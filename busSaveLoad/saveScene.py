@@ -18,17 +18,29 @@ ODD_BUSES = ["01", "03", "05", "07", "09", "11", "13", "15"]
 
 today = date.today().strftime("%Y%m%d")
 
-def printHandler(address, *args):
-    print(f"{address}: {args}")
+retry = False
 
-lastVal: float # List of all incoming args[0]
-def listHandler(address, *args):
-    global lastVal
+def printHandler(address, *args):
+    global retry
+    print(f"{address}: {args}")
+    retry = False
+
+lastVal: float # Previous args[0]
+def singleArgHandler(address, *args):
+    global lastVal, retry
     lastVal = args[0]
+    retry = False
+
+def retryHandler(address, *args):
+    global retry
+    retry = True
 
 dispatcher = Dispatcher()
 dispatcher.map("/info", printHandler)
-dispatcher.set_default_handler(listHandler)
+dispatcher.map("/ch/*", singleArgHandler)
+dispatcher.map("/auxin/*", singleArgHandler)
+dispatcher.map("/fxrtn/*", singleArgHandler)
+dispatcher.set_default_handler(retryHandler)
 
 client = SimpleUDPClient(X32_IP_ADDRESS, 10023)
 server = BlockingOSCUDPServer(("0.0.0.0", 10023), dispatcher)
@@ -52,18 +64,25 @@ for bus in BUSES:
         with open(filename, "w") as scnFile:
             scnFile.write("#4.0# \"" + filename + "\" \"\" %000000000 1\n")
             for channel in CHANNELS:
-                line = channel + "/mix/" + bus
-                client.send_message(channel + "/mix/" + bus + "/on", None)
+                prefix = channel + "/mix/" + bus
+                line = prefix
+                client.send_message(prefix + "/on", None)
                 server.handle_request()
+                while retry:
+                    server.handle_request()
                 line += " " + mapFloatToOnOff(lastVal)
 
-                client.send_message(channel + "/mix/" + bus + "/level", None)
+                client.send_message(prefix + "/level", None)
                 server.handle_request()
+                while retry:
+                    server.handle_request()
                 line += " " + mapFloatToLevel(lastVal)
 
                 if bus in ODD_BUSES:
-                    client.send_message(channel + "/mix/" + bus + "/pan", None)
+                    client.send_message(prefix + "/pan", None)
                     server.handle_request()
+                    while retry:
+                        server.handle_request()
                     line += " " + mapFloatToPan(lastVal)
 
                 scnFile.write(line + "\n")
