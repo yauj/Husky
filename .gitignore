@@ -3,8 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Mac
+# Other
 .DS_Store
+.vscode
 
 # Behringer Scene Files that are created
 *.scn

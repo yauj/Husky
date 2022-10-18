@@ -3,87 +3,60 @@
 
 import sys
 sys.path.insert(0, '../')
-sys.path.insert(0, '../util') 
 
-from config import X32_IP_ADDRESS
+import asyncio
 from constants import BUSES, CHANNELS
 from datetime import date
 from glob import glob
-from sceneMappers import mapFloatToOnOff, mapFloatToLevel, mapFloatToPan
-from pythonosc.dispatcher import Dispatcher
-from pythonosc.osc_server import BlockingOSCUDPServer
-from pythonosc.udp_client import SimpleUDPClient
+from util.defaultOSC import SimpleClient, RetryingServer
+from util.sceneMappers import mapFloatToOnOff, mapFloatToLevel, mapFloatToPan
 
 ODD_BUSES = ["01", "03", "05", "07", "09", "11", "13", "15"]
 
-today = date.today().strftime("%Y%m%d")
+async def main(client):
+    global ODD_BUSES
 
-retry = False
+    today = date.today().strftime("%Y%m%d")
 
-def printHandler(address, *args):
-    global retry
-    print(f"{address}: {args}")
-    retry = False
+    server = RetryingServer()
+    client._sock = server.socket
 
-lastVal: float # Previous args[0]
-def singleArgHandler(address, *args):
-    global lastVal, retry
-    lastVal = args[0]
-    retry = False
+    await client.send_message("/info", None)
+    server.handle_request()
 
-def retryHandler(address, *args):
-    global retry
-    retry = True
+    files = glob("*.scn")
+    names = []
+    for filename in files:
+        names.append(filename.split(".")[0].split("_")[2])
+    
+    print("Names in Directory: " + str(set(names)))
+    print("Buses to process: " + str(BUSES))
 
-dispatcher = Dispatcher()
-dispatcher.map("/info", printHandler)
-dispatcher.map("/ch/*", singleArgHandler)
-dispatcher.map("/auxin/*", singleArgHandler)
-dispatcher.map("/fxrtn/*", singleArgHandler)
-dispatcher.set_default_handler(retryHandler)
-
-client = SimpleUDPClient(X32_IP_ADDRESS, 10023)
-server = BlockingOSCUDPServer(("0.0.0.0", 10023), dispatcher)
-client._sock = server.socket
-
-client.send_message("/info", "")
-server.handle_request()
-
-files = glob("*.scn")
-names = []
-for filename in files:
-    names.append(filename.split(".")[0].split("_")[2])
-print("Names in Directory: " + str(set(names)))
-print("Buses to process: " + str(BUSES))
-
-for bus in BUSES:
-    name = input("Please type the name of the person who used Bus " + bus + ": (Type n to skip saving this Bus)\n  ")
-    if (name != "n"):
-        name = name.replace(" ", "")
-        filename = today + "_" + bus + "_" + name + ".scn"
-        with open(filename, "w") as scnFile:
-            scnFile.write("#4.0# \"" + filename + "\" \"\" %000000000 1\n")
-            for channel in CHANNELS:
-                prefix = channel + "/mix/" + bus
-                line = prefix
-                client.send_message(prefix + "/on", None)
-                server.handle_request()
-                while retry:
+    for bus in BUSES:
+        name = input("Please type the name of the person who used Bus " + bus + ": (Type n to skip saving this Bus)\n  ")
+        if (name != "n"):
+            name = name.replace(" ", "")
+            filename = today + "_" + bus + "_" + name + ".scn"
+            with open(filename, "w") as scnFile:
+                scnFile.write("#4.0# \"" + filename + "\" \"\" %000000000 1")
+                for channel in CHANNELS:
+                    prefix = channel + "/mix/" + bus
+                    line = prefix
+                    await client.send_message(prefix + "/on", None)
                     server.handle_request()
-                line += " " + mapFloatToOnOff(lastVal)
+                    line += " " + mapFloatToOnOff(server.lastVal)
 
-                client.send_message(prefix + "/level", None)
-                server.handle_request()
-                while retry:
+                    await client.send_message(prefix + "/level", None)
                     server.handle_request()
-                line += " " + mapFloatToLevel(lastVal)
+                    line += " " + mapFloatToLevel(server.lastVal)
 
-                if bus in ODD_BUSES:
-                    client.send_message(prefix + "/pan", None)
-                    server.handle_request()
-                    while retry:
+                    if bus in ODD_BUSES:
+                        await client.send_message(prefix + "/pan", None)
                         server.handle_request()
-                    line += " " + mapFloatToPan(lastVal)
+                        line += " " + mapFloatToPan(server.lastVal)
 
-                scnFile.write(line + "\n")
-        print("  Created " + filename + " for settings that were read from " + bus + "\n")
+                    scnFile.write("\n" + line)
+            print("  Created " + filename + " for settings that were read from Bus " + bus + "\n")
+
+if __name__ == "__main__":
+    asyncio.run(main(SimpleClient()))
