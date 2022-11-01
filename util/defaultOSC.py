@@ -1,15 +1,14 @@
 import sys
 sys.path.insert(0, '../')
 
-from config import X32_IP_ADDRESS
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer
 
 # Simple Client that has async logic, since testing client has async logic
 class SimpleClient(SimpleUDPClient):
-    def __init__(self):
-        super().__init__(X32_IP_ADDRESS, 10023)
+    def __init__(self, ipAddress):
+        super().__init__(ipAddress, 10023)
 
     async def send_message(self, address, value):
         super().send_message(address, value)

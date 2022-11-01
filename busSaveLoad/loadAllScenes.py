@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, '../')
 
 import asyncio
-from config import BUSES_TO_SAVE
+from config import BUSES_TO_SAVE, IEM_IP_ADDRESS
 from glob import glob
 from loadSingleScene import runSingle
 from util.constants import ALL_BUSES
@@ -32,4 +32,4 @@ async def main(client):
             await runSingle(client, bus, name)
             
 if __name__ == "__main__":
-    asyncio.run(main(SimpleClient()))
+    asyncio.run(main(SimpleClient(IEM_IP_ADDRESS)))

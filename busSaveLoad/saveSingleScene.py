@@ -2,9 +2,11 @@
 # Suggested that this script is run from the busSaveLoad directory
 
 import sys
+
 sys.path.insert(0, '../')
 
 import asyncio
+from config import IEM_IP_ADDRESS
 from datetime import date
 from glob import glob
 from util.constants import ALL_BUSES, ODD_BUSES, ALL_CHANNELS
@@ -61,4 +63,4 @@ async def runSingle(client, server, bus, name, today):
     print("  Created " + filename + " for settings that were read from Bus " + bus + "\n")
 
 if __name__ == "__main__":
-    asyncio.run(main(SimpleClient()))
+    asyncio.run(main(SimpleClient(IEM_IP_ADDRESS)))

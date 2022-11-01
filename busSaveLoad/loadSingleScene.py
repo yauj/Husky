@@ -5,6 +5,7 @@ import sys
 sys.path.insert(0, '../')
 
 import asyncio
+from config import IEM_IP_ADDRESS 
 from glob import glob
 from util.constants import ALL_BUSES, ODD_BUSES
 from util.defaultOSC import SimpleClient, RetryingServer
@@ -78,4 +79,4 @@ async def runSingle(client, bus, name):
 
 
 if __name__ == "__main__":
-    asyncio.run(main(SimpleClient()))
+    asyncio.run(main(SimpleClient(IEM_IP_ADDRESS)))
