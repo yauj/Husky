@@ -3,6 +3,8 @@ Custom scripts for X32
 
 Run the following: `python3 __main__.py`
 
+For Macs, just open `X32Helper.app`.
+
 ## Dependencies:
 
 - [python](https://www.python.org/downloads/)
