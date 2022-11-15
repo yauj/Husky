@@ -31,4 +31,8 @@ class CueSaveButton(QPushButton):
                     if lead == "":
                         lead = "N"
 
-                    file.write("\n" + key + " " + lead)
+                    snippet = cue["snippet"].text()
+                    if snippet == "":
+                        snippet = "N"
+
+                    file.write("\n" + key + " " + lead + " " + snippet)

@@ -41,9 +41,9 @@ class LoadButton(QPushButton):
             dlg.exec()
         
 async def main(fohClient, iemClient, server, filename):
-    await runSingle(fohClient, iemClient, server, filename)
+    await runSingle(fohClient, iemClient, server, filename, True)
 
-async def runSingle(fohClient, iemClient, server, filename):
+async def runSingle(fohClient, iemClient, server, filename, iemDynamics):
     fohClient._sock = server.socket
     iemClient._sock = server.socket
 
@@ -66,8 +66,9 @@ async def runSingle(fohClient, iemClient, server, filename):
 
             if (components[0] == "foh"):
                 await fohClient.send_message(components[1], arg)
-
-            # Send All Saved settings to IEM Mixer
-            await iemClient.send_message(components[1], arg)
-
+                if iemDynamics: # Whether not to send Dynamics to IEM mixer as well
+                    await iemClient.send_message(components[1], arg)
+            elif (components[0] == "iem"):
+                await iemClient.send_message(components[1], arg)
+            
     print("Loaded " + filename + "\n")

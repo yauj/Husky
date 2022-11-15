@@ -4,6 +4,7 @@ import sys
 from apis.cues.cueFire import CueFireButton
 from apis.cues.cueLoad import CueLoadButton
 from apis.cues.cueSave import CueSaveButton
+from apis.cues.cueSnippet import CueSnippetButton
 from apis.snippets.loadAll import LoadAllButton
 from apis.snippets.loadSingle import LoadButton
 from apis.snippets.saveAll import SaveAllButton
@@ -14,12 +15,12 @@ from util.constants import KEYS
 from util.defaultOSC import RetryingServer
 from PyQt6.QtWidgets import (
     QApplication,
-    QHBoxLayout,
+    QCheckBox,
     QComboBox,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
     QMainWindow,
-    QPushButton,
     QTabWidget,
     QVBoxLayout,
     QWidget,
@@ -29,7 +30,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.widgets = {"personal": {}, "ip": {}}
+        self.widgets = {"personal": {}, "ip": {}, "cue": {}}
         self.server = RetryingServer()
 
         self.setWindowTitle("X32 Helper")
@@ -131,6 +132,16 @@ class MainWindow(QMainWindow):
         return widget
     
     def cuesLayer(self):
+        tabs = QTabWidget()
+
+        # Need to compile saveLayer first, since loadLayer is dependent on saveLayer
+
+        tabs.addTab(self.cuesMainLayer(), "Main")
+        tabs.addTab(self.cuesSnippetLayer(), "Snippet")
+
+        return tabs
+
+    def cuesMainLayer(self):
         vlayout = QVBoxLayout()
 
         vlayout.addWidget(QLabel("Fire cues per song"))
@@ -156,7 +167,13 @@ class MainWindow(QMainWindow):
             options["lead"].addItems(["", "1", "2", "3", "4"])
             hlayout.addWidget(options["lead"])
 
-            hlayout.addWidget(QPushButton("Other"))
+            snippet = QLineEdit()
+            snippet.setPlaceholderText("Snippet Filename")
+            snippet.setFixedWidth(150)
+            hlayout.addWidget(snippet)
+            options["snippet"] = snippet
+            self.widgets["cue"][index] = snippet
+
             hlayout.addWidget(CueFireButton(self.widgets, self.server, index, options))
 
             vlayout.addLayout(hlayout)
@@ -172,6 +189,55 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(vlayout)
         return widget
+
+    def cuesSnippetLayer(self):
+        vlayout = QVBoxLayout()
+
+        vlayout.addWidget(QLabel("Save Snippet to be loaded by cue"))
+
+        hlayout = QHBoxLayout()
+
+        hlayout.addWidget(QLabel("Cue: "))
+
+        cue = QComboBox()
+        cue.setPlaceholderText("Index")
+        for index in self.widgets["cue"]:
+            cue.addItem(index)
+        hlayout.addWidget(cue)
+
+        vlayout.addLayout(hlayout)
+   
+        options = {}
+
+        for chName in config["personal"]:
+            hlayout = QHBoxLayout()
+
+            hlayout.addWidget(QLabel(chName + ":"))
+
+            options[chName] = {}
+
+            hlayout.addWidget(QLabel("FOH"))
+            if "channels" in config["personal"][chName]:
+                options[chName]["channels"] = QCheckBox()
+                hlayout.addWidget(options[chName]["channels"])
+            else:
+                hlayout.addWidget(QLabel("-"))
+
+            hlayout.addWidget(QLabel("IEM"))
+            if "iem_bus" in config["personal"][chName]:
+                options[chName]["iem_bus"] = QCheckBox()
+                hlayout.addWidget(options[chName]["iem_bus"])
+            else:
+                hlayout.addWidget(QLabel("-"))
+            
+            vlayout.addLayout(hlayout)
+        
+        vlayout.addWidget(CueSnippetButton(self.widgets, self.server, config["personal"], options, cue))
+
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        return widget
+
 
     def transferLayer(self):
         vlayout = QVBoxLayout()

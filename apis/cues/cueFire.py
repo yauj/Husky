@@ -1,6 +1,8 @@
+import os.path
 import sys
 sys.path.insert(0, '../')
 
+from apis.snippets.loadSingle import runSingle
 import asyncio
 import mido
 from util.constants import MIDI_BUS, KEYS
@@ -22,6 +24,7 @@ class CueFireButton(QPushButton):
     def clicked(self):
         asyncio.run(main(
             SimpleClient(self.widgets["ip"]["FOH"].text()),
+            SimpleClient(self.widgets["ip"]["IEM"].text()),
             self.server,
             self.options
         ))
@@ -31,10 +34,14 @@ class CueFireButton(QPushButton):
         dlg.setText("Cue " + self.index + " Fired")
         dlg.exec()
         
-async def main(client, server, options):
-    client._sock = server.socket
+async def main(fohClient, iemClient, server, options):
+    fohClient._sock = server.socket
+    iemClient._sock = server.socket
 
-    await client.send_message("/info", None)
+    await fohClient.send_message("/info", None)
+    server.handle_request()
+
+    await iemClient.send_message("/info", None)
     server.handle_request()
 
     if options["key"].currentText() != "":
@@ -66,10 +73,14 @@ async def main(client, server, options):
             leadVox = "08"
             bkgdVox.remove(leadVox)
             
-        await client.send_message("/ch/" + leadVox + "/mix/01/on", 1)
-        await client.send_message("/ch/" + leadVox + "/mix/02/on", 1)
-        await client.send_message("/ch/" + leadVox + "/mix/03/on", 0)
+        await fohClient.send_message("/ch/" + leadVox + "/mix/01/on", 1)
+        await fohClient.send_message("/ch/" + leadVox + "/mix/02/on", 1)
+        await fohClient.send_message("/ch/" + leadVox + "/mix/03/on", 0)
         for ch in bkgdVox:
-            await client.send_message("/ch/" + ch + "/mix/01/on", 0)
-            await client.send_message("/ch/" + ch + "/mix/02/on", 0)
-            await client.send_message("/ch/" + ch + "/mix/03/on", 1)
+            await fohClient.send_message("/ch/" + ch + "/mix/01/on", 0)
+            await fohClient.send_message("/ch/" + ch + "/mix/02/on", 0)
+            await fohClient.send_message("/ch/" + ch + "/mix/03/on", 1)
+    
+    if options["snippet"].text() != "":
+        if os.path.exists("data/" + options["snippet"].text()):
+            await runSingle(fohClient, iemClient, server, options["snippet"].text(), False)

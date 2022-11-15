@@ -1,7 +1,6 @@
 import sys
 sys.path.insert(0, '../')
 
-from datetime import date
 from PyQt6.QtWidgets import (
     QFileDialog,
     QPushButton,
@@ -35,5 +34,10 @@ class CueLoadButton(QPushButton):
                         self.cues[idx]["lead"].setCurrentIndex(-1)
                     else:
                         self.cues[idx]["lead"].setCurrentText(components[1])
+
+                    if components[2] == "N":
+                        self.cues[idx]["snippet"].setText("")
+                    else:
+                        self.cues[idx]["snippet"].setText(components[2])
 
                     idx = idx + 1

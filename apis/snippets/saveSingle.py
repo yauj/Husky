@@ -55,37 +55,43 @@ async def runSingle(fohClient, iemClient, server, label, config):
 
     today = date.today().strftime("%Y%m%d")
     filename = today + "_" + label + ".osc"
-    with open("data/" + filename, "w") as scnFile:
+    with open("data/" + filename, "w") as file:
         if "channels" in config:
-            for channel in config["channels"]:
-                # Channel Labeling
-                for param in ["name", "icon", "color"]:
-                    await saveSetting(scnFile, "foh", fohClient, server, "/ch/" + channel + "/config/" + param)
-
-                # Low Cut
-                for param in ["hpon", "hpf"]:
-                    await saveSetting(scnFile, "foh", fohClient, server, "/ch/" + channel + "/preamp/" + param)
-                
-                # EQ Settings
-                for band in ["1", "2", "3", "4"]:
-                    for param in ["type", "f", "g", "q"]:
-                        await saveSetting(scnFile, "foh", fohClient, server, "/ch/" + channel + "/eq/" + band + "/" + param)
-
-                # Compression Setting
-                for param in ["thr", "ratio", "knee", "mgain", "attack", "hold", "release", "mix"]:
-                    await saveSetting(scnFile, "foh", fohClient, server, "/ch/" + channel + "/dyn/" + param)
+            await saveChannels(fohClient, server, file, config["channels"])
 
         if "iem_bus" in config:
-            for channel in ALL_CHANNELS:
-                prefix = channel + "/mix/" + config["iem_bus"]
-
-                await saveSetting(scnFile, "iem", iemClient, server, prefix + "/on")
-                await saveSetting(scnFile, "iem", iemClient, server, prefix + "/level")
-
-                if config["iem_bus"] in ODD_BUSES:
-                    await saveSetting(scnFile, "iem", iemClient, server, prefix + "/pan")
+            await saveIEMBus(iemClient, server, file, config["iem_bus"])
 
     print("Created " + filename + "\n")
+
+async def saveChannels(fohClient, server, file, channels):
+    for channel in channels:
+        # Channel Labeling
+        for param in ["name", "icon", "color"]:
+            await saveSetting(file, "foh", fohClient, server, "/ch/" + channel + "/config/" + param)
+
+        # Low Cut
+        for param in ["hpon", "hpf"]:
+            await saveSetting(file, "foh", fohClient, server, "/ch/" + channel + "/preamp/" + param)
+        
+        # EQ Settings
+        for band in ["1", "2", "3", "4"]:
+            for param in ["type", "f", "g", "q"]:
+                await saveSetting(file, "foh", fohClient, server, "/ch/" + channel + "/eq/" + band + "/" + param)
+
+        # Compression Setting
+        for param in ["thr", "ratio", "knee", "mgain", "attack", "hold", "release", "mix"]:
+            await saveSetting(file, "foh", fohClient, server, "/ch/" + channel + "/dyn/" + param)
+
+async def saveIEMBus(iemClient, server, file, bus):
+    for channel in ALL_CHANNELS:
+        prefix = channel + "/mix/" + bus
+
+        await saveSetting(file, "iem", iemClient, server, prefix + "/on")
+        await saveSetting(file, "iem", iemClient, server, prefix + "/level")
+
+        if bus in ODD_BUSES:
+            await saveSetting(file, "iem", iemClient, server, prefix + "/pan")
 
 async def saveSetting(file, prefix, client, server, setting):
     await client.send_message(setting, None)
