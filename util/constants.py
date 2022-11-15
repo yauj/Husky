@@ -19,3 +19,6 @@ LINK_CHANNELS = [
 
 ALL_BUSES = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"]
 ODD_BUSES = ["01", "03", "05", "07", "09", "11", "13", "15"]
+
+MIDI_BUS = "IAC Driver Bus 1" # Mac MIDI Bus. Enable in Audio MIDI Setup
+KEYS = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
