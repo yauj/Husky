@@ -59,19 +59,13 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>COMMAND_STRING</key>
-					<string>cd ~/Documents/x32-scripts/
-python3 -m ensurepip --upgrade
-pip3 install python-osc
-pip3 install mido
-pip3 install python-rtmidi
-pip3 install PyQt6
-python3 __main__.py</string>
+					<string>screen -S X32Helper -dm zsh -c 'cd ~/Documents/x32-scripts; python3 __main__.py'</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>
 					<integer>1</integer>
 					<key>shell</key>
-					<string>/bin/sh</string>
+					<string>/bin/zsh</string>
 					<key>source</key>
 					<string></string>
 				</dict>
