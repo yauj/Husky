@@ -6,26 +6,23 @@ from apis.snippets.loadSingle import runSingle
 import asyncio
 import mido
 from util.constants import MIDI_BUS, KEYS
-from util.defaultOSC import SimpleClient
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
 
 class CueFireButton(QPushButton):
-    def __init__(self, widgets, server, index, options):
+    def __init__(self, widgets, osc, index, options):
         super().__init__("Fire")
         self.widgets = widgets
-        self.server = server
+        self.osc = osc
         self.index = index
         self.options = options
         self.pressed.connect(self.clicked)
     
     def clicked(self):
         asyncio.run(main(
-            SimpleClient(self.widgets["ip"]["FOH"].text()),
-            SimpleClient(self.widgets["ip"]["IEM"].text()),
-            self.server,
+            self.osc,
             self.options
         ))
         
@@ -34,16 +31,7 @@ class CueFireButton(QPushButton):
         dlg.setText("Cue " + self.index + " Fired")
         dlg.exec()
         
-async def main(fohClient, iemClient, server, options):
-    fohClient._sock = server.socket
-    iemClient._sock = server.socket
-
-    await fohClient.send_message("/info", None)
-    server.handle_request()
-
-    await iemClient.send_message("/info", None)
-    server.handle_request()
-
+async def main(osc, options):
     if options["key"].currentText() != "":
         print(mido.Backend("mido.backends.rtmidi").get_output_names())
 
@@ -73,14 +61,14 @@ async def main(fohClient, iemClient, server, options):
             leadVox = "08"
             bkgdVox.remove(leadVox)
             
-        await fohClient.send_message("/ch/" + leadVox + "/mix/01/on", 1)
-        await fohClient.send_message("/ch/" + leadVox + "/mix/02/on", 1)
-        await fohClient.send_message("/ch/" + leadVox + "/mix/03/on", 0)
+        await osc["fohClient"].send_message("/ch/" + leadVox + "/mix/01/on", 1)
+        await osc["fohClient"].send_message("/ch/" + leadVox + "/mix/02/on", 1)
+        await osc["fohClient"].send_message("/ch/" + leadVox + "/mix/03/on", 0)
         for ch in bkgdVox:
-            await fohClient.send_message("/ch/" + ch + "/mix/01/on", 0)
-            await fohClient.send_message("/ch/" + ch + "/mix/02/on", 0)
-            await fohClient.send_message("/ch/" + ch + "/mix/03/on", 1)
+            await osc["fohClient"].send_message("/ch/" + ch + "/mix/01/on", 0)
+            await osc["fohClient"].send_message("/ch/" + ch + "/mix/02/on", 0)
+            await osc["fohClient"].send_message("/ch/" + ch + "/mix/03/on", 1)
     
     if options["snippet"].text() != "":
         if os.path.exists("data/" + options["snippet"].text()):
-            await runSingle(fohClient, iemClient, server, options["snippet"].text(), False)
+            await runSingle(osc, options["snippet"].text(), False)

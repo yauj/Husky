@@ -3,17 +3,16 @@ import sys
 sys.path.insert(0, '../')
 
 import asyncio
-from util.defaultOSC import SimpleClient
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
 
 class LoadButton(QPushButton):
-    def __init__(self, widgets, server, chName, filename, person):
+    def __init__(self, widgets, osc, chName, filename, person):
         super().__init__("Load")
         self.widgets = widgets
-        self.server = server
+        self.osc = osc
         self.chName = chName
         self.filename = filename
         self.person = person
@@ -22,9 +21,7 @@ class LoadButton(QPushButton):
     def clicked(self):
         if (self.filename.currentText() != "" and os.path.exists("data/" + self.filename.currentText())):
             asyncio.run(main(
-                SimpleClient(self.widgets["ip"]["FOH"].text()),
-                SimpleClient(self.widgets["ip"]["IEM"].text()),
-                self.server,
+                self.osc,
                 self.filename.currentText()
             ))
 
@@ -40,19 +37,10 @@ class LoadButton(QPushButton):
             dlg.setText("Invalid Filename for " + self.chName)
             dlg.exec()
         
-async def main(fohClient, iemClient, server, filename):
-    await runSingle(fohClient, iemClient, server, filename, True)
+async def main(osc, filename):
+    await runSingle(osc, filename, True)
 
-async def runSingle(fohClient, iemClient, server, filename, iemDynamics):
-    fohClient._sock = server.socket
-    iemClient._sock = server.socket
-
-    await fohClient.send_message("/info", None)
-    server.handle_request()
-
-    await iemClient.send_message("/info", None)
-    server.handle_request()
-
+async def runSingle(osc, filename, iemDynamics):
     with open("data/" + filename) as scnFile:
         scnFile.readline() # Skip Header Line
         while (line := scnFile.readline().strip()):
@@ -65,10 +53,10 @@ async def runSingle(fohClient, iemClient, server, filename, iemDynamics):
                 arg = float(arg)
 
             if (components[0] == "foh"):
-                await fohClient.send_message(components[1], arg)
+                await osc["fohClient"].send_message(components[1], arg)
                 if iemDynamics: # Whether not to send Dynamics to IEM mixer as well
-                    await iemClient.send_message(components[1], arg)
+                    await osc["iemClient"].send_message(components[1], arg)
             elif (components[0] == "iem"):
-                await iemClient.send_message(components[1], arg)
+                await osc["iemClient"].send_message(components[1], arg)
             
     print("Loaded " + filename + "\n")

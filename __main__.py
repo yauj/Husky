@@ -1,5 +1,6 @@
 import os
 import sys
+from apis.connection.connect import ConnectButton
 
 from apis.cues.cueFire import CueFireButton
 from apis.cues.cueLoad import CueLoadButton
@@ -30,19 +31,44 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.widgets = {"personal": {}, "ip": {}, "cue": {}}
-        self.server = RetryingServer()
+        self.widgets = {"personal": {}, "cue": {}}
+        server = RetryingServer()
+        self.osc = {
+            "server": server
+        }
 
         self.setWindowTitle("X32 Helper")
 
         tabs = QTabWidget()
 
+        tabs.addTab(self.connectionLayer(), "X32 Connection")
         tabs.addTab(self.snippetsLayer(), "Snippets")
         tabs.addTab(self.cuesLayer(), "Cues")
         tabs.addTab(self.transferLayer(), "FOH->IEM")
-        tabs.addTab(self.prefLayer(), "Preferences")
         
         self.setCentralWidget(tabs)
+    
+    def connectionLayer(self):
+        vlayout = QVBoxLayout()
+
+        for mixerName in config["ip"]:
+            hlayout = QHBoxLayout()
+
+            hlayout.addWidget(QLabel(mixerName.upper() + " Mixer IP Address:"))
+
+            address = QLineEdit(config["ip"][mixerName])
+            hlayout.addWidget(address)
+
+            status = QLabel()
+            hlayout.addWidget(status)
+            
+            hlayout.addWidget(ConnectButton(self.osc, address, status, mixerName))
+
+            vlayout.addLayout(hlayout)
+
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        return widget
 
     def snippetsLayer(self):
         tabs = QTabWidget()
@@ -83,16 +109,15 @@ class MainWindow(QMainWindow):
             filenames[chName].setCurrentIndex(-1)
             hlayout.addWidget(filenames[chName])
 
-            hlayout.addWidget(LoadButton(self.widgets, self.server, chName, filenames[chName], self.widgets["personal"][chName]))
+            hlayout.addWidget(LoadButton(self.widgets, self.osc, chName, filenames[chName], self.widgets["personal"][chName]))
 
             vlayout.addLayout(hlayout)
         
-        vlayout.addWidget(LoadAllButton(self.widgets, self.server, filenames, self.widgets["personal"]))
+        vlayout.addWidget(LoadAllButton(self.widgets, self.osc, filenames, self.widgets["personal"]))
 
         widget = QWidget()
         widget.setLayout(vlayout)
         return widget
-
 
     def snippetsSaveLayer(self):
         vlayout = QVBoxLayout()
@@ -121,11 +146,11 @@ class MainWindow(QMainWindow):
             self.widgets["personal"][chName].setCurrentIndex(-1)
             hlayout.addWidget(self.widgets["personal"][chName])
 
-            hlayout.addWidget(SaveButton(self.widgets, self.server, chName, self.widgets["personal"][chName], config["personal"][chName]))
+            hlayout.addWidget(SaveButton(self.widgets, self.osc, chName, self.widgets["personal"][chName], config["personal"][chName]))
 
             vlayout.addLayout(hlayout)
 
-        vlayout.addWidget(SaveAllButton(self.widgets, self.server, self.widgets["personal"], config["personal"]))
+        vlayout.addWidget(SaveAllButton(self.widgets, self.osc, self.widgets["personal"], config["personal"]))
 
         widget = QWidget()
         widget.setLayout(vlayout)
@@ -174,7 +199,7 @@ class MainWindow(QMainWindow):
             options["snippet"] = snippet
             self.widgets["cue"][index] = snippet
 
-            hlayout.addWidget(CueFireButton(self.widgets, self.server, index, options))
+            hlayout.addWidget(CueFireButton(self.widgets, self.osc, index, options))
 
             vlayout.addLayout(hlayout)
             cues.append(options)
@@ -232,7 +257,7 @@ class MainWindow(QMainWindow):
             
             vlayout.addLayout(hlayout)
         
-        vlayout.addWidget(CueSnippetButton(self.widgets, self.server, config["personal"], options, cue))
+        vlayout.addWidget(CueSnippetButton(self.widgets, self.osc, config["personal"], options, cue))
 
         widget = QWidget()
         widget.setLayout(vlayout)
@@ -243,24 +268,7 @@ class MainWindow(QMainWindow):
         vlayout = QVBoxLayout()
 
         vlayout.addWidget(QLabel("Are you sure you want to transfer EQ, Compression settings to the IEM Mixer?"))
-        vlayout.addWidget(TransferButton(self.widgets, self.server))
-
-        widget = QWidget()
-        widget.setLayout(vlayout)
-        return widget
-
-    def prefLayer(self):
-        vlayout = QVBoxLayout()
-
-        for mixerName in config["ip"]:
-            hlayout = QHBoxLayout()
-
-            hlayout.addWidget(QLabel(mixerName + " Mixer IP Address:"))
-
-            self.widgets["ip"][mixerName] = QLineEdit(config["ip"][mixerName])
-            hlayout.addWidget(self.widgets["ip"][mixerName])
-
-            vlayout.addLayout(hlayout)
+        vlayout.addWidget(TransferButton(self.widgets, self.osc))
 
         widget = QWidget()
         widget.setLayout(vlayout)
