@@ -59,7 +59,7 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>COMMAND_STRING</key>
-					<string>screen -S X32Helper -dm zsh -c 'cd ~/Documents/x32-scripts; python3 __main__.py'</string>
+					<string>screen -S X32Helper -dm zsh -c 'source ~/.zprofile; cd ~/Documents/x32-scripts; python3 __main__.py'</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>
