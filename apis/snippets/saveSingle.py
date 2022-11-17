@@ -71,6 +71,10 @@ async def saveChannels(osc, file, channels):
         for param in ["thr", "ratio", "knee", "mgain", "attack", "hold", "release", "mix"]:
             await saveSetting(file, "foh", osc["fohClient"], osc["server"], "/ch/" + channel + "/dyn/" + param)
 
+        # Pan and On Settings
+        for param in ["pan", "on"]:
+            await saveSetting(file, "foh", osc["fohClient"], osc["server"], "/ch/" + channel + "/mix/" + param) 
+
 async def saveIEMBus(osc, file, bus):
     for channel in ALL_CHANNELS:
         prefix = channel + "/mix/" + bus

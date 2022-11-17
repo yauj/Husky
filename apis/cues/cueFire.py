@@ -14,6 +14,11 @@ from PyQt6.QtWidgets import (
 class CueFireButton(QPushButton):
     def __init__(self, widgets, osc, index, options):
         super().__init__("Fire")
+        if (len(index) == 1):
+            super().setShortcut("ctrl+" + index)
+        elif (index == "10"):
+            super().setShortcut("ctrl+0")
+
         self.widgets = widgets
         self.osc = osc
         self.index = index
