@@ -70,6 +70,9 @@ async def main(osc, options):
             await osc["fohClient"].send_message("/ch/" + ch + "/mix/03/on", 1)
     
     if options["snippet"].text() == "RESET":
+        # Retry 3 times, to bypass throttling
+        await reset(osc)
+        await reset(osc)
         await reset(osc)
     elif options["snippet"].text() != "":
         if os.path.exists("data/" + options["snippet"].text()):
