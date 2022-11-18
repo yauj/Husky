@@ -47,6 +47,10 @@ async def main(osc):
         # Copy Compression Setting
         for param in ["thr", "ratio", "knee", "mgain", "attack", "hold", "release", "mix"]:
             await transferSetting(osc, channel + "/dyn/" + param)
+
+        # Pan and On Settings
+        for param in ["pan", "on"]:
+            await transferSetting(osc, channel + "/mix/" + param)
     
     print("Settings Transferred")
 

@@ -267,7 +267,7 @@ class MainWindow(QMainWindow):
     def transferLayer(self):
         vlayout = QVBoxLayout()
 
-        vlayout.addWidget(QLabel("Are you sure you want to transfer EQ, Compression settings to the IEM Mixer?"))
+        vlayout.addWidget(QLabel("Do you want to transfer Channel EQ, Compression, Mute settings from the FOH Mixer to the IEM Mixer?"))
         vlayout.addWidget(TransferButton(self.widgets, self.osc))
 
         widget = QWidget()
