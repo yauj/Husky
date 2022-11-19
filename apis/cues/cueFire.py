@@ -98,8 +98,8 @@ async def reset(osc):
         await osc["fohClient"].send_message("/ch/" + str(ch).zfill(2) + "/mix/pan", 0.5)
     
     await osc["fohClient"].send_message("/ch/27/mix/fader", 0)
-    await osc["fohClient"].send_message("/ch/27/mix/pan", 0)
-    await osc["fohClient"].send_message("/ch/28/mix/pan", 1)
+    await osc["fohClient"].send_message("/ch/27/mix/pan", 0.0)
+    await osc["fohClient"].send_message("/ch/28/mix/pan", 1.0)
 
     for ch in range(29, 31):
         await osc["fohClient"].send_message("/ch/" + str(ch).zfill(2) + "/mix/fader", 0)
@@ -108,12 +108,12 @@ async def reset(osc):
 
     await osc["fohClient"].send_message("/ch/31/mix/fader", 0.75)
     await osc["fohClient"].send_message("/ch/31/mix/on", 1)
-    await osc["fohClient"].send_message("/ch/31/mix/pan", 0)
-    await osc["fohClient"].send_message("/ch/32/mix/pan", 1)
+    await osc["fohClient"].send_message("/ch/31/mix/pan", 0.0)
+    await osc["fohClient"].send_message("/ch/32/mix/pan", 1.0)
     await osc["fohClient"].send_message("/ch/31/mix/13/on", 1)
     await osc["fohClient"].send_message("/ch/31/mix/13/level", 0.75)
-    await osc["fohClient"].send_message("/ch/31/mix/13/pan", 0)
-    await osc["fohClient"].send_message("/ch/32/mix/13/pan", 1)
+    await osc["fohClient"].send_message("/ch/31/mix/13/pan", 0.0)
+    await osc["fohClient"].send_message("/ch/32/mix/13/pan", 1.0)
 
     await osc["fohClient"].send_message("/auxin/01/mix/fader", 0.5)
     await osc["fohClient"].send_message("/auxin/01/mix/on", 1)
@@ -131,14 +131,14 @@ async def reset(osc):
     await osc["fohClient"].send_message("/auxin/06/mix/pan", 0.75)
     await osc["fohClient"].send_message("/auxin/05/mix/13/on", 1)
     await osc["fohClient"].send_message("/auxin/05/mix/13/level", 0.75)
-    await osc["fohClient"].send_message("/auxin/05/mix/13/pan", 0)
-    await osc["fohClient"].send_message("/auxin/06/mix/13/pan", 1)
+    await osc["fohClient"].send_message("/auxin/05/mix/13/pan", 0.0)
+    await osc["fohClient"].send_message("/auxin/06/mix/13/pan", 1.0)
 
     for fx in range(0, 4):
         await osc["fohClient"].send_message("/fxrtn/" + str((fx * 2) + 1).zfill(2) + "/mix/fader", 0.75)
         await osc["fohClient"].send_message("/fxrtn/" + str((fx * 2) + 1).zfill(2) + "/mix/on", 1)
-        await osc["fohClient"].send_message("/fxrtn/" + str((fx * 2) + 1).zfill(2) + "/mix/pan", 0)
-        await osc["fohClient"].send_message("/fxrtn/" + str((fx * 2) + 2).zfill(2) + "/mix/pan", 1)
+        await osc["fohClient"].send_message("/fxrtn/" + str((fx * 2) + 1).zfill(2) + "/mix/pan", 0.0)
+        await osc["fohClient"].send_message("/fxrtn/" + str((fx * 2) + 2).zfill(2) + "/mix/pan", 1.0)
 
     for bus in [1, 2, 7, 8]:
         await osc["fohClient"].send_message("/bus/" + str(bus).zfill(2) + "/mix/fader", 0.75)
@@ -151,18 +151,18 @@ async def reset(osc):
     for bus in [3, 5, 9, 13]:
         await osc["fohClient"].send_message("/bus/" + str(bus).zfill(2) + "/mix/fader", 0.75)
         await osc["fohClient"].send_message("/bus/" + str(bus).zfill(2) + "/mix/on", 1)
-        await osc["fohClient"].send_message("/bus/" + str(bus).zfill(2) + "/mix/pan", 0)
-        await osc["fohClient"].send_message("/bus/" + str(bus + 1).zfill(2) + "/mix/pan", 1)
+        await osc["fohClient"].send_message("/bus/" + str(bus).zfill(2) + "/mix/pan", 0.0)
+        await osc["fohClient"].send_message("/bus/" + str(bus + 1).zfill(2) + "/mix/pan", 1.0)
         await osc["fohClient"].send_message("/bus/" + str(bus).zfill(2) + "/mix/03/on", 1)
         await osc["fohClient"].send_message("/bus/" + str(bus).zfill(2) + "/mix/03/level", 0.75)
-        await osc["fohClient"].send_message("/bus/" + str(bus).zfill(2) + "/mix/03/pan", 0)
-        await osc["fohClient"].send_message("/bus/" + str(bus + 1).zfill(2) + "/mix/03/pan", 1)
+        await osc["fohClient"].send_message("/bus/" + str(bus).zfill(2) + "/mix/03/pan", 0.0)
+        await osc["fohClient"].send_message("/bus/" + str(bus + 1).zfill(2) + "/mix/03/pan", 1.0)
     
     await osc["fohClient"].send_message("/bus/11/mix/fader", 0.75)
     await osc["fohClient"].send_message("/bus/11/mix/on", 1)
     await osc["fohClient"].send_message("/bus/11/mix/pan", 0.5)
-    await osc["fohClient"].send_message("/bus/11/mix/pan", 0)
-    await osc["fohClient"].send_message("/bus/11/mix/pan", 1)
+    await osc["fohClient"].send_message("/bus/11/mix/pan", 0.0)
+    await osc["fohClient"].send_message("/bus/11/mix/pan", 1.0)
 
     for bus in [15, 16]:
         await osc["fohClient"].send_message("/bus/" + str(bus).zfill(2) + "/mix/fader", 0.75)
