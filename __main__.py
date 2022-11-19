@@ -10,6 +10,7 @@ from apis.snippets.loadAll import LoadAllButton
 from apis.snippets.loadSingle import LoadButton
 from apis.snippets.saveAll import SaveAllButton
 from apis.snippets.saveSingle import SaveButton
+from apis.tracks.tracksSlider import TracksSlider
 from apis.transfer.transferSettings import TransferButton
 from config import config
 from util.constants import KEYS
@@ -22,6 +23,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QMainWindow,
+    QSlider,
     QTabWidget,
     QVBoxLayout,
     QWidget,
@@ -44,6 +46,7 @@ class MainWindow(QMainWindow):
         tabs.addTab(self.connectionLayer(), "X32 Connection")
         tabs.addTab(self.snippetsLayer(), "Snippets")
         tabs.addTab(self.cuesLayer(), "Cues")
+        tabs.addTab(self.tracksLayer(), "Tracks")
         tabs.addTab(self.transferLayer(), "FOH->IEM")
         
         self.setCentralWidget(tabs)
@@ -262,7 +265,29 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(vlayout)
         return widget
+    
+    def tracksLayer(self):
+        vlayout = QVBoxLayout()
 
+        vlayout.addWidget(QLabel("Volume Sliders for tracks"))
+
+        hlayout = QHBoxLayout()
+
+        sliders = ["Bkgd Vox", "Keys", "EG", "Bass", "Drums"]
+
+        for i in range (0, len(sliders)):
+            sliderLayout = QVBoxLayout()
+
+            sliderLayout.addWidget(TracksSlider(i))
+            sliderLayout.addWidget(QLabel(sliders[i]))
+
+            hlayout.addLayout(sliderLayout)
+
+        vlayout.addLayout(hlayout)
+
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        return widget
 
     def transferLayer(self):
         vlayout = QVBoxLayout()
