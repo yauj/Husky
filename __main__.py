@@ -273,7 +273,7 @@ class MainWindow(QMainWindow):
 
         hlayout = QHBoxLayout()
 
-        sliders = ["Bkgd Vox", "Keys", "EG", "Bass", "Drums"]
+        sliders = ["BkgdVox", "Choir", "Keys", "EG", "Bass", "Drums"]
 
         for i in range (0, len(sliders)):
             sliderLayout = QVBoxLayout()

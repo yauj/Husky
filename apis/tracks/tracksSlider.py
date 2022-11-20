@@ -17,6 +17,8 @@ class TracksSlider(QSlider):
 
         self.setRange(0, 127)
         self.setSingleStep(1)
+        self.setTickInterval(21)
+        self.setTickPosition(QSlider.TickPosition.TicksRight)
         self.valueChanged.connect(self.slider)
         self.setValue(63)
     
