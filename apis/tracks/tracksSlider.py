@@ -8,12 +8,11 @@ from PyQt6.QtWidgets import (
 )
 
 class TracksSlider(QSlider):
-    def __init__(self, index):
+    def __init__(self, osc, index):
         super().__init__()
 
+        self.midiPort = osc["midi"]
         self.index = index
-
-        self.midiPort = mido.Backend("mido.backends.rtmidi").open_output(MIDI_BUS)
 
         self.setRange(0, 127)
         self.setSingleStep(1)

@@ -13,6 +13,8 @@ For Macs, just open `X32Helper.app`.
 - [mido](https://mido.readthedocs.io/en/latest/installing.html)
 - [PyQt6](https://pypi.org/project/PyQt6/)
 
+GP Seattle Specific: IAC Driver needs to be enabled in 'Audio Midi Setup'
+
 ### For Mac run the following commands:
 
 Install Homebrew: https://brew.sh

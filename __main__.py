@@ -1,5 +1,7 @@
 import os
 import sys
+
+import mido
 from apis.connection.connect import ConnectButton
 
 from apis.cues.cueFire import CueFireButton
@@ -13,7 +15,7 @@ from apis.snippets.saveSingle import SaveButton
 from apis.tracks.tracksSlider import TracksSlider
 from apis.transfer.transferSettings import TransferButton
 from config import config
-from util.constants import KEYS
+from util.constants import KEYS, MIDI_BUS
 from util.defaultOSC import RetryingServer
 from PyQt6.QtWidgets import (
     QApplication,
@@ -36,7 +38,8 @@ class MainWindow(QMainWindow):
         self.widgets = {"personal": {}, "cue": {}}
         server = RetryingServer()
         self.osc = {
-            "server": server
+            "server": server,
+            "midi": mido.Backend("mido.backends.rtmidi").open_output(MIDI_BUS)
         }
 
         self.setWindowTitle("X32 Helper")
@@ -278,7 +281,7 @@ class MainWindow(QMainWindow):
         for i in range (0, len(sliders)):
             sliderLayout = QVBoxLayout()
 
-            sliderLayout.addWidget(TracksSlider(i))
+            sliderLayout.addWidget(TracksSlider(self.osc, i + 50))
             sliderLayout.addWidget(QLabel(sliders[i]))
 
             hlayout.addLayout(sliderLayout)

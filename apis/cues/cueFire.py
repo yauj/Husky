@@ -28,6 +28,7 @@ class CueFireButton(QPushButton):
     def clicked(self):
         asyncio.run(main(
             self.osc,
+            self.index,
             self.options
         ))
         
@@ -36,14 +37,16 @@ class CueFireButton(QPushButton):
         dlg.setText("Cue " + self.index + " Fired")
         dlg.exec()
         
-async def main(osc, options):
+async def main(osc, index, options):
+    # Fire MIDI Cue
+    osc["midi"].send(mido.Message("control_change", channel = 1, control = int(index), value = 127))
+
     if options["key"].currentText() != "":
         val = int((KEYS.index(options["key"].currentText()) * 127) / 11)
 
-        midiPort = mido.Backend("mido.backends.rtmidi").open_output(MIDI_BUS)
-        midiPort.send(mido.Message("control_change", channel = 1, control = 100, value = 127)) # On/Off Message
-        midiPort.send(mido.Message("control_change", channel = 1, control = 101, value = val)) # Key Message
-        midiPort.send(mido.Message("control_change", channel = 1, control = 102, value = 127)) # Type Message
+        osc["midi"].send(mido.Message("control_change", channel = 1, control = 100, value = 127)) # On/Off Message
+        osc["midi"].send(mido.Message("control_change", channel = 1, control = 101, value = val)) # Key Message
+        osc["midi"].send(mido.Message("control_change", channel = 1, control = 102, value = 127)) # Type Message
 
     if options["lead"].currentText() != "":
         bkgdVox = ["05", "06", "07", "08"]
@@ -70,9 +73,6 @@ async def main(osc, options):
             await osc["fohClient"].send_message("/ch/" + ch + "/mix/03/on", 1)
     
     if options["snippet"].text() == "RESET":
-        # Retry 3 times, to bypass throttling
-        await reset(osc)
-        await reset(osc)
         await reset(osc)
     elif options["snippet"].text() != "":
         if os.path.exists("data/" + options["snippet"].text()):
