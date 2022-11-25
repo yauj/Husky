@@ -88,6 +88,9 @@ async def saveIEMBus(osc, file, bus):
             await saveSetting(file, "iem", osc["iemClient"], osc["server"], prefix + "/pan")
 
 async def saveSetting(file, prefix, client, server, setting):
+    file.write("\n" + getSetting(prefix, client, server, setting))
+
+async def getSetting(prefix, client, server, setting):
     await client.send_message(setting, None)
     server.handle_request()
     type = "str"
@@ -96,4 +99,4 @@ async def saveSetting(file, prefix, client, server, setting):
     elif (isinstance(server.lastVal, float)):
         type = "float"
 
-    file.write("\n" + prefix + " " + setting + " " + str(server.lastVal) + " " + type)
+    return prefix + " " + setting + " " + str(server.lastVal) + " " + type

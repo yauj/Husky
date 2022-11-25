@@ -42,7 +42,7 @@ class LoadButton(QPushButton):
 async def main(osc, filename):
     await runSingle(osc, filename, True)
 
-async def runSingle(osc, filename, iemDynamics):
+async def runSingle(osc, filename, iemCopy):
     with open("data/" + filename) as scnFile:
         scnFile.readline() # Skip Header Line
         while (line := scnFile.readline().strip()):
@@ -56,7 +56,7 @@ async def runSingle(osc, filename, iemDynamics):
 
             if (components[0] == "foh"):
                 await osc["fohClient"].send_message(components[1], arg)
-                if iemDynamics: # Whether not to send Dynamics to IEM mixer as well
+                if iemCopy: # Whether not to send setting to IEM mixer as well
                     await osc["iemClient"].send_message(components[1], arg)
             elif (components[0] == "iem"):
                 await osc["iemClient"].send_message(components[1], arg)

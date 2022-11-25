@@ -10,6 +10,7 @@ from apis.cues.cueSave import CueSaveButton
 from apis.cues.snippet.snippetEdit import SnippetEditButton
 from apis.cues.snippet.snippetLoad import SnippetLoadButton
 from apis.cues.snippet.snippetSave import SnippetSaveButton
+from apis.cues.snippet.snippetUpdate import SnippetUpdateButton
 from apis.snippets.loadAll import LoadAllButton
 from apis.snippets.loadSingle import LoadButton
 from apis.snippets.saveAll import SaveAllButton
@@ -246,32 +247,44 @@ class MainWindow(QMainWindow):
 
         vlayout.addLayout(hlayout)
    
-        options = {}
+        options = {
+            "personal": {},
+            "settings": {}
+        }
 
         for chName in config["personal"]:
             hlayout = QHBoxLayout()
 
             hlayout.addWidget(QLabel(chName + ":"))
 
-            options[chName] = {}
+            options["personal"][chName] = {}
 
             hlayout.addWidget(QLabel("FOH"))
             if "channels" in config["personal"][chName]:
-                options[chName]["channels"] = QCheckBox()
-                hlayout.addWidget(options[chName]["channels"])
+                options["personal"][chName]["channels"] = QCheckBox()
+                hlayout.addWidget(options["personal"][chName]["channels"])
             else:
                 hlayout.addWidget(QLabel("-"))
 
             hlayout.addWidget(QLabel("IEM"))
             if "iem_bus" in config["personal"][chName]:
-                options[chName]["iem_bus"] = QCheckBox()
-                hlayout.addWidget(options[chName]["iem_bus"])
+                options["personal"][chName]["iem_bus"] = QCheckBox()
+                hlayout.addWidget(options["personal"][chName]["iem_bus"])
             else:
                 hlayout.addWidget(QLabel("-"))
             
             vlayout.addLayout(hlayout)
+
+        for setting in config["settings"]:
+            hlayout = QHBoxLayout()
+
+            hlayout.addWidget(QLabel(setting + ":"))
+            options["settings"][setting] = QCheckBox()
+            hlayout.addWidget(options["settings"][setting])
+
+            vlayout.addLayout(hlayout)
         
-        vlayout.addWidget(SnippetSaveButton(self.widgets, self.osc, config["personal"], options, cue))
+        vlayout.addWidget(SnippetSaveButton(self.widgets, self.osc, config, options, cue))
 
         widget = QWidget()
         widget.setLayout(vlayout)
@@ -291,6 +304,8 @@ class MainWindow(QMainWindow):
 
         textbox = QTextEdit()
         vlayout.addWidget(textbox)
+
+        vlayout.addWidget(SnippetUpdateButton(self.osc, textbox))
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(SnippetLoadButton(filename, textbox))

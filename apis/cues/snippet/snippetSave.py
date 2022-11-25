@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, '../')
 
-from apis.snippets.saveSingle import saveChannels, saveIEMBus
+from apis.snippets.saveSingle import saveChannels, saveIEMBus, saveSetting
 import asyncio
 from datetime import date, timedelta
 from PyQt6.QtWidgets import (
@@ -43,9 +43,14 @@ class SnippetSaveButton(QPushButton):
         
 async def main(osc, config, options, filename):
     with open(filename, "w") as file:
-        for chName in options:
-            if "channels" in options[chName] and options[chName]["channels"].isChecked():
-                await saveChannels(osc, file, config[chName]["channels"])
+        for chName in options["personal"]:
+            if "channels" in options["personal"][chName] and options["personal"][chName]["channels"].isChecked():
+                await saveChannels(osc, file, config["personal"][chName]["channels"])
 
-            if "iem_bus" in options[chName] and options[chName]["iem_bus"].isChecked():
-                await saveIEMBus(osc, file, config[chName]["iem_bus"])
+            if "iem_bus" in options["personal"][chName] and options["personal"][chName]["iem_bus"].isChecked():
+                await saveIEMBus(osc, file, config["personal"][chName]["iem_bus"])
+
+        for name in options["settings"]:
+            if options["settings"][name].isChecked():
+                for setting in config["settings"][name]:
+                    await saveSetting(file, "foh", osc["iemClient"], osc["server"], setting)
