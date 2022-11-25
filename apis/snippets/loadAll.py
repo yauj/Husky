@@ -29,6 +29,8 @@ class LoadAllButton(QPushButton):
         dlg.setWindowTitle("Load All")
         dlg.setText("All Settings Loaded")
         dlg.exec()
+
+        self.setDown(False)
         
 async def main(osc, filenames, personal):
     for chName in filenames:

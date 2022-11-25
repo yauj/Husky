@@ -7,7 +7,9 @@ from apis.connection.connect import ConnectButton
 from apis.cues.cueFire import CueFireButton
 from apis.cues.cueLoad import CueLoadButton
 from apis.cues.cueSave import CueSaveButton
-from apis.cues.cueSnippet import CueSnippetButton
+from apis.cues.snippet.snippetEdit import SnippetEditButton
+from apis.cues.snippet.snippetLoad import SnippetLoadButton
+from apis.cues.snippet.snippetSave import SnippetSaveButton
 from apis.snippets.loadAll import LoadAllButton
 from apis.snippets.loadSingle import LoadButton
 from apis.snippets.saveAll import SaveAllButton
@@ -25,8 +27,8 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QMainWindow,
-    QSlider,
     QTabWidget,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
@@ -165,8 +167,6 @@ class MainWindow(QMainWindow):
     def cuesLayer(self):
         tabs = QTabWidget()
 
-        # Need to compile saveLayer first, since loadLayer is dependent on saveLayer
-
         tabs.addTab(self.cuesMainLayer(), "Main")
         tabs.addTab(self.cuesSnippetLayer(), "Snippet")
 
@@ -222,9 +222,17 @@ class MainWindow(QMainWindow):
         return widget
 
     def cuesSnippetLayer(self):
+        tabs = QTabWidget()
+
+        tabs.addTab(self.snippetSaveLayer(), "Save")
+        tabs.addTab(self.snippetEditLayer(), "Edit")
+
+        return tabs
+
+    def snippetSaveLayer(self):
         vlayout = QVBoxLayout()
 
-        vlayout.addWidget(QLabel("Save Snippet to be loaded by cue"))
+        vlayout.addWidget(QLabel("Save new Snippet to be fired by Cue"))
 
         hlayout = QHBoxLayout()
 
@@ -263,12 +271,36 @@ class MainWindow(QMainWindow):
             
             vlayout.addLayout(hlayout)
         
-        vlayout.addWidget(CueSnippetButton(self.widgets, self.osc, config["personal"], options, cue))
+        vlayout.addWidget(SnippetSaveButton(self.widgets, self.osc, config["personal"], options, cue))
 
         widget = QWidget()
         widget.setLayout(vlayout)
         return widget
     
+    def snippetEditLayer(self):
+        vlayout = QVBoxLayout()
+
+        vlayout.addWidget(QLabel("Modify existing snippet"))
+        
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(QLabel("Filename: "))
+        filename = QLineEdit()
+        filename.setReadOnly(True)
+        hlayout.addWidget(filename)
+        vlayout.addLayout(hlayout)
+
+        textbox = QTextEdit()
+        vlayout.addWidget(textbox)
+
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(SnippetLoadButton(filename, textbox))
+        hlayout.addWidget(SnippetEditButton(filename, textbox))
+        vlayout.addLayout(hlayout)
+
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        return widget
+
     def tracksLayer(self):
         vlayout = QVBoxLayout()
 

@@ -25,6 +25,8 @@ class TransferButton(QPushButton):
         dlg.setText("Settings Transfered")
         dlg.exec()
 
+        self.setDown(False)
+
 async def main(osc):
     # Copy Channel Links
     for chlink in LINK_CHANNELS:

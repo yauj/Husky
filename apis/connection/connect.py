@@ -24,3 +24,5 @@ class ConnectButton(QPushButton):
         else:
             self.status.setText("INVALID")
             self.status.setStyleSheet("color: red")
+        
+        self.setDown(False)

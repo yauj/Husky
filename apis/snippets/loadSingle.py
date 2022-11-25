@@ -37,6 +37,8 @@ class LoadButton(QPushButton):
             dlg.setText("Invalid Filename for " + self.chName)
             dlg.exec()
         
+        self.setDown(False)
+        
 async def main(osc, filename):
     await runSingle(osc, filename, True)
 

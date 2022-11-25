@@ -28,6 +28,8 @@ class SaveAllButton(QPushButton):
         dlg.setWindowTitle("Save All")
         dlg.setText("All Settings Saved")
         dlg.exec()
+
+        self.setDown(False)
         
 async def main(osc, personNames, config):
     for chName in personNames:

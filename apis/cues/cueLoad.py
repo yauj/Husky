@@ -41,3 +41,5 @@ class CueLoadButton(QPushButton):
                         self.cues[idx]["snippet"].setText(components[2])
 
                     idx = idx + 1
+        
+        self.setDown(False)

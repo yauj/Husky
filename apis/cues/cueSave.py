@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, '../')
 
-from datetime import date
+from datetime import date, timedelta
 from PyQt6.QtWidgets import (
     QFileDialog,
     QPushButton,
@@ -14,11 +14,13 @@ class CueSaveButton(QPushButton):
         self.pressed.connect(self.clicked)
     
     def clicked(self):
+        nextSun = (date.today() + timedelta(6 - date.today().weekday())).strftime("%Y%m%d")
+
         dlg = QFileDialog()
         dlg.setWindowTitle("Save Set")
         dlg.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         dlg.setDirectory("data")
-        dlg.selectFile(date.today().strftime("%Y%m%d") + "_")
+        dlg.selectFile(nextSun + "_SWS.cue")
         dlg.setDefaultSuffix(".cue") 
         if dlg.exec():
             with open(dlg.selectedFiles()[0], "w") as file:
@@ -36,3 +38,5 @@ class CueSaveButton(QPushButton):
                         snippet = "N"
 
                     file.write("\n" + key + " " + lead + " " + snippet)
+        
+        self.setDown(False)

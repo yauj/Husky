@@ -36,7 +36,9 @@ class CueFireButton(QPushButton):
         dlg.setWindowTitle("Cue")
         dlg.setText("Cue " + self.index + " Fired")
         dlg.exec()
-        
+
+        self.setDown(False)
+
 async def main(osc, index, options):
     # Fire MIDI Cue
     osc["midi"].send(mido.Message("control_change", channel = 1, control = int(index), value = 127))

@@ -37,6 +37,8 @@ class SaveButton(QPushButton):
             dlg.setText("No person name specified for " + self.chName)
             dlg.exec()
         
+        self.setDown(False)
+        
 async def main(osc, label, config):
     await runSingle(osc, label, config)
 
