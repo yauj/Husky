@@ -20,17 +20,24 @@ class LoadButton(QPushButton):
 
     def clicked(self):
         if (self.filename.currentText() != "" and os.path.exists("data/" + self.filename.currentText())):
-            asyncio.run(main(
-                self.osc,
-                self.filename.currentText()
-            ))
+            try:
+                asyncio.run(main(
+                    self.osc,
+                    self.filename.currentText()
+                ))
 
-            self.person.setCurrentText(self.filename.currentText().split(".")[0].split("_")[2])
-            
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Load")
-            dlg.setText("Loaded " + self.filename.currentText() + " for " + self.chName)
-            dlg.exec()
+                self.person.setCurrentText(self.filename.currentText().split(".")[0].split("_")[2])
+                
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle("Load")
+                dlg.setText("Loaded " + self.filename.currentText() + " for " + self.chName)
+                dlg.exec()
+            except Exception as ex:
+                print(ex)
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle("Load")
+                dlg.setText("Error: " + str(ex))
+                dlg.exec() 
         else:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Load")

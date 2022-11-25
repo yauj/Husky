@@ -19,16 +19,23 @@ class LoadAllButton(QPushButton):
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        asyncio.run(main(
-            self.osc,
-            self.filenames,
-            self.personal
-        ))
-        
-        dlg = QMessageBox(self)
-        dlg.setWindowTitle("Load All")
-        dlg.setText("All Settings Loaded")
-        dlg.exec()
+        try:
+            asyncio.run(main(
+                self.osc,
+                self.filenames,
+                self.personal
+            ))
+            
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Load All")
+            dlg.setText("All Settings Loaded")
+            dlg.exec()
+        except Exception as ex:
+            print(ex)
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Load All")
+            dlg.setText("Error: " + str(ex))
+            dlg.exec()
 
         self.setDown(False)
         

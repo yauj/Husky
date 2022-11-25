@@ -1,4 +1,6 @@
 import sys
+
+import mido
 sys.path.insert(0, '../')
 
 import asyncio
@@ -9,19 +11,26 @@ from time import time
 
 # Simple Client that has async logic, since testing client has async logic
 class SimpleClient(SimpleUDPClient):
-    def __init__(self, ipAddress):
+    def __init__(self, name, ipAddress):
         super().__init__(ipAddress, 10023)
+        self.name = name
+        self.connected = False
 
     def connect(self, server):
         try:
             self._sock = server.socket
             asyncio.run(self.send_message("/info", None))
-            return server.handle_request_with_timeout()
+            self.connected = server.handle_request_with_timeout()
         except:
-            return False
+            self.connected = False
+
+        return self.connected
 
     async def send_message(self, address, value):
-        super().send_message(address, value)
+        if self.connected:
+            super().send_message(address, value)
+        else:
+            raise SystemError("Not Connected to " + self.name.upper() + " Client")
 
 # Server which retries attempting to get if /xinfo message passed back 
 class RetryingServer(BlockingOSCUDPServer):
@@ -66,3 +75,31 @@ class RetryingServer(BlockingOSCUDPServer):
             super().handle_request()
 
         return not self._retry
+
+# MIDI Client
+class MIDIClient(mido.Backend):
+    def __init__(self, port):
+        super().__init__("mido.backends.rtmidi")
+        self.port = port
+        self.connected = False
+        self.output = None
+    
+    def open_output(self):
+        try:
+            self.output = super().open_output(self.port)
+            self.connected = True
+        except Exception as ex:
+            print(ex)
+            self.output = None
+            self.connected = False
+
+        return self.connected
+    
+    def send(self, message):
+        if self.connected:
+            self.output.send(message)
+        else:
+            raise SystemError("Not Connected to MIDI Port")
+    
+    def get_output_names(self):
+        return set(super().get_output_names())

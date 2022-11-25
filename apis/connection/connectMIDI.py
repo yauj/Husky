@@ -1,19 +1,18 @@
 import sys
 sys.path.insert(0, '../')
 
-from util.defaultOSC import SimpleClient
+from util.defaultOSC import MIDIClient
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
 
-class ConnectButton(QPushButton):
-    def __init__(self, osc, address, status, mixerName):
+class ConnectMidiButton(QPushButton):
+    def __init__(self, osc, status, port):
         super().__init__("Connect")
         self.osc = osc
-        self.address = address
         self.status = status
-        self.mixerName = mixerName
+        self.port = port
         self.init()
         self.pressed.connect(self.connect)
     
@@ -21,19 +20,19 @@ class ConnectButton(QPushButton):
         if (self.init()):
             dlg = QMessageBox(self)
             dlg.setWindowTitle("X32 Connection")
-            dlg.setText("Connected to " + self.mixerName + " mixer")
+            dlg.setText("Connected to " + self.port.currentText() + " port")
             dlg.exec()
         else:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("X32 Connection")
-            dlg.setText("Invalid IP Address for " + self.mixerName + " mixer")
+            dlg.setText("Unable to connect to " + self.port.currentText() + " port")
             dlg.exec()
         
         self.setDown(False)
 
     def init(self):
-        self.osc[self.mixerName + "Client"] = SimpleClient(self.address.text())
-        if (self.osc[self.mixerName + "Client"].connect(self.osc["server"])):
+        self.osc["midi"] = MIDIClient(self.port.currentText())
+        if (self.osc["midi"].open_output()):
             self.status.setText("Connected!")
             self.status.setStyleSheet("color: green")
             return True

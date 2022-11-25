@@ -1,9 +1,8 @@
 import os
 import sys
 
-import mido
-from apis.connection.connect import ConnectButton
-
+from apis.connection.connectMIDI import ConnectMidiButton
+from apis.connection.connectOSC import ConnectOscButton
 from apis.cues.cueFire import CueFireButton
 from apis.cues.cueLoad import CueLoadButton
 from apis.cues.cueSave import CueSaveButton
@@ -18,7 +17,7 @@ from apis.snippets.saveSingle import SaveButton
 from apis.tracks.tracksSlider import TracksSlider
 from apis.transfer.transferSettings import TransferButton
 from config import config
-from util.constants import KEYS, MIDI_BUS
+from util.constants import KEYS
 from util.defaultOSC import RetryingServer
 from PyQt6.QtWidgets import (
     QApplication,
@@ -41,8 +40,7 @@ class MainWindow(QMainWindow):
         self.widgets = {"personal": {}, "cue": {}}
         server = RetryingServer()
         self.osc = {
-            "server": server,
-            "midi": mido.Backend("mido.backends.rtmidi").open_output(MIDI_BUS)
+            "server": server
         }
 
         self.setWindowTitle("X32 Helper")
@@ -63,17 +61,41 @@ class MainWindow(QMainWindow):
         for mixerName in config["ip"]:
             hlayout = QHBoxLayout()
 
-            hlayout.addWidget(QLabel(mixerName.upper() + " Mixer IP Address:"))
+            label = QLabel(mixerName.upper() + " Mixer IP Address:")
+            label.setFixedWidth(150)
+            hlayout.addWidget(label)
 
             address = QLineEdit(config["ip"][mixerName])
+            address.setFixedWidth(300)
             hlayout.addWidget(address)
 
             status = QLabel()
             hlayout.addWidget(status)
             
-            hlayout.addWidget(ConnectButton(self.osc, address, status, mixerName))
+            hlayout.addWidget(ConnectOscButton(self.osc, address, status, mixerName))
 
             vlayout.addLayout(hlayout)
+        
+        hlayout = QHBoxLayout()
+        label = QLabel("MIDI: ")
+        label.setFixedWidth(150)
+        hlayout.addWidget(label)
+
+        port = QComboBox()
+        port.setEditable(True)
+        port.setFixedWidth(300)
+        port.setCurrentText(config["midi"])
+        hlayout.addWidget(port)
+
+        status = QLabel()
+        hlayout.addWidget(status)
+
+        hlayout.addWidget(ConnectMidiButton(self.osc, status, port))
+
+        port.addItems(self.osc["midi"].get_output_names())
+        port.setCurrentText(config["midi"])
+
+        vlayout.addLayout(hlayout)
 
         widget = QWidget()
         widget.setLayout(vlayout)

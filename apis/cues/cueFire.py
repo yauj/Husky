@@ -5,7 +5,7 @@ sys.path.insert(0, '../')
 from apis.snippets.loadSingle import runSingle
 import asyncio
 import mido
-from util.constants import MIDI_BUS, KEYS
+from util.constants import KEYS
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
@@ -26,16 +26,23 @@ class CueFireButton(QPushButton):
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        asyncio.run(main(
-            self.osc,
-            self.index,
-            self.options
-        ))
-        
-        dlg = QMessageBox(self)
-        dlg.setWindowTitle("Cue")
-        dlg.setText("Cue " + self.index + " Fired")
-        dlg.exec()
+        try:
+            asyncio.run(main(
+                self.osc,
+                self.index,
+                self.options
+            ))
+            
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Cue")
+            dlg.setText("Cue " + self.index + " Fired")
+            dlg.exec()
+        except Exception as ex:
+            print(ex)
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Cue")
+            dlg.setText("Error: " + str(ex))
+            dlg.exec()
 
         self.setDown(False)
 
@@ -194,7 +201,6 @@ async def reset(osc):
     await osc["fohClient"].send_message("/dca/8/on", 1)
 
     # Reset Auto-Tune
-    midiPort = mido.Backend("mido.backends.rtmidi").open_output(MIDI_BUS)
     #midiPort.send(mido.Message("control_change", channel = 1, control = 100, value = 127)) # On/Off Message
-    midiPort.send(mido.Message("control_change", channel = 1, control = 101, value = 0)) # Key Message
-    midiPort.send(mido.Message("control_change", channel = 1, control = 102, value = 0)) # Type Message
+    osc["midi"].send(mido.Message("control_change", channel = 1, control = 101, value = 0)) # Key Message
+    osc["midi"].send(mido.Message("control_change", channel = 1, control = 102, value = 0)) # Type Message

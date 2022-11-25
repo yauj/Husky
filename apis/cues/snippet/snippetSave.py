@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.insert(0, '../')
 
@@ -6,6 +7,7 @@ import asyncio
 from datetime import date, timedelta
 from PyQt6.QtWidgets import (
     QFileDialog,
+    QMessageBox,
     QPushButton,
 )
 
@@ -29,15 +31,24 @@ class SnippetSaveButton(QPushButton):
         dlg.selectFile(nextSun + "_SWS_?.osc")
         dlg.setDefaultSuffix(".osc") 
         if dlg.exec():
-            asyncio.run(main(
-                self.osc,
-                self.config,
-                self.options,
-                dlg.selectedFiles()[0]
-            ))
+            try:
+                asyncio.run(main(
+                    self.osc,
+                    self.config,
+                    self.options,
+                    dlg.selectedFiles()[0]
+                ))
 
-            if self.cue.currentText() != "":
-                self.widgets["cue"][self.cue.currentText()].setText(dlg.selectedFiles()[0])
+                if self.cue.currentText() != "":
+                    self.widgets["cue"][self.cue.currentText()].setText(dlg.selectedFiles()[0])
+            except Exception as ex:
+                os.remove(dlg.selectedFiles()[0])
+                
+                print(ex)
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle("Save Snippet")
+                dlg.setText("Error: " + str(ex))
+                dlg.exec()
 
         self.setDown(False)
         
@@ -53,4 +64,4 @@ async def main(osc, config, options, filename):
         for name in options["settings"]:
             if options["settings"][name].isChecked():
                 for setting in config["settings"][name]:
-                    await saveSetting(file, "foh", osc["iemClient"], osc["server"], setting)
+                    await saveSetting(file, "foh", osc["fohClient"], osc["server"], setting)

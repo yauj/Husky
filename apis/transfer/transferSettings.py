@@ -16,14 +16,21 @@ class TransferButton(QPushButton):
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        asyncio.run(main(
-            self.osc
-        ))
-        
-        dlg = QMessageBox(self)
-        dlg.setWindowTitle("FOH->IEM")
-        dlg.setText("Settings Transfered")
-        dlg.exec()
+        try:
+            asyncio.run(main(
+                self.osc
+            ))
+            
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("FOH->IEM")
+            dlg.setText("Settings Transfered")
+            dlg.exec()
+        except Exception as ex:
+            print(ex)
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("FOH->IEM")
+            dlg.setText("Error: " + str(ex))
+            dlg.exec()
 
         self.setDown(False)
 

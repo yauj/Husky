@@ -18,16 +18,23 @@ class SaveAllButton(QPushButton):
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        asyncio.run(main(
-            self.osc,
-            self.personNames,
-            self.config
-        ))
-        
-        dlg = QMessageBox(self)
-        dlg.setWindowTitle("Save All")
-        dlg.setText("All Settings Saved")
-        dlg.exec()
+        try:
+            asyncio.run(main(
+                self.osc,
+                self.personNames,
+                self.config
+            ))
+            
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Save All")
+            dlg.setText("All Settings Saved")
+            dlg.exec()
+        except Exception as ex:
+            print(ex)
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Save All")
+            dlg.setText("Error: " + str(ex))
+            dlg.exec() 
 
         self.setDown(False)
         

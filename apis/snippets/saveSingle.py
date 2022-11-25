@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.insert(0, '../')
 
@@ -21,16 +22,23 @@ class SaveButton(QPushButton):
     
     def clicked(self):
         if (self.personName.currentText() != ""):
-            asyncio.run(main(
-                self.osc,
-                self.chName + "_" + self.personName.currentText(),
-                self.config
-            ))
-            
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Save")
-            dlg.setText("Settings Saved for " + self.chName)
-            dlg.exec()
+            try:
+                asyncio.run(main(
+                    self.osc,
+                    self.chName + "_" + self.personName.currentText(),
+                    self.config
+                ))
+                
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle("Save")
+                dlg.setText("Settings Saved for " + self.chName)
+                dlg.exec()
+            except Exception as ex:
+                print(ex)
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle("Save")
+                dlg.setText("Error: " + str(ex))
+                dlg.exec() 
         else:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Save")
@@ -45,14 +53,18 @@ async def main(osc, label, config):
 async def runSingle(osc, label, config):
     today = date.today().strftime("%Y%m%d")
     filename = today + "_" + label + ".osc"
-    with open("data/" + filename, "w") as file:
-        if "channels" in config:
-            await saveChannels(osc, file, config["channels"])
+    try:
+        with open("data/" + filename, "w") as file:
+            if "channels" in config:
+                await saveChannels(osc, file, config["channels"])
 
-        if "iem_bus" in config:
-            await saveIEMBus(osc, file, config["iem_bus"])
-
-    print("Created " + filename + "\n")
+            if "iem_bus" in config:
+                await saveIEMBus(osc, file, config["iem_bus"])
+        
+        print("Created " + filename + "\n")
+    except Exception as ex:
+        os.remove("data/" + filename)
+        raise ex
 
 async def saveChannels(osc, file, channels):
     for channel in channels:
@@ -88,7 +100,8 @@ async def saveIEMBus(osc, file, bus):
             await saveSetting(file, "iem", osc["iemClient"], osc["server"], prefix + "/pan")
 
 async def saveSetting(file, prefix, client, server, setting):
-    file.write("\n" + getSetting(prefix, client, server, setting))
+    line = await getSetting(prefix, client, server, setting)
+    file.write("\n" + line)
 
 async def getSetting(prefix, client, server, setting):
     await client.send_message(setting, None)
