@@ -14,15 +14,23 @@ class SimpleClient(SimpleUDPClient):
     def __init__(self, name, ipAddress):
         super().__init__(ipAddress, 10023)
         self.name = name
+        self.ipAddress = ipAddress
         self.connected = False
 
     def connect(self, server):
         try:
+            self.connected = True # Need this to send message
             self._sock = server.socket
             asyncio.run(self.send_message("/info", None))
             self.connected = server.handle_request_with_timeout()
-        except:
+        except Exception as ex:
+            print(ex)
             self.connected = False
+
+        if self.connected:
+            print("Connected to " + self.name.upper() + " at " + self.ipAddress)
+        else:
+            print("Failed to connect to " + self.name.upper() + " at " + self.ipAddress)
 
         return self.connected
 
@@ -88,8 +96,10 @@ class MIDIClient(mido.Backend):
         try:
             self.output = super().open_output(self.port)
             self.connected = True
+            print("Connected to MIDI Port at " + self.port)
         except Exception as ex:
             print(ex)
+            print("Failed to connect to MIDI Port at " + self.port)
             self.output = None
             self.connected = False
 
