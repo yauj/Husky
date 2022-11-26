@@ -89,24 +89,21 @@ class MIDIClient(mido.Backend):
     def __init__(self, port):
         super().__init__("mido.backends.rtmidi")
         self.port = port
-        self.connected = False
         self.output = None
     
     def open_output(self):
         try:
             self.output = super().open_output(self.port)
-            self.connected = True
-            print("Connected to MIDI Port at " + self.port)
+            print("Connected to MIDI at " + self.port)
         except Exception as ex:
             print(ex)
-            print("Failed to connect to MIDI Port at " + self.port)
+            print("Failed to connect to MIDI at " + self.port)
             self.output = None
-            self.connected = False
 
-        return self.connected
+        return self.output is not None
     
     def send(self, message):
-        if self.connected:
+        if self.output is not None:
             self.output.send(message)
         else:
             raise SystemError("Not Connected to MIDI Port")
