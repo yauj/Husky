@@ -36,5 +36,5 @@ class UpdateApp(QAction):
         else:
             dlg = QMessageBox(self.s)
             dlg.setWindowTitle("Update App")
-            dlg.setText("Error Updating. Please check server.log.")
+            dlg.setText("Error Updating: " + statusMsg)
             dlg.exec()
