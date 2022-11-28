@@ -12,12 +12,13 @@ from PyQt6.QtWidgets import (
 )
 
 class SnippetSaveButton(QPushButton):
-    def __init__(self, widgets, osc, config, options, cue):
+    def __init__(self, widgets, osc, config, options, page, cue):
         super().__init__("Save New Snippet")
         self.widgets = widgets
         self.osc = osc
         self.config = config
         self.options = options
+        self.page = page
         self.cue = cue
         self.pressed.connect(self.clicked)
     
@@ -39,8 +40,8 @@ class SnippetSaveButton(QPushButton):
                     dlg.selectedFiles()[0]
                 ))
 
-                if self.cue.currentText() != "":
-                    self.widgets["cue"][self.cue.currentText()].setText(dlg.selectedFiles()[0])
+                if self.page.currentText() != "" and self.cue.currentText() != "":
+                    self.widgets["cue"][self.page.currentText()][self.cue.currentText()].setText(dlg.selectedFiles()[0].split("/")[-1])
             except Exception as ex:
                 os.remove(dlg.selectedFiles()[0])
                 

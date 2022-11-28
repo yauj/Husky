@@ -3,9 +3,9 @@ import sys
 
 from apis.connection.connectMIDI import ConnectMidiButton
 from apis.connection.connectOSC import ConnectOscButton
-from apis.cues.cueFire import CueFireButton
 from apis.cues.cueLoad import CueLoadButton
 from apis.cues.cueSave import CueSaveButton
+from apis.cues.cueTabs import CueTab
 from apis.cues.snippet.snippetEdit import SnippetEditButton
 from apis.cues.snippet.snippetLoad import SnippetLoadButton
 from apis.cues.snippet.snippetSave import SnippetSaveButton
@@ -18,7 +18,6 @@ from apis.snippets.saveSingle import SaveButton
 from apis.tracks.tracksSlider import TracksSlider
 from apis.transfer.transferSettings import TransferButton
 from config import config
-from util.constants import KEYS
 from util.defaultOSC import RetryingServer
 from PyQt6.QtWidgets import (
     QApplication,
@@ -202,47 +201,14 @@ class MainWindow(QMainWindow):
     def cuesMainLayer(self):
         vlayout = QVBoxLayout()
 
-        vlayout.addWidget(QLabel("Fire cues per song"))
-
-        cues = []
-
-        for cue in range(0, 10):
-            index = str(cue + 1)
-            options = {}
-
-            hlayout = QHBoxLayout()
-            
-            hlayout.addWidget(QLabel(index + ":"))
-        
-            options["key"] = QComboBox()
-            options["key"].setPlaceholderText("Key of Song")
-            options["key"].addItem("")
-            options["key"].addItems(KEYS)
-            hlayout.addWidget(options["key"])
-
-            options["lead"] = QComboBox()
-            options["lead"].setPlaceholderText("Vocal Lead")
-            options["lead"].addItems(["", "1", "2", "3", "4"])
-            hlayout.addWidget(options["lead"])
-
-            snippet = QLineEdit()
-            snippet.setPlaceholderText("Snippet Filename")
-            snippet.setFixedWidth(150)
-            hlayout.addWidget(snippet)
-            options["snippet"] = snippet
-            self.widgets["cue"][index] = snippet
-
-            hlayout.addWidget(CueFireButton(self.widgets, self.osc, index, options))
-
-            vlayout.addLayout(hlayout)
-            cues.append(options)
+        tabs = CueTab(self.osc, self.widgets)
 
         hlayout = QHBoxLayout()
-        
-        hlayout.addWidget(CueLoadButton(cues))
-        hlayout.addWidget(CueSaveButton(cues))
-
+        hlayout.addWidget(CueLoadButton(tabs.getCues()))
+        hlayout.addWidget(CueSaveButton(tabs.getCues()))
         vlayout.addLayout(hlayout)
+
+        vlayout.addWidget(tabs)
 
         widget = QWidget()
         widget.setLayout(vlayout)
@@ -265,9 +231,15 @@ class MainWindow(QMainWindow):
 
         hlayout.addWidget(QLabel("Cue: "))
 
+        page = QComboBox()
+        page.setPlaceholderText("Page")
+        for letter in self.widgets["cue"]:
+            page.addItem(letter)
+        hlayout.addWidget(page)
+
         cue = QComboBox()
         cue.setPlaceholderText("Index")
-        for index in self.widgets["cue"]:
+        for index in self.widgets["cue"][letter]:
             cue.addItem(index)
         hlayout.addWidget(cue)
 
@@ -310,7 +282,7 @@ class MainWindow(QMainWindow):
 
             vlayout.addLayout(hlayout)
         
-        vlayout.addWidget(SnippetSaveButton(self.widgets, self.osc, config, options, cue))
+        vlayout.addWidget(SnippetSaveButton(self.widgets, self.osc, config, options, page, cue))
 
         widget = QWidget()
         widget.setLayout(vlayout)
