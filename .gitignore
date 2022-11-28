@@ -10,3 +10,6 @@ __pycache__/
 # Custom File Suffixes
 *.osc
 *.cue
+
+# Log File
+server.log
