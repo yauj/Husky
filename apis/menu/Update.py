@@ -30,7 +30,7 @@ class UpdateApp(QAction):
         elif statusCode == 0:
             dlg = QMessageBox(self.s)
             dlg.setWindowTitle("Update App")
-            dlg.setText("App Updated. Quitting App now.")
+            dlg.setText("App Updated. Quitting App now. Please open again.")
             if dlg.exec():
                 os._exit(os.EX_OK)
         else:
