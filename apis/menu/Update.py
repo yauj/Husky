@@ -12,5 +12,5 @@ class UpdateApp(QAction):
         self.triggered.connect(self.main)
 
     def main(self):
-        os.system("git pull orgin master")
+        os.system("git pull origin master")
 
