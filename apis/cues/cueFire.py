@@ -171,7 +171,7 @@ async def reset(osc):
     await osc["fohClient"].send_message("/bus/11/mix/on", 1)
     await osc["fohClient"].send_message("/bus/11/mix/pan", 0.5)
     await osc["fohClient"].send_message("/bus/11/mix/pan", 0.0)
-    await osc["fohClient"].send_message("/bus/11/mix/pan", 1.0)
+    await osc["fohClient"].send_message("/bus/12/mix/pan", 1.0)
 
     for bus in [15, 16]:
         await osc["fohClient"].send_message("/bus/" + str(bus).zfill(2) + "/mix/fader", 0.75)
