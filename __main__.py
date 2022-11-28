@@ -10,6 +10,7 @@ from apis.cues.snippet.snippetEdit import SnippetEditButton
 from apis.cues.snippet.snippetLoad import SnippetLoadButton
 from apis.cues.snippet.snippetSave import SnippetSaveButton
 from apis.cues.snippet.snippetUpdate import SnippetUpdateButton
+from apis.menu.Update import UpdateApp
 from apis.snippets.loadAll import LoadAllButton
 from apis.snippets.loadSingle import LoadButton
 from apis.snippets.saveAll import SaveAllButton
@@ -54,6 +55,9 @@ class MainWindow(QMainWindow):
         tabs.addTab(self.transferLayer(), "FOH->IEM")
         
         self.setCentralWidget(tabs)
+        
+        menu = self.menuBar().addMenu("&X32 Helper")
+        menu.addAction(UpdateApp(self))
     
     def connectionLayer(self):
         vlayout = QVBoxLayout()
