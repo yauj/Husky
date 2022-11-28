@@ -61,14 +61,14 @@ class MainWindow(QMainWindow):
     def connectionLayer(self):
         vlayout = QVBoxLayout()
 
-        for mixerName in config["ip"]:
+        for mixerName in config["osc"]:
             hlayout = QHBoxLayout()
 
             label = QLabel(mixerName.upper() + " Mixer IP Address:")
             label.setFixedWidth(150)
             hlayout.addWidget(label)
 
-            address = QLineEdit(config["ip"][mixerName])
+            address = QLineEdit(config["osc"][mixerName])
             address.setFixedWidth(300)
             hlayout.addWidget(address)
 
@@ -79,26 +79,27 @@ class MainWindow(QMainWindow):
 
             vlayout.addLayout(hlayout)
         
-        hlayout = QHBoxLayout()
-        label = QLabel("MIDI: ")
-        label.setFixedWidth(150)
-        hlayout.addWidget(label)
+        for name in config["midi"]:
+            hlayout = QHBoxLayout()
+            label = QLabel(name.capitalize() + " MIDI: ")
+            label.setFixedWidth(150)
+            hlayout.addWidget(label)
 
-        port = QComboBox()
-        port.setEditable(True)
-        port.setFixedWidth(300)
-        port.setCurrentText(config["midi"])
-        hlayout.addWidget(port)
+            port = QComboBox()
+            port.setEditable(True)
+            port.setFixedWidth(300)
+            port.setCurrentText(config["midi"][name])
+            hlayout.addWidget(port)
 
-        status = QLabel()
-        hlayout.addWidget(status)
+            status = QLabel()
+            hlayout.addWidget(status)
 
-        hlayout.addWidget(ConnectMidiButton(self.osc, status, port))
+            hlayout.addWidget(ConnectMidiButton(self.osc, name, status, port))
 
-        port.addItems(self.osc["midi"].get_output_names())
-        port.setCurrentText(config["midi"])
+            port.addItems(self.osc[name + "Midi"].get_output_names())
+            port.setCurrentText(config["midi"][name])
 
-        vlayout.addLayout(hlayout)
+            vlayout.addLayout(hlayout)
 
         widget = QWidget()
         widget.setLayout(vlayout)

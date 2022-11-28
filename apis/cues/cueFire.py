@@ -29,7 +29,6 @@ class CueFireButton(QPushButton):
         try:
             asyncio.run(main(
                 self.osc,
-                self.index,
                 self.options
             ))
             
@@ -46,16 +45,13 @@ class CueFireButton(QPushButton):
 
         self.setDown(False)
 
-async def main(osc, index, options):
-    # Fire MIDI Cue
-    osc["midi"].send(mido.Message("control_change", channel = 1, control = int(index), value = 127))
-
+async def main(osc, options):
     if options["key"].currentText() != "":
         val = int((KEYS.index(options["key"].currentText()) * 127) / 11)
 
-        #osc["midi"].send(mido.Message("control_change", channel = 1, control = 100, value = 127)) # On/Off Message
-        osc["midi"].send(mido.Message("control_change", channel = 1, control = 101, value = val)) # Key Message
-        osc["midi"].send(mido.Message("control_change", channel = 1, control = 102, value = 127)) # Type Message
+        #osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 100, value = 127)) # On/Off Message
+        osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 101, value = val)) # Key Message
+        osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 102, value = 127)) # Type Message
 
     if options["lead"].currentText() != "":
         bkgdVox = ["05", "06", "07", "08"]
@@ -202,5 +198,5 @@ async def reset(osc):
 
     # Reset Auto-Tune
     #midiPort.send(mido.Message("control_change", channel = 1, control = 100, value = 127)) # On/Off Message
-    osc["midi"].send(mido.Message("control_change", channel = 1, control = 101, value = 0)) # Key Message
-    osc["midi"].send(mido.Message("control_change", channel = 1, control = 102, value = 0)) # Type Message
+    osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 101, value = 0)) # Key Message
+    osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 102, value = 0)) # Type Message

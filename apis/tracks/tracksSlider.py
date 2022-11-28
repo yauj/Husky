@@ -22,7 +22,7 @@ class TracksSlider(QSlider):
     
     def slider(self):
         try:
-            self.osc["midi"].send(mido.Message("control_change", channel = 1, control = self.index, value = self.value()))
+            self.osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = self.index, value = self.value()))
         except Exception as ex:
             # Fail Quietly
             print(ex)

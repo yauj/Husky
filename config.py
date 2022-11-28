@@ -49,9 +49,13 @@ config = {
             "/dca/1/on", "/dca/2/on", "/dca/3/on", "/dca/4/on", "/dca/5/on"
         ]
     },
-    "ip": {
+    "osc": {
         "foh": "10.246.1.10",
         "iem": "10.246.1.15"
     },
-    "midi": "IAC Driver Bus 1"
+    "midi": {
+        "audio": "IAC Driver Bus 1",
+        "video": "Network Session 1",
+        "light": "Gracepoint‚Äôs Mac mini Bluetooth"
+    }
 }

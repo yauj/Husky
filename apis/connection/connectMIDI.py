@@ -8,9 +8,10 @@ from PyQt6.QtWidgets import (
 )
 
 class ConnectMidiButton(QPushButton):
-    def __init__(self, osc, status, port):
+    def __init__(self, osc, name, status, port):
         super().__init__("Connect")
         self.osc = osc
+        self.name = name
         self.status = status
         self.port = port
         self.init()
@@ -31,8 +32,8 @@ class ConnectMidiButton(QPushButton):
         self.setDown(False)
 
     def init(self):
-        self.osc["midi"] = MIDIClient(self.port.currentText())
-        if (self.osc["midi"].open_output()):
+        self.osc[self.name + "Midi"] = MIDIClient(self.port.currentText())
+        if (self.osc[self.name + "Midi"].open_output()):
             self.status.setText("Connected!")
             self.status.setStyleSheet("color: green")
             return True
