@@ -16,11 +16,21 @@ class UpdateApp(QAction):
         self.triggered.connect(self.main)
 
     def main(self):
-        os.system("date > server.log")
-        if os.system("git pull origin master > server.log") == 0:
+        statusCode = os.system("git pull origin master > update.log")
+        statusMsg = ""
+        with open("update.log") as file:
+            statusMsg = file.readline()
+        os.system("rm update.log")
+        
+        if statusMsg == "Already up to date.":
             dlg = QMessageBox(self.s)
             dlg.setWindowTitle("Update App")
-            dlg.setText("App Updated! Please restart App now.")
+            dlg.setText(statusMsg)
+            dlg.exec()
+        elif statusCode == 0:
+            dlg = QMessageBox(self.s)
+            dlg.setWindowTitle("Update App")
+            dlg.setText(statusMsg + " Quitting App now.")
             if dlg.exec():
                 os._exit(os.EX_OK)
         else:
@@ -28,4 +38,3 @@ class UpdateApp(QAction):
             dlg.setWindowTitle("Update App")
             dlg.setText("Error Updating. Please check server.log.")
             dlg.exec()
-
