@@ -61,13 +61,15 @@ async def runSingle(osc, filename, iemCopy):
                 channel = int(components[2]) - 1
                 control = int(components[3])
                 value = int(components[4])
-                msg = mido.Message("control_change", channel = channel, control = control, value = value)
                 if (components[1] == "audio"):
-                    osc["audioMidi"].send(msg)
-                elif (components[2] == "video"):
-                    osc["videoMidi"].send(msg)
-                elif (components[2] == "light"):
-                    osc["lightMidi"].send(msg)
+                    osc["audioMidi"].send(mido.Message("control_change", channel = channel, control = control, value = value))
+                elif (components[1] == "video"):
+                    osc["videoMidi"].send(mido.Message("control_change", channel = channel, control = control, value = value))
+                elif (components[1] == "light"):
+                    if value == 0:
+                        osc["lightMidi"].send(mido.Message("note_off", channel = channel, note = control))
+                    else:
+                        osc["lightMidi"].send(mido.Message("note_on", channel = channel, note = control))
             else:
                 arg = components[2]
                 if (components[3] == "int"):
