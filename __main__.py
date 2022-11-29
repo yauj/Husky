@@ -7,6 +7,7 @@ from apis.cues.cueLoad import CueLoadButton
 from apis.cues.cueSave import CueSaveButton
 from apis.cues.cueTabs import CueTab
 from apis.cues.snippet.snippetEdit import SnippetEditButton
+from apis.cues.snippet.snippetFire import SnippetFireButton
 from apis.cues.snippet.snippetLoad import SnippetLoadButton
 from apis.cues.snippet.snippetSave import SnippetSaveButton
 from apis.cues.snippet.snippetUpdate import SnippetUpdateButton
@@ -305,6 +306,7 @@ class MainWindow(QMainWindow):
         vlayout.addWidget(textbox)
 
         vlayout.addWidget(SnippetUpdateButton(self.osc, textbox))
+        vlayout.addWidget(SnippetFireButton(self.osc, textbox))
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(SnippetLoadButton(filename, textbox))

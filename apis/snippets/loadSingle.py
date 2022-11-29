@@ -55,33 +55,36 @@ async def runSingle(osc, filename, iemCopy):
     with open("data/" + filename) as scnFile:
         scnFile.readline() # Skip Header Line
         while (line := scnFile.readline().strip()):
-            components = line.split()
+            await fireLine(osc, line, iemCopy)
 
-            if components[0] == "midi":
-                channel = int(components[2]) - 1
-                control = int(components[3])
-                value = int(components[4])
-                if (components[1] == "audio"):
-                    osc["audioMidi"].send(mido.Message("control_change", channel = channel, control = control, value = value))
-                elif (components[1] == "video"):
-                    osc["videoMidi"].send(mido.Message("control_change", channel = channel, control = control, value = value))
-                elif (components[1] == "light"):
-                    if value == 0:
-                        osc["lightMidi"].send(mido.Message("note_off", channel = channel, note = control))
-                    else:
-                        osc["lightMidi"].send(mido.Message("note_on", channel = channel, note = control))
-            else:
-                arg = components[2]
-                if (components[3] == "int"):
-                    arg = int(arg)
-                elif (components[3] == "float"):
-                    arg = float(arg)
-
-                if (components[0] == "foh"):
-                    await osc["fohClient"].send_message(components[1], arg)
-                    if iemCopy: # Whether not to send setting to IEM mixer as well
-                        await osc["iemClient"].send_message(components[1], arg)
-                elif (components[0] == "iem"):
-                    await osc["iemClient"].send_message(components[1], arg)
-            
     print("Loaded " + filename + "\n")
+
+async def fireLine(osc, line, iemCopy):
+    components = line.split()
+
+    if components[0] == "midi":
+        channel = int(components[2]) - 1
+        control = int(components[3])
+        value = int(components[4])
+        if (components[1] == "audio"):
+            osc["audioMidi"].send(mido.Message("control_change", channel = channel, control = control, value = value))
+        elif (components[1] == "video"):
+            osc["videoMidi"].send(mido.Message("control_change", channel = channel, control = control, value = value))
+        elif (components[1] == "light"):
+            if value == 0:
+                osc["lightMidi"].send(mido.Message("note_off", channel = channel, note = control))
+            else:
+                osc["lightMidi"].send(mido.Message("note_on", channel = channel, note = control))
+    else:
+        arg = components[2]
+        if (components[3] == "int"):
+            arg = int(arg)
+        elif (components[3] == "float"):
+            arg = float(arg)
+
+        if (components[0] == "foh"):
+            await osc["fohClient"].send_message(components[1], arg)
+            if iemCopy: # Whether not to send setting to IEM mixer as well
+                await osc["iemClient"].send_message(components[1], arg)
+        elif (components[0] == "iem"):
+            await osc["iemClient"].send_message(components[1], arg)

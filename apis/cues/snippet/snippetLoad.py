@@ -27,6 +27,6 @@ class SnippetLoadButton(QPushButton):
                 while (line := file.readline().strip()):
                     self.textbox.append(line)
             
-            self.filename.setText(dlg.selectedFiles()[0])
+            self.filename.setText(dlg.selectedFiles()[0].split("/")[-1])
         
         self.setDown(False)
