@@ -2,7 +2,7 @@ import sys
 sys.path.insert(0, '../')
 
 import asyncio
-from util.constants import COPY_CHANNELS, LINK_CHANNELS
+from util.constants import COPY_CHANNELS, LINK_CHANNELS, SETTINGS
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
@@ -39,27 +39,11 @@ async def main(osc):
     for chlink in LINK_CHANNELS:
         await transferSetting(osc, "/config/chlink/" + chlink)
 
+    # COPY_CHANNELS excludes FOH talkback channel
     for channel in COPY_CHANNELS:
-        # Copy Channel Labeling (except FOH talkback)
-        for param in ["name", "icon", "color"]:
-            await transferSetting(osc, channel + "/config/" + param) 
-
-        # Copy Low Cut
-        for param in ["hpon", "hpf"]:
-            await transferSetting(osc, channel + "/preamp/" + param)
-
-        # Copy EQ Settings
-        for band in ["1", "2", "3", "4"]:
-            for param in ["type", "f", "g", "q"]:
-                await transferSetting(osc, channel + "/eq/" + band + "/" + param)
-
-        # Copy Compression Setting
-        for param in ["thr", "ratio", "knee", "mgain", "attack", "hold", "release", "mix"]:
-            await transferSetting(osc, channel + "/dyn/" + param)
-
-        # Pan and On Settings
-        for param in ["pan", "on"]:
-            await transferSetting(osc, channel + "/mix/" + param)
+        for category in SETTINGS:
+            for param in SETTINGS[category]:
+                await transferSetting(osc, channel + param)
     
     print("Settings Transferred")
 

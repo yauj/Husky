@@ -6,6 +6,7 @@ from apis.connection.connectOSC import ConnectOscButton
 from apis.cues.cueLoad import CueLoadButton
 from apis.cues.cueSave import CueSaveButton
 from apis.cues.cueTabs import CueTab
+from apis.cues.snippet.snippetAdd import SnippetAddButton
 from apis.cues.snippet.snippetEdit import SnippetEditButton
 from apis.cues.snippet.snippetFire import SnippetFireButton
 from apis.cues.snippet.snippetLoad import SnippetLoadButton
@@ -305,8 +306,11 @@ class MainWindow(QMainWindow):
         textbox = QTextEdit()
         vlayout.addWidget(textbox)
 
-        vlayout.addWidget(SnippetUpdateButton(self.osc, textbox))
-        vlayout.addWidget(SnippetFireButton(self.osc, textbox))
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(SnippetAddButton(self.osc, textbox))
+        hlayout.addWidget(SnippetUpdateButton(self.osc, textbox))
+        hlayout.addWidget(SnippetFireButton(self.osc, textbox))
+        vlayout.addLayout(hlayout)
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(SnippetLoadButton(filename, textbox))

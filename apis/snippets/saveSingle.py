@@ -4,7 +4,7 @@ sys.path.insert(0, '../')
 
 import asyncio
 from datetime import date
-from util.constants import ODD_BUSES, ALL_CHANNELS
+from util.constants import ODD_BUSES, ALL_CHANNELS, SETTINGS
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
@@ -38,7 +38,7 @@ class SaveButton(QPushButton):
                 dlg = QMessageBox(self)
                 dlg.setWindowTitle("Save")
                 dlg.setText("Error: " + str(ex))
-                dlg.exec() 
+                dlg.exec()
         else:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Save")
@@ -68,26 +68,9 @@ async def runSingle(osc, label, config):
 
 async def saveChannels(osc, file, channels):
     for channel in channels:
-        # Channel Labeling
-        for param in ["name", "icon", "color"]:
-            await saveSetting(file, "foh", osc["fohClient"], osc["server"], "/ch/" + channel + "/config/" + param)
-
-        # Low Cut
-        for param in ["hpon", "hpf"]:
-            await saveSetting(file, "foh", osc["fohClient"], osc["server"], "/ch/" + channel + "/preamp/" + param)
-        
-        # EQ Settings
-        for band in ["1", "2", "3", "4"]:
-            for param in ["type", "f", "g", "q"]:
-                await saveSetting(file, "foh", osc["fohClient"], osc["server"], "/ch/" + channel + "/eq/" + band + "/" + param)
-
-        # Compression Setting
-        for param in ["thr", "ratio", "knee", "mgain", "attack", "hold", "release", "mix"]:
-            await saveSetting(file, "foh", osc["fohClient"], osc["server"], "/ch/" + channel + "/dyn/" + param)
-
-        # Pan and On Settings
-        for param in ["pan", "on"]:
-            await saveSetting(file, "foh", osc["fohClient"], osc["server"], "/ch/" + channel + "/mix/" + param) 
+        for category in SETTINGS:
+            for param in SETTINGS[category]:
+                await saveSetting(file, "foh", osc["fohClient"], osc["server"], "/ch/" + channel + param)
 
 async def saveIEMBus(osc, file, bus):
     for channel in ALL_CHANNELS:
