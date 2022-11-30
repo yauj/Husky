@@ -47,7 +47,10 @@ async def main(osc, curSettings, textbox):
     for line in curSettings:
         components = line.strip().split()
 
-        if (components[0] == "foh"):
-            textbox.append(await getSetting("foh", osc["fohClient"], osc["server"], components[1]))
-        elif (components[0] == "iem"):
-            textbox.append(await getSetting("iem", osc["iemClient"], osc["server"], components[1]))
+        if (components[3] == "delta"):
+            textbox.append(line.strip())
+        else:
+            if (components[0] == "foh"):
+                textbox.append(await getSetting("foh", osc["fohClient"], osc["server"], components[1]))
+            elif (components[0] == "iem"):
+                textbox.append(await getSetting("iem", osc["iemClient"], osc["server"], components[1]))

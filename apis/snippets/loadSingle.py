@@ -81,6 +81,12 @@ async def fireLine(osc, line, iemCopy):
             arg = int(arg)
         elif (components[3] == "float"):
             arg = float(arg)
+        elif (components[3] == "delta"):
+            delta = float(arg)
+            await osc["fohClient"].send_message(components[1], None)
+            osc["server"].handle_request()
+            curVal = osc["server"].lastVal
+            arg = curVal + delta
 
         if (components[0] == "foh"):
             await osc["fohClient"].send_message(components[1], arg)
