@@ -1,9 +1,10 @@
+import os
+import socket
 import sys
-
-import mido
 sys.path.insert(0, '../')
 
 import asyncio
+import mido
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer
@@ -13,10 +14,11 @@ MIDI_SERVER_NAME = "X32Helper"
 
 # Simple Client that has async logic, since testing client has async logic
 class SimpleClient(SimpleUDPClient):
-    def __init__(self, name, ipAddress):
+    def __init__(self, name, ipAddress, test = False):
         super().__init__(ipAddress, 10023)
         self.name = name
         self.ipAddress = ipAddress
+        self.test = test
         self.connected = False
 
     def connect(self, server):
@@ -29,10 +31,11 @@ class SimpleClient(SimpleUDPClient):
             print(ex)
             self.connected = False
 
-        if self.connected:
-            print("Connected to " + self.name.upper() + " at " + self.ipAddress)
-        else:
-            print("Failed to connect to " + self.name.upper() + " at " + self.ipAddress)
+        if not self.test:
+            if self.connected:
+                print("Connected to " + self.name.upper() + " at " + self.ipAddress)
+            else:
+                print("Failed to connect to " + self.name.upper() + " at " + self.ipAddress)
 
         return self.connected
 
@@ -76,15 +79,36 @@ class RetryingServer(BlockingOSCUDPServer):
         while (self._retry):
             super().handle_request()
     
-    # Timeout after 1 seconds. Returns if call succeeded.
+    # Timeout after 0.02 seconds. Returns if call succeeded.
     def handle_request_with_timeout(self):
-        self.timeout = 1
+        self.timeout = 0.02
         startTime = time()
         self._retry = True
-        while (self._retry and time() - startTime < 1.0):
+        while (self._retry and time() - startTime < self.timeout):
             super().handle_request()
 
         return not self._retry
+
+    def getAvailableIPs(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.settimeout(0.1)
+            s.connect(("8.8.8.8", 80))
+            thisIp = s.getsockname()[0]
+
+            components = thisIp.split(".")
+            prefix = components[0] + "." + components[1] + "." + components[2] + "."
+            
+            validIps = []
+            for i in range(2, 256):
+                ip = prefix + str(i)
+                if ip == thisIp:
+                    ip = "0.0.0.0"
+                client = SimpleClient("Test", ip, True)
+                client.connect(self)
+                if client.connected:
+                    validIps.append(ip)
+
+            return validIps
 
 # MIDI Client
 class MIDIClient(mido.Backend):

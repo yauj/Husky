@@ -63,6 +63,8 @@ class MainWindow(QMainWindow):
     def connectionLayer(self):
         vlayout = QVBoxLayout()
 
+        validIps = self.osc["server"].getAvailableIPs()
+
         for mixerName in config["osc"]:
             hlayout = QHBoxLayout()
 
@@ -70,7 +72,10 @@ class MainWindow(QMainWindow):
             label.setFixedWidth(150)
             hlayout.addWidget(label)
 
-            address = QLineEdit(config["osc"][mixerName])
+            address = QComboBox()
+            address.setEditable(True)
+            address.addItems(validIps)
+            address.setCurrentText(config["osc"][mixerName])
             address.setFixedWidth(300)
             hlayout.addWidget(address)
 
