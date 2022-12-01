@@ -117,8 +117,11 @@ class MIDIClient(mido.Backend):
 class MIDIServer(mido.Backend):
     def __init__(self):
         super().__init__("mido.backends.rtmidi")
-        self.input = super().open_input(MIDI_SERVER_NAME, True)
-        print("Created MIDI reciever " + MIDI_SERVER_NAME)
+        self.ioPort = super().open_ioport(MIDI_SERVER_NAME, True)
+        print("Created MIDI IO Port " + MIDI_SERVER_NAME)
     
     def callback(self, function):
-        self.input.callback = function
+        self.ioPort.input.callback = function
+
+    def send(self, message):
+        self.ioPort.output.send(message)

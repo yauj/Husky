@@ -211,6 +211,8 @@ class MainWindow(QMainWindow):
         hlayout.addWidget(CueSaveButton(tabs.getCues()))
         vlayout.addLayout(hlayout)
 
+        vlayout.addWidget(QLabel("Fire Cues. Green indicates last cue fired was successful. Red indicates failure."))
+
         vlayout.addWidget(tabs)
 
         widget = QWidget()
