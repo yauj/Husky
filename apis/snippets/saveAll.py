@@ -1,4 +1,5 @@
 import sys
+import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.saveSingle import runSingle
@@ -30,7 +31,7 @@ class SaveAllButton(QPushButton):
             dlg.setText("All Settings Saved")
             dlg.exec()
         except Exception as ex:
-            print(ex)
+            print(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Save All")
             dlg.setText("Error: " + str(ex))

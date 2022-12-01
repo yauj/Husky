@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.saveSingle import saveChannels, saveIEMBus, saveSetting
@@ -45,7 +46,7 @@ class SnippetSaveButton(QPushButton):
             except Exception as ex:
                 os.remove(dlg.selectedFiles()[0])
                 
-                print(ex)
+                print(traceback.format_exc())
                 dlg = QMessageBox(self)
                 dlg.setWindowTitle("Save Snippet")
                 dlg.setText("Error: " + str(ex))

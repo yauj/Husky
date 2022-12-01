@@ -1,4 +1,5 @@
 import sys
+import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.saveSingle import getSetting
@@ -192,7 +193,7 @@ class AddFOHButton(QPushButton):
             dlg.setText("Settings Added")
             dlg.exec()
         except Exception as ex:
-            print(ex)
+            print(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Add")
             dlg.setText("Error: " + str(ex))
@@ -226,7 +227,7 @@ class AddIEMButton(QPushButton):
             dlg.setText("Settings Added")
             dlg.exec()
         except Exception as ex:
-            print(ex)
+            print(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Add")
             dlg.setText("Error: " + str(ex))
@@ -263,7 +264,7 @@ class AddMIDIButton(QPushButton):
             dlg.setText("Settings Added")
             dlg.exec()
         except Exception as ex:
-            print(ex)
+            print(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Add")
             dlg.setText("Error: " + str(ex))

@@ -1,4 +1,5 @@
 import sys
+import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.saveSingle import getSetting
@@ -34,7 +35,7 @@ class SnippetUpdateButton(QPushButton):
             for line in curSettings:
                 self.textbox.append(line)
 
-            print(ex)
+            print(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Update Snippet")
             dlg.setText("Error: " + str(ex))

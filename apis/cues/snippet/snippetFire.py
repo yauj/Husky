@@ -1,4 +1,5 @@
 import sys
+import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.loadSingle import fireLine
@@ -27,7 +28,7 @@ class SnippetFireButton(QPushButton):
             dlg.setText("Fired all Commands in textbox")
             dlg.exec()
         except Exception as ex:
-            print(ex)
+            print(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Fire Snippet")
             dlg.setText("Error: " + str(ex))

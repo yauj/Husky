@@ -1,4 +1,5 @@
 import sys
+import traceback
 sys.path.insert(0, '../')
 
 from apis.cues.cueFire import CueFireButton, main
@@ -17,34 +18,37 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+TAB_LAYER_NAMES = ["a", "b", "c", "d", "e"]
+
 class CueTab(QTabWidget):
     def __init__(self, osc, widgets):
         super().__init__()
         self.osc = osc
         self.widgets = widgets
         self.cues = []
+        self.prevIndex = [None]
         
-        layers = ["a", "b", "c", "d", "e"]
-
-        for i in range(0, len(layers)):
-            self.addTab(self.cuesTriggerLayer(layers[i]), layers[i])
-            self.addAction(TabShortcut(self, layers[i], i))
+        for i in range(0, len(TAB_LAYER_NAMES)):
+            self.addTab(self.cuesTriggerLayer(TAB_LAYER_NAMES[i], i), TAB_LAYER_NAMES[i])
+            self.addAction(TabShortcut(self, TAB_LAYER_NAMES[i], i))
 
         self.osc["serverMidi"].callback(self.callbackFunction)
 
-    def cuesTriggerLayer(self, page):
+    def cuesTriggerLayer(self, pageName, pageIndex):
         vlayout = QVBoxLayout()
 
         vlayout.addWidget(QLabel("Fire cues per song"))
 
-        self.widgets["cue"][page] = {}
+        self.widgets["cue"][pageName] = {}
         for cue in range(0, 10):
-            index = str(cue + 1)
+            index = (pageIndex * 10) + cue
+            printIndex = str(cue + 1)
             options = {}
 
             hlayout = QHBoxLayout()
-            
-            hlayout.addWidget(QLabel(index + ":"))
+
+            options["label"] = QLabel(printIndex + ":")
+            hlayout.addWidget(options["label"])
         
             options["key"] = QComboBox()
             options["key"].setPlaceholderText("Key of Song")
@@ -62,9 +66,9 @@ class CueTab(QTabWidget):
             snippet.setFixedWidth(150)
             hlayout.addWidget(snippet)
             options["snippet"] = snippet
-            self.widgets["cue"][page][index] = snippet
+            self.widgets["cue"][pageName][printIndex] = snippet
 
-            hlayout.addWidget(CueFireButton(self.widgets, self.osc, index, options))
+            hlayout.addWidget(CueFireButton(self.widgets, self.osc, self.prevIndex, index, printIndex, self.cues))
 
             vlayout.addLayout(hlayout)
             self.cues.append(options)
@@ -77,21 +81,26 @@ class CueTab(QTabWidget):
         return self.cues
 
     def callbackFunction(self, message):
-        if message.channel == 0 and message.control >= 0 and message.control < 10:
-            index = (self.currentIndex() * 10) + message.control
-            try:
-                asyncio.run(main(
-                    self.osc,
-                    self.cues[index]
-                ))
-                
-                print("Cue " + str(index + 1) + " Fired")
-            except Exception as ex:
-                print(ex)
-        elif message.channel == 0 and message.control == 10:
-            self.setCurrentIndex(self.currentIndex() - 1)
-        elif message.channel == 0 and message.control == 11:
-            self.setCurrentIndex(self.currentIndex() + 1)
+        if message.value > 0:
+            if message.channel == 4 and message.control >= 0 and message.control < 10:
+                index = (self.currentIndex() * 10) + message.control
+                try:
+                    asyncio.run(main(
+                        self.osc,
+                        self.prevIndex,
+                        index,
+                        self.cues
+                    ))
+                    
+                    print("Cue " + TAB_LAYER_NAMES[self.currentIndex()] + str(message.control + 1) + " Fired")
+                except Exception:
+                    print(traceback.format_exc())
+            elif message.channel == 4 and message.control == 10:
+                self.setCurrentIndex(self.currentIndex() - 1)
+            elif message.channel == 4 and message.control == 11:
+                self.setCurrentIndex(self.currentIndex() + 1)
+            elif message.channel == 4 and message.control == 12 and message.value <= len(TAB_LAYER_NAMES):
+                self.setCurrentIndex(message.value - 1)
 
 class TabShortcut(QAction):
     def __init__(self, cueTab, page, index):

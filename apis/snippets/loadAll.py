@@ -1,5 +1,6 @@
 import os.path
 import sys
+import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.loadSingle import runSingle
@@ -31,7 +32,7 @@ class LoadAllButton(QPushButton):
             dlg.setText("All Settings Loaded")
             dlg.exec()
         except Exception as ex:
-            print(ex)
+            print(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Load All")
             dlg.setText("Error: " + str(ex))

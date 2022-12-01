@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 sys.path.insert(0, '../')
 
 import asyncio
@@ -34,7 +35,7 @@ class SaveButton(QPushButton):
                 dlg.setText("Settings Saved for " + self.chName)
                 dlg.exec()
             except Exception as ex:
-                print(ex)
+                print(traceback.format_exc())
                 dlg = QMessageBox(self)
                 dlg.setWindowTitle("Save")
                 dlg.setText("Error: " + str(ex))

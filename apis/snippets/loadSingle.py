@@ -1,5 +1,6 @@
 import os.path
 import sys
+import traceback
 
 import mido
 sys.path.insert(0, '../')
@@ -35,7 +36,7 @@ class LoadButton(QPushButton):
                 dlg.setText("Loaded " + self.filename.currentText() + " for " + self.chName)
                 dlg.exec()
             except Exception as ex:
-                print(ex)
+                print(traceback.format_exc())
                 dlg = QMessageBox(self)
                 dlg.setWindowTitle("Load")
                 dlg.setText("Error: " + str(ex))
@@ -69,7 +70,10 @@ async def fireLine(osc, line, iemCopy):
         if (components[1] == "audio"):
             osc["audioMidi"].send(mido.Message("control_change", channel = channel, control = control, value = value))
         elif (components[1] == "video"):
-            osc["videoMidi"].send(mido.Message("control_change", channel = channel, control = control, value = value))
+            if value == 0:
+                osc["videoMidi"].send(mido.Message("note_off", channel = channel, note = control))
+            else:
+                osc["videoMidi"].send(mido.Message("note_on", channel = channel, note = control))
         elif (components[1] == "light"):
             if value == 0:
                 osc["lightMidi"].send(mido.Message("note_off", channel = channel, note = control))

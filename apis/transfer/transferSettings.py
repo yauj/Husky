@@ -1,4 +1,5 @@
 import sys
+import traceback
 sys.path.insert(0, '../')
 
 import asyncio
@@ -26,7 +27,7 @@ class TransferButton(QPushButton):
             dlg.setText("Settings Transfered")
             dlg.exec()
         except Exception as ex:
-            print(ex)
+            print(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("FOH->IEM")
             dlg.setText("Error: " + str(ex))

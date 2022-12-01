@@ -1,5 +1,6 @@
 import os.path
 import sys
+import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.loadSingle import runSingle
@@ -12,32 +13,31 @@ from PyQt6.QtWidgets import (
 )
 
 class CueFireButton(QPushButton):
-    def __init__(self, widgets, osc, index, options):
+    def __init__(self, widgets, osc, prevIndex, index, printIndex, cues):
         super().__init__("Fire")
-        if (len(index) == 1):
-            super().setShortcut("ctrl+" + index)
-        elif (index == "10"):
+        if (len(printIndex) == 1):
+            super().setShortcut("ctrl+" + printIndex)
+        elif (printIndex == "10"):
             super().setShortcut("ctrl+0")
 
         self.widgets = widgets
         self.osc = osc
+        self.prevIndex = prevIndex
         self.index = index
-        self.options = options
+        self.printIndex = printIndex
+        self.cues = cues
         self.pressed.connect(self.clicked)
     
     def clicked(self):
         try:
             asyncio.run(main(
                 self.osc,
-                self.options
+                self.prevIndex,
+                self.index,
+                self.cues
             ))
-            
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Cue")
-            dlg.setText("Cue " + self.index + " Fired")
-            dlg.exec()
         except Exception as ex:
-            print(ex)
+            print(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Cue")
             dlg.setText("Error: " + str(ex))
@@ -45,43 +45,52 @@ class CueFireButton(QPushButton):
 
         self.setDown(False)
 
-async def main(osc, options):
-    if options["key"].currentText() != "":
-        val = int((KEYS.index(options["key"].currentText()) * 127) / 11)
+async def main(osc, prevIndex, index, cues):
+    if prevIndex[0] is not None:
+        cues[prevIndex[0]]["label"].setStyleSheet("")
+    prevIndex[0] = index
+    try:
+        if cues[index]["key"].currentText() != "":
+            val = int((KEYS.index(cues[index]["key"].currentText()) * 127) / 11)
 
-        #osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 100, value = 127)) # On/Off Message
-        osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 101, value = val)) # Key Message
-        osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 102, value = 127)) # Type Message
+            #osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 100, value = 127)) # On/Off Message
+            osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 101, value = val)) # Key Message
+            osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 102, value = 127)) # Type Message
 
-    if options["lead"].currentText() != "":
-        bkgdVox = ["05", "06", "07", "08"]
-        leadVox = ""
-        if options["lead"].currentText() == "1":
-            leadVox = "05"
-            bkgdVox.remove(leadVox)
-        elif options["lead"].currentText() == "2":
-            leadVox = "06"
-            bkgdVox.remove(leadVox)
-        elif options["lead"].currentText() == "3":
-            leadVox = "07"
-            bkgdVox.remove(leadVox)
-        elif options["lead"].currentText() == "4":
-            leadVox = "08"
-            bkgdVox.remove(leadVox)
-            
-        await osc["fohClient"].send_message("/ch/" + leadVox + "/mix/01/on", 1)
-        await osc["fohClient"].send_message("/ch/" + leadVox + "/mix/02/on", 1)
-        await osc["fohClient"].send_message("/ch/" + leadVox + "/mix/03/on", 0)
-        for ch in bkgdVox:
-            await osc["fohClient"].send_message("/ch/" + ch + "/mix/01/on", 0)
-            await osc["fohClient"].send_message("/ch/" + ch + "/mix/02/on", 0)
-            await osc["fohClient"].send_message("/ch/" + ch + "/mix/03/on", 1)
-    
-    if options["snippet"].text() == "RESET":
-        await reset(osc)
-    elif options["snippet"].text() != "":
-        if os.path.exists("data/" + options["snippet"].text()):
-            await runSingle(osc, options["snippet"].text(), False)
+        if cues[index]["lead"].currentText() != "":
+            bkgdVox = ["05", "06", "07", "08"]
+            leadVox = ""
+            if cues[index]["lead"].currentText() == "1":
+                leadVox = "05"
+                bkgdVox.remove(leadVox)
+            elif cues[index]["lead"].currentText() == "2":
+                leadVox = "06"
+                bkgdVox.remove(leadVox)
+            elif cues[index]["lead"].currentText() == "3":
+                leadVox = "07"
+                bkgdVox.remove(leadVox)
+            elif cues[index]["lead"].currentText() == "4":
+                leadVox = "08"
+                bkgdVox.remove(leadVox)
+                
+            await osc["fohClient"].send_message("/ch/" + leadVox + "/mix/01/on", 1)
+            await osc["fohClient"].send_message("/ch/" + leadVox + "/mix/02/on", 1)
+            await osc["fohClient"].send_message("/ch/" + leadVox + "/mix/03/on", 0)
+            for ch in bkgdVox:
+                await osc["fohClient"].send_message("/ch/" + ch + "/mix/01/on", 0)
+                await osc["fohClient"].send_message("/ch/" + ch + "/mix/02/on", 0)
+                await osc["fohClient"].send_message("/ch/" + ch + "/mix/03/on", 1)
+        
+        if cues[index]["snippet"].text() == "RESET":
+            await reset(osc)
+        elif cues[index]["snippet"].text() != "":
+            if os.path.exists("data/" + cues[index]["snippet"].text()):
+                await runSingle(osc, cues[index]["snippet"].text(), False)
+
+        cues[index]["label"].setStyleSheet("color:green")
+    except Exception as ex:
+        cues[index]["label"].setStyleSheet("color:red")
+        raise ex
 
 # This is specific to GP Seattle
 async def reset(osc):
