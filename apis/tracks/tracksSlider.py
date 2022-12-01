@@ -1,4 +1,5 @@
 import sys
+import traceback
 sys.path.insert(0, '../')
 
 import mido
@@ -25,4 +26,4 @@ class TracksSlider(QSlider):
             self.osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = self.index, value = self.value()))
         except Exception as ex:
             # Fail Quietly
-            print(ex)
+            print(traceback.format_exc())
