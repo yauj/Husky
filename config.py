@@ -54,7 +54,7 @@ config = {
         "iem": "10.246.1.15"
     },
     "midi": {
-        "audio": "IAC Driver Bus 1",
+        "audio": "X32Helper",
         "video": "Network Session 1",
         "light": "Gracepoint‚Äôs Mac mini Bluetooth"
     }

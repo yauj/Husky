@@ -111,10 +111,7 @@ class MIDIClient(mido.Backend):
             raise SystemError("Not Connected to MIDI Port")
     
     def get_output_names(self):
-        names = set(super().get_output_names())
-        if MIDI_SERVER_NAME in names:
-            names.remove(MIDI_SERVER_NAME)
-        return names
+        return set(super().get_output_names())
 
 # MIDI Server
 class MIDIServer(mido.Backend):
