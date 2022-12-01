@@ -1,7 +1,8 @@
 import sys
 sys.path.insert(0, '../')
 
-from apis.cues.cueFire import CueFireButton
+from apis.cues.cueFire import CueFireButton, main
+import asyncio
 from util.constants import KEYS
 from PyQt6.QtGui import (
     QAction,
@@ -28,6 +29,8 @@ class CueTab(QTabWidget):
         for i in range(0, len(layers)):
             self.addTab(self.cuesTriggerLayer(layers[i]), layers[i])
             self.addAction(TabShortcut(self, layers[i], i))
+
+        self.osc["serverMidi"].callback(self.callbackFunction)
 
     def cuesTriggerLayer(self, page):
         vlayout = QVBoxLayout()
@@ -72,6 +75,23 @@ class CueTab(QTabWidget):
     
     def getCues(self):
         return self.cues
+
+    def callbackFunction(self, message):
+        if message.channel == 0 and message.control >= 0 and message.control < 10:
+            index = (self.currentIndex() * 10) + message.control
+            try:
+                asyncio.run(main(
+                    self.osc,
+                    self.cues[index]
+                ))
+                
+                print("Cue " + str(index + 1) + " Fired")
+            except Exception as ex:
+                print(ex)
+        elif message.channel == 0 and message.control == 10:
+            self.setCurrentIndex(self.currentIndex() - 1)
+        elif message.channel == 0 and message.control == 11:
+            self.setCurrentIndex(self.currentIndex() + 1)
 
 class TabShortcut(QAction):
     def __init__(self, cueTab, page, index):

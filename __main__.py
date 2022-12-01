@@ -20,7 +20,7 @@ from apis.snippets.saveSingle import SaveButton
 from apis.tracks.tracksSlider import TracksSlider
 from apis.transfer.transferSettings import TransferButton
 from config import config
-from util.defaultOSC import RetryingServer
+from util.defaultOSC import MIDIServer, RetryingServer
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -40,9 +40,9 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.widgets = {"personal": {}, "cue": {}}
-        server = RetryingServer()
         self.osc = {
-            "server": server
+            "server": RetryingServer(),
+            "serverMidi": MIDIServer()
         }
 
         self.setWindowTitle("X32 Helper")

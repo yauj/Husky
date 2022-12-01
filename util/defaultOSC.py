@@ -9,6 +9,8 @@ from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer
 from time import time
 
+MIDI_SERVER_NAME = "X32Helper"
+
 # Simple Client that has async logic, since testing client has async logic
 class SimpleClient(SimpleUDPClient):
     def __init__(self, name, ipAddress):
@@ -109,4 +111,17 @@ class MIDIClient(mido.Backend):
             raise SystemError("Not Connected to MIDI Port")
     
     def get_output_names(self):
-        return set(super().get_output_names())
+        names = set(super().get_output_names())
+        if MIDI_SERVER_NAME in names:
+            names.remove(MIDI_SERVER_NAME)
+        return names
+
+# MIDI Server
+class MIDIServer(mido.Backend):
+    def __init__(self):
+        super().__init__("mido.backends.rtmidi")
+        self.input = super().open_input(MIDI_SERVER_NAME, True)
+        print("Created MIDI reciever " + MIDI_SERVER_NAME)
+    
+    def callback(self, function):
+        self.input.callback = function
