@@ -44,7 +44,7 @@ class MainWindow(QMainWindow):
         self.osc = {
             "server": RetryingServer()
         }
-        virtualPort = MIDIVirtualPort()
+        self.virtualPort = MIDIVirtualPort()
 
         self.setWindowTitle("X32 Helper")
 

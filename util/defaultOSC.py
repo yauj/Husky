@@ -146,13 +146,17 @@ class MIDIServer(mido.Backend):
         self.callbackFunction = None
 
     def open_input(self):
+        if self.input is not None:
+            self.input.close()
+            print("Stopped listening to MIDI Port " + self.port.currentText())
+
         try:
-            self.input = super().open_input(self.port)
+            self.input = super().open_input(self.port.currentText())
             self.input.callback = self.callbackFunction
-            print("Listening to MIDI Port " + self.port)
+            print("Listening to MIDI Port " + self.port.currentText())
         except Exception as ex:
             print(ex)
-            print("Failed to connect to MIDI at " + self.port)
+            print("Failed to connect to MIDI at " + self.port.currentText())
             self.input = None
 
         return self.input is not None
@@ -164,11 +168,6 @@ class MIDIServer(mido.Backend):
 
     def get_input_names(self):
         return set(super().get_input_names())
-
-    def close():
-        self.input.close()
-        print("Stopped listening to MIDI Port " + self.port)
-
 
 # MIDI Virtual Port
 class MIDIVirtualPort(mido.Backend):

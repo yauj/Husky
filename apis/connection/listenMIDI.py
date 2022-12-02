@@ -13,6 +13,7 @@ class ListenMidiButton(QPushButton):
         self.osc = osc
         self.status = status
         self.port = port
+        self.osc["serverMidi"] = MIDIServer(self.port)
         self.init()
         self.pressed.connect(self.connect)
     
@@ -31,10 +32,6 @@ class ListenMidiButton(QPushButton):
         self.setDown(False)
 
     def init(self):
-        if ("serverMidi" in self.osc):
-            self.osc["serverMidi"].close()
-
-        self.osc["serverMidi"] = MIDIServer(self.port.currentText())
         if (self.osc["serverMidi"].open_input()):
             self.status.setText("Connected!")
             self.status.setStyleSheet("color: green")
@@ -42,6 +39,5 @@ class ListenMidiButton(QPushButton):
         else:
             self.status.setText("INVALID")
             self.status.setStyleSheet("color: red")
-            self.osc["serverMidi"] = None
 
             return False
