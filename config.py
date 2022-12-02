@@ -58,5 +58,10 @@ config = {
         "audio": "X32Helper",
         "video": "Network Session 1",
         "light": "Gracepoint‚Äôs Mac mini Bluetooth"
+    },
+    "faders": {
+        "VOX EQ": ["foh /ch/05/eq/1/g 0.4 0.5"],
+        "VOX Pan": ["foh /ch/06/mix/pan 0.5 0.2", "foh /ch/07/mix/pan 0.5 0.8"],
+        "Keys/EG Pan": ["foh /ch/13/mix/pan 0.5 0.2", "foh /ch/11/mix/pan 0.5 0.8"]
     }
 }

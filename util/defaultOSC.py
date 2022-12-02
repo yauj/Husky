@@ -73,15 +73,20 @@ class RetryingServer(BlockingOSCUDPServer):
 
         super().__init__(("0.0.0.0", 10024), dispatcher)
 
+        self.timeout = 0.03 # Timeout calls after 0.03 seconds
+
+    # Throws Exception if timed out
     def handle_request(self):
-        self.timeout = None
+        startTime = time()
         self._retry = True
-        while (self._retry):
+        while (self._retry and time() - startTime < self.timeout):
             super().handle_request()
+        
+        if self._retry:
+            raise TimeoutError("Timed out waiting for response. Please check if command is valid.")
     
-    # Timeout after 0.02 seconds. Returns if call succeeded.
+    # Returns whether or not command was successful
     def handle_request_with_timeout(self):
-        self.timeout = 0.02
         startTime = time()
         self._retry = True
         while (self._retry and time() - startTime < self.timeout):

@@ -18,7 +18,9 @@ class X32Emulator():
             print("Closed Server")
         
     def loopbackHandler(self, address, *args):
-        if args:
+        if address == "/info":
+            self.client.send_message("/info", ('V0.00', 'osc-server', 'LOCAL', '0.00-0'))
+        elif args:
             print(f"{address}: {args}")
         else:
             self.client.send_message("/xinfo", None) # Simulate metadata calls
