@@ -139,8 +139,11 @@ class MainWindow(QMainWindow):
 
             files = []
             for filename in os.listdir("data"):
-                if filename.split(".")[0].split("_")[1] == chName:
-                    files.append(filename)
+                try:
+                    if filename.split(".")[0].split("_")[1] == chName:
+                        files.append(filename)
+                except IndexError:
+                    pass
             files.sort(reverse=True)
 
             filenames[chName] = QComboBox()
@@ -174,9 +177,12 @@ class MainWindow(QMainWindow):
 
             names = []
             for filename in os.listdir("data"):
-                components = filename.split(".")[0].split("_")
-                if components[1] == chName:
-                    names.append(components[2])
+                try:
+                    components = filename.split(".")[0].split("_")
+                    if components[1] == chName:
+                        names.append(components[2])
+                except IndexError:
+                    pass
             names = list(set(names))
             names.sort()
 
