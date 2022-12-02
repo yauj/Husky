@@ -240,17 +240,18 @@ class MainWindow(QMainWindow):
         vlayout = QVBoxLayout()
 
         tabs = CueTab(self.osc, self.widgets)
+        faders = self.cuesFadersLayer()
 
         hlayout = QHBoxLayout()
-        hlayout.addWidget(CueLoadButton(tabs.getCues()))
-        hlayout.addWidget(CueSaveButton(tabs.getCues()))
+        hlayout.addWidget(CueLoadButton(tabs.getCues(), self.faderNames, self.faders))
+        hlayout.addWidget(CueSaveButton(tabs.getCues(), self.faderNames, self.faders))
         vlayout.addLayout(hlayout)
 
         vlayout.addWidget(QLabel("Fire Cues. Green indicates last cue fired was successful. Red indicates failure."))
 
         subLayer = QTabWidget()
         subLayer.addTab(tabs, "Cues")
-        subLayer.addTab(self.cuesFadersLayer(), "Faders")
+        subLayer.addTab(faders, "Faders")
 
         vlayout.addWidget(subLayer)
 
@@ -265,6 +266,7 @@ class MainWindow(QMainWindow):
 
         hlayout = QHBoxLayout()
 
+        self.faderNames = []
         self.faders = []
 
         for i, name in enumerate(config["faders"]):
@@ -272,8 +274,11 @@ class MainWindow(QMainWindow):
 
             sliderLayout = QVBoxLayout()
 
+            label = QLineEdit(name)
+            self.faderNames.append(label)
+
             sliderLayout.addWidget(FadersSlider(self.osc, self.faders, i))
-            sliderLayout.addWidget(QLineEdit(name))
+            sliderLayout.addWidget(label)
             sliderLayout.addWidget(FadersEditButton(self.osc, self.faders, i))
 
             hlayout.addLayout(sliderLayout)

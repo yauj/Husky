@@ -7,9 +7,11 @@ from PyQt6.QtWidgets import (
 )
 
 class CueLoadButton(QPushButton):
-    def __init__(self, cues):
+    def __init__(self, cues, faderNames, faders):
         super().__init__("Load Set")
         self.cues = cues
+        self.faderNames = faderNames
+        self.faders = faders
         self.pressed.connect(self.clicked)
     
     def clicked(self):
@@ -21,25 +23,37 @@ class CueLoadButton(QPushButton):
         if dlg.exec():
             with open(dlg.selectedFiles()[0]) as file:
                 file.readline() # Skip Header Line
-                idx = 0
+                cueIdx = 0
+                faderIdx = -1
+                lastFaderName = None
                 while (line := file.readline().strip()):
                     components = line.split()
 
-                    if components[0] == "N":
-                        self.cues[idx]["key"].setCurrentIndex(-1)
-                    else:
-                        self.cues[idx]["key"].setCurrentText(components[0])
+                    if components[0] == "cue":
+                        if components[1] == "N":
+                            self.cues[cueIdx]["key"].setCurrentIndex(-1)
+                        else:
+                            self.cues[cueIdx]["key"].setCurrentText(components[1])
 
-                    if components[1] == "N":
-                        self.cues[idx]["lead"].setCurrentIndex(-1)
-                    else:
-                        self.cues[idx]["lead"].setCurrentText(components[1])
+                        if components[2] == "N":
+                            self.cues[cueIdx]["lead"].setCurrentIndex(-1)
+                        else:
+                            self.cues[cueIdx]["lead"].setCurrentText(components[2])
 
-                    if components[2] == "N":
-                        self.cues[idx]["snippet"].setText("")
-                    else:
-                        self.cues[idx]["snippet"].setText(components[2])
+                        if components[3] == "N":
+                            self.cues[cueIdx]["snippet"].setText("")
+                        else:
+                            self.cues[cueIdx]["snippet"].setText(components[3])
 
-                    idx = idx + 1
+                        cueIdx = cueIdx + 1
+                    elif components[0] == "fader":
+                        command = " ".join(components[1:5])
+                        name = " ".join(components[5:])
+                        if lastFaderName != name:
+                            faderIdx = faderIdx + 1
+                            self.faders[faderIdx] = []
+                            lastFaderName = name
+                        self.faderNames[faderIdx].setText(name)
+                        self.faders[faderIdx].append(command)
         
         self.setDown(False)

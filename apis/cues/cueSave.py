@@ -8,9 +8,11 @@ from PyQt6.QtWidgets import (
 )
 
 class CueSaveButton(QPushButton):
-    def __init__(self, cues):
+    def __init__(self, cues, faderNames, faders):
         super().__init__("Save Set")
         self.cues = cues
+        self.faderNames = faderNames
+        self.faders = faders
         self.pressed.connect(self.clicked)
     
     def clicked(self):
@@ -37,6 +39,10 @@ class CueSaveButton(QPushButton):
                     if snippet == "":
                         snippet = "N"
 
-                    file.write("\n" + key + " " + lead + " " + snippet)
+                    file.write("\n" + "cue " + key + " " + lead + " " + snippet)
+                
+                for i in range(0, len(self.faderNames)):
+                    for command in self.faders[i]:
+                        file.write("\n" + "fader " + command + " " + self.faderNames[i].text())
         
         self.setDown(False)
