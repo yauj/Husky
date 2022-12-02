@@ -20,12 +20,12 @@ class ConnectMidiButton(QPushButton):
     def connect(self):
         if (self.init()):
             dlg = QMessageBox(self)
-            dlg.setWindowTitle("X32 Connection")
+            dlg.setWindowTitle("MIDI Connection")
             dlg.setText("Connected to " + self.port.currentText() + " port")
             dlg.exec()
         else:
             dlg = QMessageBox(self)
-            dlg.setWindowTitle("X32 Connection")
+            dlg.setWindowTitle("MIDI Connection")
             dlg.setText("Unable to connect to " + self.port.currentText() + " port")
             dlg.exec()
         

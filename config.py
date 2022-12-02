@@ -53,6 +53,7 @@ config = {
         "foh": "10.246.1.10",
         "iem": "10.246.1.15"
     },
+    "serverMidi": "X-USB",
     "midi": {
         "audio": "X32Helper",
         "video": "Network Session 1",

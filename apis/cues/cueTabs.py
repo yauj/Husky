@@ -79,30 +79,26 @@ class CueTab(QTabWidget):
         return self.cues
 
     def callbackFunction(self, message):
-        if message.channel == 4:
-            if message.value > 0:
-                if message.control >= 0 and message.control < 10:
-                    index = (self.currentIndex() * 10) + message.control
-                    try:
-                        asyncio.run(main(
-                            self.osc,
-                            self.prevIndex,
-                            index,
-                            self.cues
-                        ))
-                        
-                        print("Cue " + TAB_LAYER_NAMES[self.currentIndex()] + str(message.control + 1) + " Fired")
-                    except Exception:
-                        print(traceback.format_exc())
-                elif message.control == 10:
-                    self.setCurrentIndex(self.currentIndex() - 1)
-                elif message.control == 11:
-                    self.setCurrentIndex(self.currentIndex() + 1)
-                elif message.control == 12 and message.value <= len(TAB_LAYER_NAMES):
-                    self.setCurrentIndex(message.value - 1)
-        else:
-            # Send message out to listeners
-            self.osc["serverMidi"].send(message)
+        if message.channel == 4 and message.value > 0:
+            if message.control >= 0 and message.control < 10:
+                index = (self.currentIndex() * 10) + message.control
+                try:
+                    asyncio.run(main(
+                        self.osc,
+                        self.prevIndex,
+                        index,
+                        self.cues
+                    ))
+                    
+                    print("Cue " + TAB_LAYER_NAMES[self.currentIndex()] + str(message.control + 1) + " Fired")
+                except Exception:
+                    print(traceback.format_exc())
+            elif message.control == 10:
+                self.setCurrentIndex(self.currentIndex() - 1)
+            elif message.control == 11:
+                self.setCurrentIndex(self.currentIndex() + 1)
+            elif message.control == 12 and message.value <= len(TAB_LAYER_NAMES):
+                self.setCurrentIndex(message.value - 1)
 
 class TabShortcut(QAction):
     def __init__(self, cueTab, page, index):

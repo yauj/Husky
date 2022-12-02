@@ -139,13 +139,41 @@ class MIDIClient(mido.Backend):
 
 # MIDI Server
 class MIDIServer(mido.Backend):
+    def __init__(self, port):
+        super().__init__("mido.backends.rtmidi")
+        self.input = None
+        self.port = port
+        self.callbackFunction = None
+
+    def open_input(self):
+        try:
+            self.input = super().open_input(self.port)
+            self.input.callback = self.callbackFunction
+            print("Listening to MIDI Port " + self.port)
+        except Exception as ex:
+            print(ex)
+            print("Failed to connect to MIDI at " + self.port)
+            self.input = None
+
+        return self.input is not None
+    
+    def callback(self, function):
+        self.callbackFunction = function
+        if self.input is not None:
+            self.input.callback = function
+
+    def get_input_names(self):
+        return set(super().get_input_names())
+
+    def close():
+        self.input.close()
+        print("Stopped listening to MIDI Port " + self.port)
+
+
+# MIDI Virtual Port
+class MIDIVirtualPort(mido.Backend):
     def __init__(self):
         super().__init__("mido.backends.rtmidi")
         self.ioPort = super().open_ioport(MIDI_SERVER_NAME, True)
+        self.ioPort.input.callback = self.ioPort.output.send
         print("Created MIDI IO Port " + MIDI_SERVER_NAME)
-    
-    def callback(self, function):
-        self.ioPort.input.callback = function
-
-    def send(self, message):
-        self.ioPort.output.send(message)

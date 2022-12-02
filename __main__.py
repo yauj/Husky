@@ -3,6 +3,7 @@ import sys
 
 from apis.connection.connectMIDI import ConnectMidiButton
 from apis.connection.connectOSC import ConnectOscButton
+from apis.connection.listenMIDI import ListenMidiButton
 from apis.cues.cueLoad import CueLoadButton
 from apis.cues.cueSave import CueSaveButton
 from apis.cues.cueTabs import CueTab
@@ -20,7 +21,7 @@ from apis.snippets.saveSingle import SaveButton
 from apis.tracks.tracksSlider import TracksSlider
 from apis.transfer.transferSettings import TransferButton
 from config import config
-from util.defaultOSC import MIDIServer, RetryingServer
+from util.defaultOSC import MIDIVirtualPort, RetryingServer
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -41,9 +42,9 @@ class MainWindow(QMainWindow):
 
         self.widgets = {"personal": {}, "cue": {}}
         self.osc = {
-            "server": RetryingServer(),
-            "serverMidi": MIDIServer()
+            "server": RetryingServer()
         }
+        virtualPort = MIDIVirtualPort()
 
         self.setWindowTitle("X32 Helper")
 
@@ -85,6 +86,27 @@ class MainWindow(QMainWindow):
             hlayout.addWidget(ConnectOscButton(self.osc, address, status, mixerName))
 
             vlayout.addLayout(hlayout)
+
+        hlayout = QHBoxLayout()
+        label = QLabel("MIDI Input: ")
+        label.setFixedWidth(150)
+        hlayout.addWidget(label)
+
+        port = QComboBox()
+        port.setEditable(True)
+        port.setFixedWidth(300)
+        port.setCurrentText(config["serverMidi"])
+        hlayout.addWidget(port)
+
+        status = QLabel()
+        hlayout.addWidget(status)
+
+        hlayout.addWidget(ListenMidiButton(self.osc, status, port))
+
+        port.addItems(self.osc["serverMidi"].get_input_names())
+        port.setCurrentText(config["serverMidi"])
+
+        vlayout.addLayout(hlayout)
         
         for name in config["midi"]:
             hlayout = QHBoxLayout()
