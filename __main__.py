@@ -7,14 +7,14 @@ from apis.connection.listenMIDI import ListenMidiButton
 from apis.cues.cueLoad import CueLoadButton
 from apis.cues.cueSave import CueSaveButton
 from apis.cues.cueTabs import CueTab
+from apis.cues.faders.fadersEdit import FadersEditButton
+from apis.cues.faders.fadersSlider import FadersSlider
 from apis.cues.snippet.snippetAdd import SnippetAddButton
 from apis.cues.snippet.snippetEdit import SnippetEditButton
 from apis.cues.snippet.snippetFire import SnippetFireButton
 from apis.cues.snippet.snippetLoad import SnippetLoadButton
 from apis.cues.snippet.snippetSave import SnippetSaveButton
 from apis.cues.snippet.snippetUpdate import SnippetUpdateButton
-from apis.faders.fadersEdit import FadersEditButton
-from apis.faders.fadersSlider import FadersSlider
 from apis.menu.Update import UpdateApp
 from apis.snippets.loadAll import LoadAllButton
 from apis.snippets.loadSingle import LoadButton
@@ -55,7 +55,6 @@ class MainWindow(QMainWindow):
         tabs.addTab(self.connectionLayer(), "X32 Connection")
         tabs.addTab(self.snippetsLayer(), "Snippets")
         tabs.addTab(self.cuesLayer(), "Cues")
-        tabs.addTab(self.fadersLayer(), "Faders")
         tabs.addTab(self.tracksLayer(), "Tracks")
         tabs.addTab(self.transferLayer(), "FOH->IEM")
         
@@ -249,7 +248,37 @@ class MainWindow(QMainWindow):
 
         vlayout.addWidget(QLabel("Fire Cues. Green indicates last cue fired was successful. Red indicates failure."))
 
-        vlayout.addWidget(tabs)
+        subLayer = QTabWidget()
+        subLayer.addTab(tabs, "Cues")
+        subLayer.addTab(self.cuesFadersLayer(), "Faders")
+
+        vlayout.addWidget(subLayer)
+
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        return widget
+    
+    def cuesFadersLayer(self):
+        vlayout = QVBoxLayout()
+
+        vlayout.addWidget(QLabel("Volume Sliders for tracks"))
+
+        hlayout = QHBoxLayout()
+
+        self.faders = []
+
+        for i, name in enumerate(config["faders"]):
+            self.faders.append(config["faders"][name])
+
+            sliderLayout = QVBoxLayout()
+
+            sliderLayout.addWidget(FadersSlider(self.osc, self.faders, i))
+            sliderLayout.addWidget(QLineEdit(name))
+            sliderLayout.addWidget(FadersEditButton(self.osc, self.faders, i))
+
+            hlayout.addLayout(sliderLayout)
+
+        vlayout.addLayout(hlayout)
 
         widget = QWidget()
         widget.setLayout(vlayout)
@@ -353,32 +382,6 @@ class MainWindow(QMainWindow):
         hlayout = QHBoxLayout()
         hlayout.addWidget(SnippetLoadButton(filename, textbox))
         hlayout.addWidget(SnippetEditButton(filename, textbox))
-        vlayout.addLayout(hlayout)
-
-        widget = QWidget()
-        widget.setLayout(vlayout)
-        return widget
-
-    def fadersLayer(self):
-        vlayout = QVBoxLayout()
-
-        vlayout.addWidget(QLabel("Volume Sliders for tracks"))
-
-        hlayout = QHBoxLayout()
-
-        self.faders = []
-
-        for i, name in enumerate(config["faders"]):
-            self.faders.append(config["faders"][name])
-
-            sliderLayout = QVBoxLayout()
-
-            sliderLayout.addWidget(FadersSlider(self.osc, self.faders, i))
-            sliderLayout.addWidget(QLineEdit(name))
-            sliderLayout.addWidget(FadersEditButton(self.osc, self.faders, i))
-
-            hlayout.addLayout(sliderLayout)
-
         vlayout.addLayout(hlayout)
 
         widget = QWidget()
