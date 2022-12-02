@@ -148,7 +148,7 @@ class MIDIServer(mido.Backend):
         super().__init__("mido.backends.rtmidi")
         self.input = None
         self.port = port
-        self.callbackFunction = None
+        self.callbackFunctions = []
 
     def open_input(self):
         if self.input is not None:
@@ -167,9 +167,11 @@ class MIDIServer(mido.Backend):
         return self.input is not None
     
     def callback(self, function):
-        self.callbackFunction = function
-        if self.input is not None:
-            self.input.callback = function
+        self.callbackFunctions.append(function)
+
+    def callbackFunction(self, message):
+        for function in self.callbackFunctions:
+            function(message)
 
     def get_input_names(self):
         return set(super().get_input_names())

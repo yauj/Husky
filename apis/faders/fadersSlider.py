@@ -22,13 +22,19 @@ class FadersSlider(QSlider):
         self.setTickInterval(21)
         self.setTickPosition(QSlider.TickPosition.TicksRight)
         self.valueChanged.connect(self.slider)
-    
+
+        self.osc["serverMidi"].callback(self.callbackFunction)
+
     def slider(self):
         try:
             asyncio.run(main(self.osc, self.commands[self.index], self))
         except Exception:
             # Fail Quietly
             print(traceback.format_exc())
+
+    def callbackFunction(self, message):
+        if message.channel == 4 and message.control == 13 + self.index:
+            self.setValue(message.value)
 
 async def main(osc, commands, fader):
     # Command should be in following format:
