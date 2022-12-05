@@ -1,11 +1,9 @@
 import os.path
 import sys
 import traceback
-
-import mido
 sys.path.insert(0, '../')
 
-import asyncio
+import mido
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
@@ -24,10 +22,10 @@ class LoadButton(QPushButton):
     def clicked(self):
         if (self.filename.currentText() != "" and os.path.exists("data/" + self.filename.currentText())):
             try:
-                asyncio.run(main(
+                main(
                     self.osc,
                     self.filename.currentText()
-                ))
+                )
 
                 self.person.setCurrentText(self.filename.currentText().split(".")[0].split("_")[2])
                 
@@ -49,18 +47,18 @@ class LoadButton(QPushButton):
         
         self.setDown(False)
         
-async def main(osc, filename):
-    await runSingle(osc, filename, True)
+def main(osc, filename):
+    runSingle(osc, filename, True)
 
-async def runSingle(osc, filename, iemCopy):
+def runSingle(osc, filename, iemCopy):
     with open("data/" + filename) as scnFile:
         scnFile.readline() # Skip Header Line
         while (line := scnFile.readline().strip()):
-            await fireLine(osc, line, iemCopy)
+            fireLine(osc, line, iemCopy)
 
     print("Loaded " + filename + "\n")
 
-async def fireLine(osc, line, iemCopy):
+def fireLine(osc, line, iemCopy):
     components = line.split()
 
     if components[0] == "midi":
@@ -87,14 +85,14 @@ async def fireLine(osc, line, iemCopy):
             arg = float(arg)
         elif (components[3] == "delta"):
             delta = float(arg)
-            await osc["fohClient"].send_message(components[1], None)
+            osc["fohClient"].send_message(components[1], None)
             osc["server"].handle_request()
             curVal = osc["server"].lastVal
             arg = curVal + delta
 
         if (components[0] == "foh"):
-            await osc["fohClient"].send_message(components[1], arg)
+            osc["fohClient"].send_message(components[1], arg)
             if iemCopy: # Whether not to send setting to IEM mixer as well
-                await osc["iemClient"].send_message(components[1], arg)
+                osc["iemClient"].send_message(components[1], arg)
         elif (components[0] == "iem"):
-            await osc["iemClient"].send_message(components[1], arg)
+            osc["iemClient"].send_message(components[1], arg)

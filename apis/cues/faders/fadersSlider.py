@@ -3,7 +3,6 @@ import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.loadSingle import fireLine
-import asyncio
 from PyQt6.QtWidgets import (
     QSlider,
 )
@@ -27,7 +26,7 @@ class FadersSlider(QSlider):
 
     def slider(self):
         try:
-            asyncio.run(main(self.osc, self.commands[self.index], self))
+            main(self.osc, self.commands[self.index], self)
         except Exception:
             # Fail Quietly
             print(traceback.format_exc())
@@ -36,7 +35,7 @@ class FadersSlider(QSlider):
         if message.channel == 4 and message.control == 13 + self.index:
             self.setValue(message.value)
 
-async def main(osc, commands, fader):
+def main(osc, commands, fader):
     # Command should be in following format:
     # [foh|iem] [osc command] [min float] [max float]
     for command in commands:
@@ -46,4 +45,4 @@ async def main(osc, commands, fader):
         max = float(components[3])
         arg = (faderPosition * (max - min)) + min
         line = components[0] + " " + components[1] + " " + str(arg) + " float"
-        await fireLine(osc, line, False)
+        fireLine(osc, line, False)

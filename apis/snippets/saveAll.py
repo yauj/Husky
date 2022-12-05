@@ -3,7 +3,6 @@ import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.saveSingle import runSingle
-import asyncio
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
@@ -20,11 +19,11 @@ class SaveAllButton(QPushButton):
     
     def clicked(self):
         try:
-            asyncio.run(main(
+            main(
                 self.osc,
                 self.personNames,
                 self.config
-            ))
+            )
             
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Save All")
@@ -39,7 +38,7 @@ class SaveAllButton(QPushButton):
 
         self.setDown(False)
         
-async def main(osc, personNames, config):
+def main(osc, personNames, config):
     for chName in personNames:
         if (personNames[chName].currentText() != ""):
-            await runSingle(osc, chName + "_" + personNames[chName].currentText(), config[chName])
+            runSingle(osc, chName + "_" + personNames[chName].currentText(), config[chName])

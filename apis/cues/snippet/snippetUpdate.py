@@ -3,7 +3,6 @@ import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.saveSingle import getSetting
-import asyncio
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
@@ -20,11 +19,11 @@ class SnippetUpdateButton(QPushButton):
         curSettings = self.textbox.toPlainText().splitlines()
 
         try:
-            asyncio.run(main(
+            main(
                 self.osc,
                 curSettings,
                 self.textbox
-            ))
+            )
 
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Update Snippet")
@@ -43,7 +42,7 @@ class SnippetUpdateButton(QPushButton):
 
         self.setDown(False)
 
-async def main(osc, curSettings, textbox):
+def main(osc, curSettings, textbox):
     textbox.clear()
     for line in curSettings:
         components = line.strip().split()
@@ -52,6 +51,6 @@ async def main(osc, curSettings, textbox):
             textbox.append(line.strip())
         else:
             if (components[0] == "foh"):
-                textbox.append(await getSetting("foh", osc["fohClient"], osc["server"], components[1]))
+                textbox.append(getSetting("foh", osc["fohClient"], osc["server"], components[1]))
             elif (components[0] == "iem"):
-                textbox.append(await getSetting("iem", osc["iemClient"], osc["server"], components[1]))
+                textbox.append(getSetting("iem", osc["iemClient"], osc["server"], components[1]))

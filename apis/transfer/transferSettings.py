@@ -2,7 +2,6 @@ import sys
 import traceback
 sys.path.insert(0, '../')
 
-import asyncio
 from util.constants import COPY_CHANNELS, LINK_CHANNELS, SETTINGS
 from PyQt6.QtWidgets import (
     QMessageBox,
@@ -18,9 +17,9 @@ class TransferButton(QPushButton):
     
     def clicked(self):
         try:
-            asyncio.run(main(
+            main(
                 self.osc
-            ))
+            )
             
             dlg = QMessageBox(self)
             dlg.setWindowTitle("FOH->IEM")
@@ -35,21 +34,21 @@ class TransferButton(QPushButton):
 
         self.setDown(False)
 
-async def main(osc):
+def main(osc):
     # Copy Channel Links
     for chlink in LINK_CHANNELS:
-        await transferSetting(osc, "/config/chlink/" + chlink)
+        transferSetting(osc, "/config/chlink/" + chlink)
 
     # COPY_CHANNELS excludes FOH talkback channel
     for channel in COPY_CHANNELS:
         for category in SETTINGS:
             for param in SETTINGS[category]:
-                await transferSetting(osc, channel + param)
+                transferSetting(osc, channel + param)
     
     print("Settings Transferred")
 
-async def transferSetting(osc, command):
-    await osc["fohClient"].send_message(command, None)
+def transferSetting(osc, command):
+    osc["fohClient"].send_message(command, None)
     osc["server"].handle_request()
-    await osc["iemClient"].send_message(command, osc["server"].lastVal)
+    osc["iemClient"].send_message(command, osc["server"].lastVal)
 

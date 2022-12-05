@@ -3,7 +3,6 @@ import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.saveSingle import getSetting
-import asyncio
 from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -79,7 +78,7 @@ class UpdateButton(QPushButton):
     
     def clicked(self):
         try:
-            asyncio.run(self.main())
+            self.main()
         except Exception as ex:
             print(traceback.format_exc())
             dlg = QMessageBox(self)
@@ -89,12 +88,12 @@ class UpdateButton(QPushButton):
 
         self.setDown(False)
 
-    async def main(self):
+    def main(self):
         commands = []
         for line in self.textbox.toPlainText().splitlines():
             if line.strip() != "":
                 components = line.split()
-                newLine = await getSetting(components[0], self.osc[components[0] + "Client"], self.osc["server"], components[1])
+                newLine = getSetting(components[0], self.osc[components[0] + "Client"], self.osc["server"], components[1])
                 newComponents = newLine.split()
                 if self.name == "Minimum":
                     commands.append(components[0] + " " + components[1] + " " + newComponents[2] + " " + components[3])

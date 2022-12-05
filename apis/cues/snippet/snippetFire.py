@@ -3,7 +3,6 @@ import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.loadSingle import fireLine
-import asyncio
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
@@ -18,10 +17,10 @@ class SnippetFireButton(QPushButton):
     
     def clicked(self):
         try:
-            asyncio.run(main(
+            main(
                 self.osc,
                 self.textbox
-            ))
+            )
 
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Fire Snippet")
@@ -36,7 +35,7 @@ class SnippetFireButton(QPushButton):
 
         self.setDown(False)
 
-async def main(osc, textbox):
+def main(osc, textbox):
     for line in textbox.toPlainText().splitlines():
         if line.strip() != "":
-            await fireLine(osc, line, False)
+            fireLine(osc, line, False)

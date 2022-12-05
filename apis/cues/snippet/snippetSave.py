@@ -4,7 +4,6 @@ import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.saveSingle import saveChannels, saveIEMBus, saveSetting
-import asyncio
 from datetime import date, timedelta
 from PyQt6.QtWidgets import (
     QFileDialog,
@@ -34,12 +33,12 @@ class SnippetSaveButton(QPushButton):
         dlg.setDefaultSuffix(".osc") 
         if dlg.exec():
             try:
-                asyncio.run(main(
+                main(
                     self.osc,
                     self.config,
                     self.options,
                     dlg.selectedFiles()[0]
-                ))
+                )
 
                 if self.page.currentText() != "" and self.cue.currentText() != "":
                     self.widgets["cue"][self.page.currentText()][self.cue.currentText()].setText(dlg.selectedFiles()[0].split("/")[-1])
@@ -54,16 +53,16 @@ class SnippetSaveButton(QPushButton):
 
         self.setDown(False)
         
-async def main(osc, config, options, filename):
+def main(osc, config, options, filename):
     with open(filename, "w") as file:
         for chName in options["personal"]:
             if "channels" in options["personal"][chName] and options["personal"][chName]["channels"].isChecked():
-                await saveChannels(osc, file, config["personal"][chName]["channels"])
+                saveChannels(osc, file, config["personal"][chName]["channels"])
 
             if "iem_bus" in options["personal"][chName] and options["personal"][chName]["iem_bus"].isChecked():
-                await saveIEMBus(osc, file, config["personal"][chName]["iem_bus"])
+                saveIEMBus(osc, file, config["personal"][chName]["iem_bus"])
 
         for name in options["settings"]:
             if options["settings"][name].isChecked():
                 for setting in config["settings"][name]:
-                    await saveSetting(file, "foh", osc["fohClient"], osc["server"], setting)
+                    saveSetting(file, "foh", osc["fohClient"], osc["server"], setting)

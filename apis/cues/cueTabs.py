@@ -3,7 +3,6 @@ import traceback
 sys.path.insert(0, '../')
 
 from apis.cues.cueFire import CueFireButton, main
-import asyncio
 from util.constants import KEYS
 from PyQt6.QtGui import (
     QAction,
@@ -83,12 +82,12 @@ class CueTab(QTabWidget):
             if message.control >= 0 and message.control < 10:
                 index = (self.currentIndex() * 10) + message.control
                 try:
-                    asyncio.run(main(
+                    main(
                         self.osc,
                         self.prevIndex,
                         index,
                         self.cues
-                    ))
+                    )
                     
                     print("Cue " + TAB_LAYER_NAMES[self.currentIndex()] + str(message.control + 1) + " Fired")
                 except Exception:

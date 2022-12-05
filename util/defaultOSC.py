@@ -2,23 +2,25 @@ import socket
 import sys
 sys.path.insert(0, '../')
 
-import asyncio
+from itertools import islice
+from math import ceil
 import mido
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer
 import threading
-from time import time
+from time import time, sleep
 
 MIDI_SERVER_NAME = "X32Helper"
+NUM_THREADS = 10
 
-# Simple Client that has async logic, since testing client has async logic
+# Simple Client that has logic, since testing client has logic
 class SimpleClient(SimpleUDPClient):
-    def __init__(self, name, ipAddress, test = False):
+    def __init__(self, name, ipAddress, parent = True):
         super().__init__(ipAddress, 10023)
         self.name = name
         self.ipAddress = ipAddress
-        self.test = test
+        self.parent = parent
         self.connected = False
 
     def connect(self, server):
@@ -26,15 +28,15 @@ class SimpleClient(SimpleUDPClient):
             self.connected = True # Need this to send message
             self._sock = server.socket
             if self.ipAddress == "0.0.0.0":
-                asyncio.run(self.send_message("/info", server.port))
+                self.send_message("/info", server.port)
             else:
-                asyncio.run(self.send_message("/info", None))
+                self.send_message("/info", None)
             self.connected = server.handle_request_with_timeout()
         except Exception as ex:
             print(ex)
             self.connected = False
 
-        if not self.test:
+        if self.parent:
             if self.connected:
                 print("Connected to " + self.name.upper() + " at " + self.ipAddress)
             else:
@@ -42,15 +44,46 @@ class SimpleClient(SimpleUDPClient):
 
         return self.connected
 
-    async def send_message(self, address, value):
+    def send_message(self, address, value):
         if self.connected:
             super().send_message(address, value)
         else:
             raise SystemError("Not Connected to " + self.name.upper() + " Client")
+    
+    # Send a bunch of messages. Useful for safely sending messages to 
+    def bulk_send_messages(self, addresses):
+        if self.connected:
+            itr = iter(addresses)
+            size = ceil(len(addresses) / NUM_THREADS)
+            threads = []
+            for index in range(0, NUM_THREADS):
+                slice = {}
+                for address in islice(itr, size):
+                    slice[address] = addresses[address]
+
+                thread = threading.Thread(target = self.child, args = (index, slice))
+                thread.start()
+                threads.append(thread)
+
+            for thread in threads:
+                thread.join()
+        else:
+            raise SystemError("Not Connected to " + self.name.upper() + " Client")
+    
+    def child(self, index, addresses):
+        with RetryingServer(10000 + index) as server:
+            client = SimpleClient(self.name, self.ipAddress, False)
+            client.connect(server)
+            if client.connected:
+                for address in addresses:
+                    client.send_message(address, addresses[address])
+                    sleep(0.1)
+            else:
+                print("ERROR")
 
 # Server which retries attempting to get if /xinfo message passed back 
 class RetryingServer(BlockingOSCUDPServer):
-    def __init__(self, port = 10020):
+    def __init__(self, port = 10000 + NUM_THREADS):
         self.port = port
         self.retry = True
         self.lastVal = None
@@ -95,9 +128,6 @@ class RetryingServer(BlockingOSCUDPServer):
         return not self.retry
 
 class AvailableIPs:
-    def __init__(self):
-        self.numThreads = 20
-
     def get(self):
         self.validIPs = []
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
@@ -109,7 +139,7 @@ class AvailableIPs:
             self.prefix = components[0] + "." + components[1] + "." + components[2] + "."
 
             threads = []
-            for index in range(0, self.numThreads):
+            for index in range(0, NUM_THREADS):
                 thread = threading.Thread(target = self.child, args = (index,))
                 thread.start()
                 threads.append(thread)
@@ -121,18 +151,15 @@ class AvailableIPs:
 
     
     def child(self, index):
-        server = RetryingServer(10000 + index)
-
-        while index <= 255:
-            ip = self.prefix + str(index)
-            if ip == self.thisIp:
-                ip = "0.0.0.0"
-            client = SimpleClient("Test", ip, True)
-            client.connect(server)
-            if client.connected:
-                self.validIPs.append(ip)
-
-            index = index + self.numThreads
+        with RetryingServer(10000 + index) as server:
+            for i in range(index, 256, NUM_THREADS):
+                ip = self.prefix + str(i)
+                if ip == self.thisIp:
+                    ip = "0.0.0.0"
+                client = SimpleClient("Test", ip, False)
+                client.connect(server)
+                if client.connected:
+                    self.validIPs.append(ip)
 
 # MIDI Client
 class MIDIClient(mido.Backend):

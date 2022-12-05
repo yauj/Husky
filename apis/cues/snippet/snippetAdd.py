@@ -3,7 +3,6 @@ import traceback
 sys.path.insert(0, '../')
 
 from apis.snippets.saveSingle import getSetting
-import asyncio
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -186,7 +185,7 @@ class AddFOHButton(QPushButton):
     
     def clicked(self):
         try:
-            asyncio.run(self.main())
+            self.main()
             
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Add")
@@ -201,14 +200,14 @@ class AddFOHButton(QPushButton):
 
         self.setDown(False)
 
-    async def main(self):
+    def main(self):
         for category in self.settings:
             if self.settings[category].isChecked():
                 for param in SETTINGS[category]:
-                    self.textbox.append(await getSetting("foh", self.osc["fohClient"], self.osc["server"], self.channel.currentText() + param))
+                    self.textbox.append(getSetting("foh", self.osc["fohClient"], self.osc["server"], self.channel.currentText() + param))
 
         if self.fader.isChecked():
-            self.textbox.append(await getSetting("foh", self.osc["fohClient"], self.osc["server"], self.channel.currentText() + "/mix/fader"))
+            self.textbox.append(getSetting("foh", self.osc["fohClient"], self.osc["server"], self.channel.currentText() + "/mix/fader"))
 
 class AddIEMButton(QPushButton):
     def __init__(self, osc, textbox, bus):
@@ -220,7 +219,7 @@ class AddIEMButton(QPushButton):
     
     def clicked(self):
         try:
-            asyncio.run(self.main())
+            self.main()
             
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Add")
@@ -235,15 +234,15 @@ class AddIEMButton(QPushButton):
 
         self.setDown(False)
 
-    async def main(self):
+    def main(self):
         for channel in ALL_CHANNELS:
             prefix = channel + "/mix/" + self.bus.currentText()
 
-            self.textbox.append(await getSetting("iem", self.osc["iemClient"], self.osc["server"], prefix + "/on"))
-            self.textbox.append(await getSetting("iem", self.osc["iemClient"], self.osc["server"], prefix + "/level"))
+            self.textbox.append(getSetting("iem", self.osc["iemClient"], self.osc["server"], prefix + "/on"))
+            self.textbox.append(getSetting("iem", self.osc["iemClient"], self.osc["server"], prefix + "/level"))
 
             if self.bus.currentText() in ODD_BUSES:
-                self.textbox.append(await getSetting("iem", self.osc["iemClient"], self.osc["server"], prefix + "/pan"))
+                self.textbox.append(getSetting("iem", self.osc["iemClient"], self.osc["server"], prefix + "/pan"))
 
 class AddMIDIButton(QPushButton):
     def __init__(self, textbox, type, channel, control, value):

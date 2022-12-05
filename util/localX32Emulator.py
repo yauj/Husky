@@ -1,10 +1,11 @@
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import ThreadingOSCUDPServer
 from pythonosc.udp_client import SimpleUDPClient
+from defaultOSC import NUM_THREADS
 
 class X32Emulator():
     def __init__(self):
-        self.client = SimpleUDPClient("0.0.0.0", 10020)
+        self.client = SimpleUDPClient("0.0.0.0", 10000 + NUM_THREADS)
         dispatcher = Dispatcher()
         dispatcher.set_default_handler(self.loopbackHandler)
         self.server = ThreadingOSCUDPServer(("0.0.0.0", 10023), dispatcher)
