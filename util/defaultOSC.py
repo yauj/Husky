@@ -1,4 +1,3 @@
-import os
 import socket
 import sys
 sys.path.insert(0, '../')
@@ -8,6 +7,7 @@ import mido
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer
+import threading
 from time import time
 
 MIDI_SERVER_NAME = "X32Helper"
@@ -25,7 +25,10 @@ class SimpleClient(SimpleUDPClient):
         try:
             self.connected = True # Need this to send message
             self._sock = server.socket
-            asyncio.run(self.send_message("/info", None))
+            if self.ipAddress == "0.0.0.0":
+                asyncio.run(self.send_message("/info", server.port))
+            else:
+                asyncio.run(self.send_message("/info", None))
             self.connected = server.handle_request_with_timeout()
         except Exception as ex:
             print(ex)
@@ -47,73 +50,89 @@ class SimpleClient(SimpleUDPClient):
 
 # Server which retries attempting to get if /xinfo message passed back 
 class RetryingServer(BlockingOSCUDPServer):
-    @property
-    def lastVal(self):
-        return self._lastVal # Previous args[0]
+    def __init__(self, port = 10020):
+        self.port = port
+        self.retry = True
+        self.lastVal = None
 
-    def __init__(self):
-        self._retry = True
-        self._lastVal = None
-
-        def printHandler(address, *args):
-            print(f"{address}: {args}")
-            self._retry = False
-
-        def singleArgHandler(address, *args):
-            self._lastVal = args[0]
-            self._retry = False
-
-        def retryHandler(address, *args):
-            self._retry = True
-        
         dispatcher = Dispatcher()
-        dispatcher.map("/info", printHandler)
-        dispatcher.map("/xinfo", retryHandler)
-        dispatcher.set_default_handler(singleArgHandler)
+        dispatcher.map("/info", self.printHandler)
+        dispatcher.map("/xinfo", self.retryHandler)
+        dispatcher.set_default_handler(self.singleArgHandler)
 
-        super().__init__(("0.0.0.0", 10024), dispatcher)
+        super().__init__(("0.0.0.0", port), dispatcher)
+        
+        self.timeout = 0.1 # Timeout calls after 0.1 seconds
+    
+    def printHandler(self, address, *args):
+        print(f"{address}: {args}")
+        self.retry = False
 
-        self.timeout = 0.03 # Timeout calls after 0.03 seconds
+    def singleArgHandler(self, address, *args):
+        self.lastVal = args[0]
+        self.retry = False
+
+    def retryHandler(self, address, *args):
+        self.retry = True
 
     # Throws Exception if timed out
     def handle_request(self):
         startTime = time()
-        self._retry = True
-        while (self._retry and time() - startTime < self.timeout):
+        self.retry = True
+        while (self.retry and time() - startTime < self.timeout):
             super().handle_request()
-        
-        if self._retry:
+
+        if self.retry:
             raise TimeoutError("Timed out waiting for response. Please check if command is valid.")
     
     # Returns whether or not command was successful
     def handle_request_with_timeout(self):
         startTime = time()
-        self._retry = True
-        while (self._retry and time() - startTime < self.timeout):
+        self.retry = True
+        while (self.retry and time() - startTime < self.timeout):
             super().handle_request()
 
-        return not self._retry
+        return not self.retry
 
-    def getAvailableIPs(self):
+class AvailableIPs:
+    def __init__(self):
+        self.numThreads = 20
+
+    def get(self):
+        self.validIPs = []
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             s.settimeout(0.1)
             s.connect(("8.8.8.8", 80))
-            thisIp = s.getsockname()[0]
+            self.thisIp = s.getsockname()[0]
 
-            components = thisIp.split(".")
-            prefix = components[0] + "." + components[1] + "." + components[2] + "."
+            components = self.thisIp.split(".")
+            self.prefix = components[0] + "." + components[1] + "." + components[2] + "."
+
+            threads = []
+            for index in range(0, self.numThreads):
+                thread = threading.Thread(target = self.child, args = (index,))
+                thread.start()
+                threads.append(thread)
+
+            for thread in threads:
+                thread.join()
             
-            validIps = []
-            for i in range(2, 256):
-                ip = prefix + str(i)
-                if ip == thisIp:
-                    ip = "0.0.0.0"
-                client = SimpleClient("Test", ip, True)
-                client.connect(self)
-                if client.connected:
-                    validIps.append(ip)
+            return self.validIPs
 
-            return validIps
+    
+    def child(self, index):
+        server = RetryingServer(10000 + index)
+
+        while index <= 255:
+            ip = self.prefix + str(index)
+            if ip == self.thisIp:
+                ip = "0.0.0.0"
+            client = SimpleClient("Test", ip, True)
+            client.connect(server)
+            if client.connected:
+                self.validIPs.append(ip)
+
+            index = index + self.numThreads
 
 # MIDI Client
 class MIDIClient(mido.Backend):

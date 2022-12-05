@@ -23,7 +23,7 @@ from apis.snippets.saveSingle import SaveButton
 from apis.tracks.tracksSlider import TracksSlider
 from apis.transfer.transferSettings import TransferButton
 from config import config
-from util.defaultOSC import MIDIVirtualPort, RetryingServer
+from util.defaultOSC import AvailableIPs, MIDIVirtualPort, RetryingServer
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -66,7 +66,7 @@ class MainWindow(QMainWindow):
     def connectionLayer(self):
         vlayout = QVBoxLayout()
 
-        validIps = self.osc["server"].getAvailableIPs()
+        validIPs = AvailableIPs().get()
 
         for mixerName in config["osc"]:
             hlayout = QHBoxLayout()
@@ -77,7 +77,7 @@ class MainWindow(QMainWindow):
 
             address = QComboBox()
             address.setEditable(True)
-            address.addItems(validIps)
+            address.addItems(validIPs)
             address.setCurrentText(config["osc"][mixerName])
             address.setFixedWidth(300)
             hlayout.addWidget(address)

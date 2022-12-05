@@ -1,25 +1,28 @@
 from pythonosc.dispatcher import Dispatcher
-from pythonosc.osc_server import BlockingOSCUDPServer
+from pythonosc.osc_server import ThreadingOSCUDPServer
 from pythonosc.udp_client import SimpleUDPClient
 
 class X32Emulator():
     def __init__(self):
-        self.client = SimpleUDPClient("0.0.0.0", 10024)
+        self.client = SimpleUDPClient("0.0.0.0", 10020)
         dispatcher = Dispatcher()
         dispatcher.set_default_handler(self.loopbackHandler)
-        self.server = BlockingOSCUDPServer(("0.0.0.0", 10023), dispatcher)
+        self.server = ThreadingOSCUDPServer(("0.0.0.0", 10023), dispatcher)
         print("Server Started for port " + str(self.server.server_address))
 
     def start(self):
         try:
-            while True:
-                self.server.handle_request()
+            self.server.serve_forever()
         finally:
             print("Closed Server")
         
     def loopbackHandler(self, address, *args):
         if address == "/info":
-            self.client.send_message("/info", ('V0.00', 'osc-server', 'LOCAL', '0.00-0'))
+            if args:
+                client = SimpleUDPClient("0.0.0.0", args[0])
+                client.send_message("/info", ('V0.00', 'osc-server', 'LOCAL', '0.00-0'))
+            else:
+                self.client.send_message("/info", ('V0.00', 'osc-server', 'LOCAL', '0.00-0'))
         elif args:
             print(f"{address}: {args}")
         else:
