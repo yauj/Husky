@@ -2,7 +2,7 @@ import sys
 import traceback
 sys.path.insert(0, '../')
 
-from apis.snippets.loadSingle import fireLine
+from apis.snippets.loadSingle import fireLines
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
@@ -36,6 +36,9 @@ class SnippetFireButton(QPushButton):
         self.setDown(False)
 
 def main(osc, textbox):
+    lines = []
     for line in textbox.toPlainText().splitlines():
         if line.strip() != "":
-            fireLine(osc, line, False)
+            lines.append(line)
+
+    fireLines(osc, lines, False)

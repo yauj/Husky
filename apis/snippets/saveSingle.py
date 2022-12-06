@@ -67,32 +67,52 @@ def runSingle(osc, label, config):
         raise ex
 
 def saveChannels(osc, file, channels):
+    settings = {}
     for channel in channels:
         for category in SETTINGS:
             for param in SETTINGS[category]:
-                saveSetting(file, "foh", osc["fohClient"], osc["server"], "/ch/" + channel + param)
+                settings["/ch/" + channel + param] = None
+
+    saveSettingsToFile(osc, file, "foh", settings)    
 
 def saveIEMBus(osc, file, bus):
+    settings = {}
     for channel in ALL_CHANNELS:
         prefix = channel + "/mix/" + bus
 
-        saveSetting(file, "iem", osc["iemClient"], osc["server"], prefix + "/on")
-        saveSetting(file, "iem", osc["iemClient"], osc["server"], prefix + "/level")
+        settings[prefix + "/on"] = None
+        settings[prefix + "/level"] = None
 
         if bus in ODD_BUSES:
-            saveSetting(file, "iem", osc["iemClient"], osc["server"], prefix + "/pan")
+            settings[prefix + "/pan"] = None
+    
+    saveSettingsToFile(osc, file, "iem", settings)
 
-def saveSetting(file, prefix, client, server, setting):
-    line = getSetting(prefix, client, server, setting)
-    file.write("\n" + line)
+def saveSettingsToFile(osc, file, prefix, settings):
+    lines = getSettings(osc, prefix, settings)
 
-def getSetting(prefix, client, server, setting):
-    client.send_message(setting, None)
-    server.handle_request()
-    type = "str"
-    if (isinstance(server.lastVal, int)):
-        type = "int"
-    elif (isinstance(server.lastVal, float)):
-        type = "float"
+    for line in lines:
+        file.write("\n" + line)
 
-    return prefix + " " + setting + " " + str(server.lastVal) + " " + type
+def appendSettingsToTextbox(osc, textbox, prefix, settings):
+    lines = getSettings(osc, prefix, settings)
+
+    for line in lines:
+        textbox.append(line)
+
+def getSettings(osc, prefix, settings):
+    values = osc[prefix + "Client"].bulk_send_messages(settings)
+    
+    lines = []
+    for setting in values:
+        value = values[setting]
+        type = "str"
+        if (isinstance(value, int)):
+            type = "int"
+        elif (isinstance(value, float)):
+            type = "float"
+
+        lines.append(prefix + " " + setting + " " + str(value) + " " + type)
+    
+    lines.sort()
+    return lines

@@ -2,7 +2,6 @@ import sys
 import traceback
 sys.path.insert(0, '../')
 
-from apis.snippets.loadSingle import fireLine
 from PyQt6.QtWidgets import (
     QSlider,
 )
@@ -44,5 +43,8 @@ def main(osc, commands, fader):
         min = float(components[2])
         max = float(components[3])
         arg = (faderPosition * (max - min)) + min
-        line = components[0] + " " + components[1] + " " + str(arg) + " float"
-        fireLine(osc, line, False)
+        
+        if components[0] == "foh":
+            osc["fohClient"].send_message(components[1], arg)
+        elif components[0] == "iem":
+            osc["iemClient"].send_message(components[1], arg)

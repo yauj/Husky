@@ -2,7 +2,7 @@ import sys
 import traceback
 sys.path.insert(0, '../')
 
-from apis.snippets.saveSingle import getSetting
+from apis.snippets.saveSingle import appendSettingsToTextbox
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
@@ -43,14 +43,21 @@ class SnippetUpdateButton(QPushButton):
         self.setDown(False)
 
 def main(osc, curSettings, textbox):
-    textbox.clear()
+    fohSettings = {}
+    iemSettings = {}
+    otherLines = []
     for line in curSettings:
         components = line.strip().split()
 
-        if (components[3] == "delta"):
-            textbox.append(line.strip())
+        if components[0] == "foh":
+            fohSettings[components[1]] = None
+        elif components[0] == "iem":
+            iemSettings[components[1]] = None
         else:
-            if (components[0] == "foh"):
-                textbox.append(getSetting("foh", osc["fohClient"], osc["server"], components[1]))
-            elif (components[0] == "iem"):
-                textbox.append(getSetting("iem", osc["iemClient"], osc["server"], components[1]))
+            otherLines.append(line)
+
+    textbox.clear()
+    appendSettingsToTextbox(osc, textbox, "foh", fohSettings)
+    appendSettingsToTextbox(osc, textbox, "iem", iemSettings)
+    for line in otherLines:
+        textbox.append(line)

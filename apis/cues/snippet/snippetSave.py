@@ -3,7 +3,7 @@ import sys
 import traceback
 sys.path.insert(0, '../')
 
-from apis.snippets.saveSingle import saveChannels, saveIEMBus, saveSetting
+from apis.snippets.saveSingle import saveChannels, saveIEMBus, saveSettingsToFile
 from datetime import date, timedelta
 from PyQt6.QtWidgets import (
     QFileDialog,
@@ -64,5 +64,8 @@ def main(osc, config, options, filename):
 
         for name in options["settings"]:
             if options["settings"][name].isChecked():
+                settings = {}
                 for setting in config["settings"][name]:
-                    saveSetting(file, "foh", osc["fohClient"], osc["server"], setting)
+                    settings[setting] = None
+                
+                saveSettingsToFile(osc, file, "foh", settings)

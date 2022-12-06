@@ -184,14 +184,16 @@ def main(osc, prevIndex, index, cues):
             elif cues[index]["lead"].currentText() == "4":
                 leadVox = "08"
                 bkgdVox.remove(leadVox)
-                
-            osc["fohClient"].send_message("/ch/" + leadVox + "/mix/01/on", 1)
-            osc["fohClient"].send_message("/ch/" + leadVox + "/mix/02/on", 1)
-            osc["fohClient"].send_message("/ch/" + leadVox + "/mix/03/on", 0)
+            
+            settings = {}
+            settings["/ch/" + leadVox + "/mix/01/on"] = 1
+            settings["/ch/" + leadVox + "/mix/02/on"] = 1
+            settings["/ch/" + leadVox + "/mix/03/on"] = 0
             for ch in bkgdVox:
-                osc["fohClient"].send_message("/ch/" + ch + "/mix/01/on", 0)
-                osc["fohClient"].send_message("/ch/" + ch + "/mix/02/on", 0)
-                osc["fohClient"].send_message("/ch/" + ch + "/mix/03/on", 1)
+                settings["/ch/" + ch + "/mix/01/on"] = 0
+                settings["/ch/" + ch + "/mix/02/on"] = 0
+                settings["/ch/" + ch + "/mix/03/on"] = 1
+            osc["fohClient"].bulk_send_messages(settings)
         
         if cues[index]["snippet"].text() == "RESET":
             reset(osc)

@@ -35,20 +35,21 @@ class TransferButton(QPushButton):
         self.setDown(False)
 
 def main(osc):
+    settings = {}
+
     # Copy Channel Links
     for chlink in LINK_CHANNELS:
-        transferSetting(osc, "/config/chlink/" + chlink)
+        settings["/config/chlink/" + chlink] = None
 
     # COPY_CHANNELS excludes FOH talkback channel
     for channel in COPY_CHANNELS:
         for category in SETTINGS:
             for param in SETTINGS[category]:
-                transferSetting(osc, channel + param)
+                settings[channel + param] = None
+    
+    print(settings)
+    values = osc["fohClient"].bulk_send_messages(settings)
+    print(values)
+    osc["iemClient"].bulk_send_messages(values)
     
     print("Settings Transferred")
-
-def transferSetting(osc, command):
-    osc["fohClient"].send_message(command, None)
-    osc["server"].handle_request()
-    osc["iemClient"].send_message(command, osc["server"].lastVal)
-

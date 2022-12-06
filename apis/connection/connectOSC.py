@@ -33,7 +33,7 @@ class ConnectOscButton(QPushButton):
 
     def init(self):
         self.osc[self.mixerName + "Client"] = SimpleClient(self.mixerName, self.address.currentText())
-        if (self.osc[self.mixerName + "Client"].connect(self.osc["server"])):
+        if (self.osc[self.mixerName + "Client"].connect()):
             self.status.setText("Connected!")
             self.status.setStyleSheet("color: green")
             return True

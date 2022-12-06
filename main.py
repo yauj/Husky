@@ -43,9 +43,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.widgets = {"personal": {}, "cue": {}}
-        self.osc = {
-            "server": RetryingServer()
-        }
+        self.osc = {}
         self.virtualPort = MIDIVirtualPort()
 
         self.setWindowTitle("X32 Helper")

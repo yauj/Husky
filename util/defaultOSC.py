@@ -23,29 +23,30 @@ class SimpleClient(SimpleUDPClient):
         self.parent = parent
         self.connected = False
 
-    def connect(self, server):
+    # Only parent needs to connect
+    def connect(self):
+        with RetryingServer() as server:
+            self.connected = self.isConnected(server)
+
+        if self.connected:
+            print("Connected to " + self.name.upper() + " at " + self.ipAddress)
+        else:
+            print("Failed to connect to " + self.name.upper() + " at " + self.ipAddress)
+
+        return self.connected
+    
+    def isConnected(self, server):
         try:
             self.connected = True # Need this to send message
             self._sock = server.socket
-            if self.ipAddress == "0.0.0.0":
-                self.send_message("/info", server.port)
-            else:
-                self.send_message("/info", None)
-            self.connected = server.handle_request_with_timeout()
+            self.send_message("/info", None)
+            return server.handle_request_with_timeout()
         except Exception as ex:
             print(ex)
-            self.connected = False
-
-        if self.parent:
-            if self.connected:
-                print("Connected to " + self.name.upper() + " at " + self.ipAddress)
-            else:
-                print("Failed to connect to " + self.name.upper() + " at " + self.ipAddress)
-
-        return self.connected
+            return False
 
     def send_message(self, address, value):
-        if self.connected:
+        if self.connected or not self.parent:
             super().send_message(address, value)
         else:
             raise SystemError("Not Connected to " + self.name.upper() + " Client")
@@ -77,17 +78,13 @@ class SimpleClient(SimpleUDPClient):
     def child(self, index, addresses, results):
         with RetryingServer(10000 + index) as server:
             client = SimpleClient(self.name, self.ipAddress, False)
-            client.connect(server)
-            if client.connected:
-                for address in addresses:
-                    client.send_message(address, addresses[address])
-                    if addresses[address] is None:
-                        server.handle_request()
-                        results[address] = server.lastVal
-                    else:
-                        sleep(0.1) # Need to sleep to ensure that no requests are dropped
-            else:
-                print("ERROR")
+            for address in addresses:
+                client.send_message(address, addresses[address])
+                if addresses[address] is None:
+                    server.handle_request()
+                    results[address] = server.lastVal
+                else:
+                    sleep(0.1) # Need to sleep to ensure that no requests are dropped
 
 # Server which retries attempting to get if /xinfo message passed back 
 class RetryingServer(BlockingOSCUDPServer):
@@ -166,8 +163,7 @@ class AvailableIPs:
                 if ip == self.thisIp:
                     ip = "0.0.0.0"
                 client = SimpleClient("Test", ip, False)
-                client.connect(server)
-                if client.connected:
+                if client.isConnected(server):
                     self.validIPs.append(ip)
 
 # MIDI Client

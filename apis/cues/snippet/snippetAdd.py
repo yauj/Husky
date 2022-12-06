@@ -2,7 +2,7 @@ import sys
 import traceback
 sys.path.insert(0, '../')
 
-from apis.snippets.saveSingle import getSetting
+from apis.snippets.saveSingle import appendSettingsToTextbox
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -201,13 +201,17 @@ class AddFOHButton(QPushButton):
         self.setDown(False)
 
     def main(self):
+        settings = {}
         for category in self.settings:
             if self.settings[category].isChecked():
                 for param in SETTINGS[category]:
-                    self.textbox.append(getSetting("foh", self.osc["fohClient"], self.osc["server"], self.channel.currentText() + param))
+                    settings[self.channel.currentText() + param] = None
 
         if self.fader.isChecked():
-            self.textbox.append(getSetting("foh", self.osc["fohClient"], self.osc["server"], self.channel.currentText() + "/mix/fader"))
+            settings[self.channel.currentText() + "/mix/fader"] = None
+
+        if len(settings) > 0:
+            appendSettingsToTextbox(self.osc, self.textbox, "foh", settings)
 
 class AddIEMButton(QPushButton):
     def __init__(self, osc, textbox, bus):
@@ -235,14 +239,17 @@ class AddIEMButton(QPushButton):
         self.setDown(False)
 
     def main(self):
+        settings = {}
         for channel in ALL_CHANNELS:
             prefix = channel + "/mix/" + self.bus.currentText()
 
-            self.textbox.append(getSetting("iem", self.osc["iemClient"], self.osc["server"], prefix + "/on"))
-            self.textbox.append(getSetting("iem", self.osc["iemClient"], self.osc["server"], prefix + "/level"))
+            settings[prefix + "/on"] = None
+            settings[prefix + "/level"] = None
 
             if self.bus.currentText() in ODD_BUSES:
-                self.textbox.append(getSetting("iem", self.osc["iemClient"], self.osc["server"], prefix + "/pan"))
+                settings[prefix + "/pan"] = None
+        
+        appendSettingsToTextbox(self.osc, self.textbox, "iem", settings)
 
 class AddMIDIButton(QPushButton):
     def __init__(self, textbox, type, channel, control, value):

@@ -2,7 +2,7 @@ import sys
 import traceback
 sys.path.insert(0, '../')
 
-from apis.snippets.saveSingle import getSetting
+from apis.snippets.saveSingle import getSettings
 from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -89,17 +89,32 @@ class UpdateButton(QPushButton):
         self.setDown(False)
 
     def main(self):
-        commands = []
+        lines = []
+        fohSettings = {}
+        iemSettings = {}
         for line in self.textbox.toPlainText().splitlines():
             if line.strip() != "":
                 components = line.split()
-                newLine = getSetting(components[0], self.osc[components[0] + "Client"], self.osc["server"], components[1])
-                newComponents = newLine.split()
-                if self.name == "Minimum":
-                    commands.append(components[0] + " " + components[1] + " " + newComponents[2] + " " + components[3])
-                if self.name == "Maximum":
-                    commands.append(components[0] + " " + components[1] + " " + components[2] + " " + newComponents[2])
-            
+                if components[0] == "foh":
+                    fohSettings[components[1]] = None
+                    lines.append(line)
+                elif components[0] == "iem":
+                    iemSettings[components[1]] = None
+                    lines.append(line)
+                
+        fohValues = self.osc["fohClient"].bulk_send_messages(fohSettings)
+        iemValues = self.osc["iemClient"].bulk_send_messages(iemSettings)
+
         self.textbox.clear()
-        for command in commands:
-            self.textbox.append(command)
+        for line in lines:
+            components = line.split()
+            value = components[2]
+            if components[0] == "foh":
+                value = fohValues[components[1]]
+            elif components[0] == "iem":
+                value = iemValues[components[1]]
+
+            if self.name == "Minimum":
+                self.textbox.append(components[0] + " " + components[1] + " " + str(value) + " " + components[3])
+            if self.name == "Maximum":
+                self.textbox.append(components[0] + " " + components[1] + " " + components[2] + " " + str(value))
