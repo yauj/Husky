@@ -78,6 +78,7 @@ class SimpleClient(SimpleUDPClient):
     def child(self, index, addresses, results):
         with RetryingServer(10000 + index) as server:
             client = SimpleClient(self.name, self.ipAddress, False)
+            client._sock = server.socket
             for address in addresses:
                 client.send_message(address, addresses[address])
                 if addresses[address] is None:
