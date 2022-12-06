@@ -47,9 +47,7 @@ def main(osc):
             for param in SETTINGS[category]:
                 settings[channel + param] = None
     
-    print(settings)
     values = osc["fohClient"].bulk_send_messages(settings)
-    print(values)
     osc["iemClient"].bulk_send_messages(values)
     
     print("Settings Transferred")
