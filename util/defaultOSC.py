@@ -50,9 +50,11 @@ class SimpleClient(SimpleUDPClient):
         else:
             raise SystemError("Not Connected to " + self.name.upper() + " Client")
     
-    # Send a bunch of messages. Useful for safely sending messages to 
+    # Send a bunch of messages. Return results if arg is None.
     def bulk_send_messages(self, addresses):
         if self.connected:
+            results = {}
+
             itr = iter(addresses)
             size = ceil(len(addresses) / NUM_THREADS)
             threads = []
@@ -61,23 +63,29 @@ class SimpleClient(SimpleUDPClient):
                 for address in islice(itr, size):
                     slice[address] = addresses[address]
 
-                thread = threading.Thread(target = self.child, args = (index, slice))
+                thread = threading.Thread(target = self.child, args = (index, slice, results))
                 thread.start()
                 threads.append(thread)
 
             for thread in threads:
                 thread.join()
+            
+            return results
         else:
             raise SystemError("Not Connected to " + self.name.upper() + " Client")
     
-    def child(self, index, addresses):
+    def child(self, index, addresses, results):
         with RetryingServer(10000 + index) as server:
             client = SimpleClient(self.name, self.ipAddress, False)
             client.connect(server)
             if client.connected:
                 for address in addresses:
                     client.send_message(address, addresses[address])
-                    sleep(0.1)
+                    if addresses[address] is None:
+                        server.handle_request()
+                        results[address] = server.lastVal
+                    else:
+                        sleep(0.1) # Need to sleep to ensure that no requests are dropped
             else:
                 print("ERROR")
 
@@ -95,7 +103,7 @@ class RetryingServer(BlockingOSCUDPServer):
 
         super().__init__(("0.0.0.0", port), dispatcher)
         
-        self.timeout = 0.1 # Timeout calls after 0.1 seconds
+        self.timeout = 1 # Timeout calls after 1 second
     
     def printHandler(self, address, *args):
         print(f"{address}: {args}")
@@ -152,6 +160,7 @@ class AvailableIPs:
     
     def child(self, index):
         with RetryingServer(10000 + index) as server:
+            server.timeout = 0.1
             for i in range(index, 256, NUM_THREADS):
                 ip = self.prefix + str(i)
                 if ip == self.thisIp:
