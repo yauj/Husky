@@ -140,23 +140,36 @@ class AvailableIPs:
         self.validIPs = []
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             s.settimeout(0.1)
-            s.connect(("8.8.8.8", 80))
-            self.thisIp = s.getsockname()[0]
+            try:
+                s.connect(("8.8.8.8", 80))
+                self.thisIp = s.getsockname()[0]
+                components = self.thisIp.split(".")
+                self.prefix = components[0] + "." + components[1] + "." + components[2] + "."
 
-            components = self.thisIp.split(".")
-            self.prefix = components[0] + "." + components[1] + "." + components[2] + "."
+                threads = []
+                for index in range(0, NUM_THREADS):
+                    th = threading.Thread(target = self.child, args = (index,))
+                    th.start()
+                    threads.append(th)
 
-            threads = []
-            for index in range(0, NUM_THREADS):
-                th = threading.Thread(target = self.child, args = (index,))
-                th.start()
-                threads.append(th)
-
-            for th in threads:
-                th.join()
-            
-            return self.validIPs
-
+                for th in threads:
+                    th.join()
+                
+                return self.validIPs
+            except OSError as ex:
+                if str(ex) == "[Errno 51] Network is unreachable":
+                    print("Not Connected to Internet. Just checking 0.0.0.0")
+                    with RetryingServer(10000) as server:
+                        server.timeout = 0.1
+                        ip = "0.0.0.0"
+                        client = SimpleClient("Test", ip, False)
+                        client.setConnected(server)
+                        if client.connected:
+                            return [ip]
+                        else:
+                            return []
+                else:
+                    raise ex
     
     def child(self, index):
         with RetryingServer(10000 + index) as server:
