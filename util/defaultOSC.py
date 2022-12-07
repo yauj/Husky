@@ -52,7 +52,7 @@ class SimpleClient(SimpleUDPClient):
             raise SystemError("Not Connected to " + self.name.upper() + " Client")
     
     # Send a bunch of messages. Return results if arg is None.
-    def bulk_send_messages(self, addresses):
+    def bulk_send_messages(self, addresses, progressDialog = None):
         if self.connected:
             results = {}
 
@@ -64,18 +64,18 @@ class SimpleClient(SimpleUDPClient):
                 for address in islice(itr, size):
                     slice[address] = addresses[address]
 
-                thread = threading.Thread(target = self.child, args = (index, slice, results))
-                thread.start()
-                threads.append(thread)
+                th = threading.Thread(target = self.child, args = (index, slice, results, progressDialog))
+                th.start()
+                threads.append(th)
 
-            for thread in threads:
-                thread.join()
+            for th in threads:
+                th.join()
             
             return results
         else:
             raise SystemError("Not Connected to " + self.name.upper() + " Client")
     
-    def child(self, index, addresses, results):
+    def child(self, index, addresses, results, progressDialog):
         with RetryingServer(10000 + index) as server:
             client = SimpleClient(self.name, self.ipAddress, False)
             client._sock = server.socket
@@ -86,6 +86,8 @@ class SimpleClient(SimpleUDPClient):
                     results[address] = server.lastVal
                 else:
                     sleep(0.1) # Need to sleep to ensure that no requests are dropped
+                if progressDialog:
+                    progressDialog.progressOne.emit()
 
 # Server which retries attempting to get if /xinfo message passed back 
 class RetryingServer(BlockingOSCUDPServer):
@@ -146,12 +148,12 @@ class AvailableIPs:
 
             threads = []
             for index in range(0, NUM_THREADS):
-                thread = threading.Thread(target = self.child, args = (index,))
-                thread.start()
-                threads.append(thread)
+                th = threading.Thread(target = self.child, args = (index,))
+                th.start()
+                threads.append(th)
 
-            for thread in threads:
-                thread.join()
+            for th in threads:
+                th.join()
             
             return self.validIPs
 

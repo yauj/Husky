@@ -2,11 +2,11 @@ import sys
 import traceback
 sys.path.insert(0, '../')
 
-from apis.snippets.saveSingle import runSingle
+from apis.snippets.saveSingle import runSingle, saveSingleNumSettings
 from PyQt6.QtWidgets import (
-    QMessageBox,
     QPushButton,
 )
+from util.customWidgets import ProgressDialog
 
 class SaveAllButton(QPushButton):
     def __init__(self, widgets, osc, personNames, config):
@@ -18,27 +18,25 @@ class SaveAllButton(QPushButton):
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        try:
-            main(
-                self.osc,
-                self.personNames,
-                self.config
-            )
-            
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Save All")
-            dlg.setText("All Settings Saved")
-            dlg.exec()
-        except Exception as ex:
-            print(traceback.format_exc())
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Save All")
-            dlg.setText("Error: " + str(ex))
-            dlg.exec() 
+        dlg = ProgressDialog("All Settings Sav", self.main)
+        dlg.exec()
 
         self.setDown(False)
         
-def main(osc, personNames, config):
+    def main(self, dlg):
+        try:
+            dlg.initBar.emit(saveAllNumSettings(self.personNames, self.config))
+            for chName in self.personNames:
+                if (self.personNames[chName].currentText() != ""):
+                    runSingle(self.osc, chName + "_" + self.personNames[chName].currentText(), self.config[chName], dlg)
+            dlg.complete.emit()
+        except Exception as ex:
+            print(traceback.format_exc())
+            dlg.raiseException.emit(ex)
+
+def saveAllNumSettings(personNames, config):
+    num = 0
     for chName in personNames:
         if (personNames[chName].currentText() != ""):
-            runSingle(osc, chName + "_" + personNames[chName].currentText(), config[chName])
+            num = num + saveSingleNumSettings(config[chName])
+    return num

@@ -9,6 +9,8 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
+from util.customWidgets import ProgressDialog
+
 
 class SaveButton(QPushButton):
     def __init__(self, widgets, osc, chName, personName, config):
@@ -22,23 +24,8 @@ class SaveButton(QPushButton):
     
     def clicked(self):
         if (self.personName.currentText() != ""):
-            try:
-                main(
-                    self.osc,
-                    self.chName + "_" + self.personName.currentText(),
-                    self.config
-                )
-                
-                dlg = QMessageBox(self)
-                dlg.setWindowTitle("Save")
-                dlg.setText("Settings Saved for " + self.chName)
-                dlg.exec()
-            except Exception as ex:
-                print(traceback.format_exc())
-                dlg = QMessageBox(self)
-                dlg.setWindowTitle("Save")
-                dlg.setText("Error: " + str(ex))
-                dlg.exec()
+            dlg = ProgressDialog("Settings for " + self.chName + " Sav", self.main)
+            dlg.exec()
         else:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Save")
@@ -47,35 +34,42 @@ class SaveButton(QPushButton):
         
         self.setDown(False)
         
-def main(osc, label, config):
-    runSingle(osc, label, config)
+    def main(self, dlg):
+        try:
+            dlg.initBar.emit(saveSingleNumSettings(self.config))
+            label = self.chName + "_" + self.personName.currentText()
+            runSingle(self.osc, label, self.config, dlg)
+            dlg.complete.emit()
+        except Exception as ex:
+            print(traceback.format_exc())
+            dlg.raiseException.emit(ex)
 
-def runSingle(osc, label, config):
+def runSingle(osc, label, config, dlg = None):
     today = date.today().strftime("%Y%m%d")
     filename = today + "_" + label + ".osc"
     try:
         with open("data/" + filename, "w") as file:
             if "channels" in config:
-                saveChannels(osc, file, config["channels"])
+                saveChannels(osc, file, config["channels"], dlg)
 
             if "iem_bus" in config:
-                saveIEMBus(osc, file, config["iem_bus"])
+                saveIEMBus(osc, file, config["iem_bus"], dlg)
         
-        print("Created " + filename + "\n")
+        print("Created " + filename)
     except Exception as ex:
         os.remove("data/" + filename)
         raise ex
 
-def saveChannels(osc, file, channels):
+def saveChannels(osc, file, channels, dlg = None):
     settings = {}
     for channel in channels:
         for category in SETTINGS:
             for param in SETTINGS[category]:
                 settings["/ch/" + channel + param] = None
 
-    saveSettingsToFile(osc, file, "foh", settings)    
+    saveSettingsToFile(osc, file, "foh", settings, dlg)    
 
-def saveIEMBus(osc, file, bus):
+def saveIEMBus(osc, file, bus, dlg = None):
     settings = {}
     for channel in ALL_CHANNELS:
         prefix = channel + "/mix/" + bus
@@ -86,10 +80,10 @@ def saveIEMBus(osc, file, bus):
         if bus in ODD_BUSES:
             settings[prefix + "/pan"] = None
     
-    saveSettingsToFile(osc, file, "iem", settings)
+    saveSettingsToFile(osc, file, "iem", settings, dlg)
 
-def saveSettingsToFile(osc, file, prefix, settings):
-    lines = getSettings(osc, prefix, settings)
+def saveSettingsToFile(osc, file, prefix, settings, dlg = None):
+    lines = getSettings(osc, prefix, settings, dlg)
 
     for line in lines:
         file.write("\n" + line)
@@ -100,8 +94,8 @@ def appendSettingsToTextbox(osc, textbox, prefix, settings):
     for line in lines:
         textbox.append(line)
 
-def getSettings(osc, prefix, settings):
-    values = osc[prefix + "Client"].bulk_send_messages(settings)
+def getSettings(osc, prefix, settings, dlg = None):
+    values = osc[prefix + "Client"].bulk_send_messages(settings, dlg)
     
     lines = []
     for setting in values:
@@ -116,3 +110,24 @@ def getSettings(osc, prefix, settings):
     
     lines.sort()
     return lines
+
+def saveSingleNumSettings(config):
+    num = 0
+    if "channels" in config:
+        channelNum = 0
+        for category in SETTINGS:
+            channelNum = channelNum + len(SETTINGS[category])
+        
+        channelNum = channelNum * len(config["channels"])
+        num = num + channelNum
+
+    if "iem_bus" in config:
+        iemNum = len(ALL_CHANNELS)
+        if config["iem_bus"] in ODD_BUSES:
+            iemNum = iemNum * 3
+        else:
+            iemNum = iemNum * 2
+        
+        num = num + iemNum
+
+    return num

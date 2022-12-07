@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
+from util.customWidgets import ProgressDialog
 
 class LoadButton(QPushButton):
     def __init__(self, widgets, osc, chName, filename, person):
@@ -21,24 +22,8 @@ class LoadButton(QPushButton):
 
     def clicked(self):
         if (self.filename.currentText() != "" and os.path.exists("data/" + self.filename.currentText())):
-            try:
-                main(
-                    self.osc,
-                    self.filename.currentText()
-                )
-
-                self.person.setCurrentText(self.filename.currentText().split(".")[0].split("_")[2])
-                
-                dlg = QMessageBox(self)
-                dlg.setWindowTitle("Load")
-                dlg.setText("Loaded " + self.filename.currentText() + " for " + self.chName)
-                dlg.exec()
-            except Exception as ex:
-                print(traceback.format_exc())
-                dlg = QMessageBox(self)
-                dlg.setWindowTitle("Load")
-                dlg.setText("Error: " + str(ex))
-                dlg.exec() 
+            dlg = ProgressDialog("Settings for " + self.chName + " Load", self.main)
+            dlg.exec()
         else:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Load")
@@ -47,21 +32,28 @@ class LoadButton(QPushButton):
         
         self.setDown(False)
         
-def main(osc, filename):
-    runSingle(osc, filename, True)
+    def main(self, dlg):
+        try:
+            dlg.initBar.emit(loadSingleNumSettings(self.filename.currentText(), True))
+            runSingle(self.osc, self.filename.currentText(), True, dlg)
+            self.person.setCurrentText(self.filename.currentText().split(".")[0].split("_")[2])
+            dlg.complete.emit()
+        except Exception as ex:
+            print(traceback.format_exc())
+            dlg.raiseException.emit(ex)
 
-def runSingle(osc, filename, iemCopy):
+def runSingle(osc, filename, iemCopy, dlg = None):
     lines = []
     with open("data/" + filename) as scnFile:
         scnFile.readline() # Skip Header Line
         while (line := scnFile.readline().strip()):
             lines.append(line)
         
-    fireLines(osc, lines, iemCopy)
+    fireLines(osc, lines, iemCopy, dlg)
 
-    print("Loaded " + filename + "\n")
+    print("Loaded " + filename)
 
-def fireLines(osc, lines, iemCopy):
+def fireLines(osc, lines, iemCopy, dlg = None):
     fohSettings = {}
     iemSettings = {}
     for line in lines:
@@ -96,6 +88,23 @@ def fireLines(osc, lines, iemCopy):
                     iemSettings[components[1]] = arg
             elif (components[0] == "iem"):
                 iemSettings[components[1]] = arg
-    
-    osc["fohClient"].bulk_send_messages(fohSettings)
-    osc["iemClient"].bulk_send_messages(iemSettings)
+
+    osc["fohClient"].bulk_send_messages(fohSettings, dlg)
+    osc["iemClient"].bulk_send_messages(iemSettings, dlg)
+
+def loadSingleNumSettings(filename, iemCopy):
+    num = 0
+    if (os.path.exists("data/" + filename)):
+        with open("data/" + filename) as file:
+            file.readline() # Skip Header Line
+            while (line := file.readline().strip()):
+                components = line.split()
+
+                if (components[0] == "foh"):
+                    if iemCopy:
+                        num = num + 2
+                    else:
+                        num = num + 1
+                elif (components[0] == "iem"):
+                    num = num + 1
+    return num
