@@ -7,11 +7,9 @@ from PyQt6.QtWidgets import (
 )
 
 class CueLoadButton(QPushButton):
-    def __init__(self, cues, faderNames, faders):
+    def __init__(self, widgets):
         super().__init__("Load Set")
-        self.cues = cues
-        self.faderNames = faderNames
-        self.faders = faders
+        self.widgets = widgets
         self.pressed.connect(self.clicked)
     
     def clicked(self):
@@ -31,19 +29,19 @@ class CueLoadButton(QPushButton):
 
                     if components[0] == "cue":
                         if components[1] == "N":
-                            self.cues[cueIdx]["key"].setCurrentIndex(-1)
+                            self.widgets["cues"][cueIdx]["key"].setCurrentIndex(-1)
                         else:
-                            self.cues[cueIdx]["key"].setCurrentText(components[1])
+                            self.widgets["cues"][cueIdx]["key"].setCurrentText(components[1])
 
                         if components[2] == "N":
-                            self.cues[cueIdx]["lead"].setCurrentIndex(-1)
+                            self.widgets["cues"][cueIdx]["lead"].setCurrentIndex(-1)
                         else:
-                            self.cues[cueIdx]["lead"].setCurrentText(components[2])
+                            self.widgets["cues"][cueIdx]["lead"].setCurrentText(components[2])
 
                         if components[3] == "N":
-                            self.cues[cueIdx]["snippet"].setText("")
+                            self.widgets["cues"][cueIdx]["snippet"].setText("")
                         else:
-                            self.cues[cueIdx]["snippet"].setText(components[3])
+                            self.widgets["cues"][cueIdx]["snippet"].setText(components[3])
 
                         cueIdx = cueIdx + 1
                     elif components[0] == "fader":
@@ -51,9 +49,9 @@ class CueLoadButton(QPushButton):
                         name = " ".join(components[5:])
                         if lastFaderName != name:
                             faderIdx = faderIdx + 1
-                            self.faders[faderIdx] = []
+                            self.widgets["faders"][faderIdx]["commands"] = []
                             lastFaderName = name
-                        self.faderNames[faderIdx].setText(name)
-                        self.faders[faderIdx].append(command)
+                        self.widgets["faders"][faderIdx]["name"].setText(name)
+                        self.widgets["faders"][faderIdx]["commands"].append(command)
         
         self.setDown(False)

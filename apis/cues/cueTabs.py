@@ -24,7 +24,6 @@ class CueTab(QTabWidget):
         super().__init__()
         self.osc = osc
         self.widgets = widgets
-        self.cues = []
         self.prevIndex = [None]
         
         for i in range(0, len(TAB_LAYER_NAMES)):
@@ -36,7 +35,7 @@ class CueTab(QTabWidget):
     def cuesTriggerLayer(self, pageName, pageIndex):
         vlayout = QVBoxLayout()
 
-        self.widgets["cue"][pageName] = {}
+        self.widgets["cueSnippet"][pageName] = {}
         for cue in range(0, 10):
             index = (pageIndex * 10) + cue
             printIndex = str(cue + 1)
@@ -63,19 +62,16 @@ class CueTab(QTabWidget):
             snippet.setFixedWidth(150)
             hlayout.addWidget(snippet)
             options["snippet"] = snippet
-            self.widgets["cue"][pageName][printIndex] = snippet
+            self.widgets["cueSnippet"][pageName][printIndex] = snippet
 
-            hlayout.addWidget(CueFireButton(self.widgets, self.osc, self.prevIndex, index, printIndex, self.cues))
+            hlayout.addWidget(CueFireButton(self.osc, self.prevIndex, index, printIndex, self.widgets["cues"]))
 
             vlayout.addLayout(hlayout)
-            self.cues.append(options)
+            self.widgets["cues"].append(options)
 
         widget = QWidget()
         widget.setLayout(vlayout)
         return widget
-    
-    def getCues(self):
-        return self.cues
 
     def callbackFunction(self, message):
         if message.channel == 4 and message.value > 0:
@@ -86,7 +82,7 @@ class CueTab(QTabWidget):
                         self.osc,
                         self.prevIndex,
                         index,
-                        self.cues
+                        self.widgets["cues"]
                     )
                     
                     print("Cue " + TAB_LAYER_NAMES[self.currentIndex()] + str(message.control + 1) + " Fired")

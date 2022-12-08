@@ -13,9 +13,8 @@ from util.customWidgets import ProgressDialog
 
 
 class SaveButton(QPushButton):
-    def __init__(self, widgets, osc, chName, personName, config):
+    def __init__(self, osc, chName, personName, config):
         super().__init__("Save")
-        self.widgets = widgets
         self.osc = osc
         self.chName = chName
         self.personName = personName

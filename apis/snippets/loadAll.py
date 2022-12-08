@@ -11,9 +11,8 @@ from PyQt6.QtWidgets import (
 from util.customWidgets import ProgressDialog
 
 class LoadAllButton(QPushButton):
-    def __init__(self, widgets, osc, filenames, personal):
+    def __init__(self, osc, filenames, personal):
         super().__init__("Load All")
-        self.widgets = widgets
         self.osc = osc
         self.filenames = filenames
         self.personal = personal

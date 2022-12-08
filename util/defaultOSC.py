@@ -24,18 +24,7 @@ class SimpleClient(SimpleUDPClient):
         self.connected = False
 
     # Only parent needs to connect
-    def connect(self):
-        with RetryingServer() as server:
-            self.setConnected(server)
-
-        if self.connected:
-            print("Connected to " + self.name.upper() + " at " + self.ipAddress)
-        else:
-            print("Failed to connect to " + self.name.upper() + " at " + self.ipAddress)
-
-        return self.connected
-    
-    def setConnected(self, server):
+    def connect(self, server):
         try:
             self.connected = True # Need this to send message
             self._sock = server.socket
@@ -44,6 +33,14 @@ class SimpleClient(SimpleUDPClient):
         except Exception as ex:
             print(ex)
             self.connected = False
+
+        if self.parent:
+            if self.connected:
+                print("Connected to " + self.name.upper() + " at " + self.ipAddress)
+            else:
+                print("Failed to connect to " + self.name.upper() + " at " + self.ipAddress)
+
+        return self.connected
 
     def send_message(self, address, value):
         if self.connected or not self.parent:
@@ -163,8 +160,7 @@ class AvailableIPs:
                         server.timeout = 0.1
                         ip = "0.0.0.0"
                         client = SimpleClient("Test", ip, False)
-                        client.setConnected(server)
-                        if client.connected:
+                        if client.connect(server):
                             return [ip]
                         else:
                             return []
@@ -179,8 +175,7 @@ class AvailableIPs:
                 if ip == self.thisIp:
                     ip = "0.0.0.0"
                 client = SimpleClient("Test", ip, False)
-                client.setConnected(server)
-                if client.connected:
+                if client.connect(server):
                     self.validIPs.append(ip)
 
 # MIDI Client

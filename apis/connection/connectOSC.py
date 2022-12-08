@@ -8,12 +8,13 @@ from PyQt6.QtWidgets import (
 )
 
 class ConnectOscButton(QPushButton):
-    def __init__(self, osc, address, status, mixerName):
+    def __init__(self, osc, address, status, mixerName, server):
         super().__init__("Connect")
         self.osc = osc
         self.address = address
         self.status = status
         self.mixerName = mixerName
+        self.server = server
         self.init()
         self.pressed.connect(self.connect)
     
@@ -33,7 +34,7 @@ class ConnectOscButton(QPushButton):
 
     def init(self):
         self.osc[self.mixerName + "Client"] = SimpleClient(self.mixerName, self.address.currentText())
-        if (self.osc[self.mixerName + "Client"].connect()):
+        if (self.osc[self.mixerName + "Client"].connect(self.server)):
             self.status.setText("Connected!")
             self.status.setStyleSheet("color: green")
             return True

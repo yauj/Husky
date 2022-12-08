@@ -2,7 +2,6 @@ import sys
 import traceback
 sys.path.insert(0, '../')
 
-from apis.snippets.saveSingle import getSettings
 from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -13,24 +12,23 @@ from PyQt6.QtWidgets import (
 )
 
 class FadersEditButton(QPushButton):
-    def __init__(self, osc, faders, index):
+    def __init__(self, osc, fader):
         super().__init__("Edit")
         self.osc = osc
-        self.faders = faders
-        self.index = index
+        self.fader = fader
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        FadersEditDialog(self.osc, self.faders, self.index).exec()
+        FadersEditDialog(self.osc, self.fader).exec()
         self.setDown(False)
 
 class FadersEditDialog(QDialog):
-    def __init__(self, osc, faders, index):
+    def __init__(self, osc, fader):
         super().__init__()
 
         textbox = QTextEdit()
         textbox.setMinimumWidth(500)
-        for command in faders[index]:
+        for command in fader["commands"]:
             textbox.append(command.strip())
 
         vlayout = QVBoxLayout()
@@ -41,17 +39,16 @@ class FadersEditDialog(QDialog):
         vlayout.addLayout(hlayout)
 
         vlayout.addWidget(textbox)
-        vlayout.addWidget(EditButton(self, textbox, faders, index))
+        vlayout.addWidget(EditButton(self, textbox, fader))
 
         self.setLayout(vlayout)
 
 class EditButton(QPushButton):
-    def __init__(self, parent, textbox, faders, index):
+    def __init__(self, parent, textbox, fader):
         super().__init__("Update")
         self.parent = parent
         self.textbox = textbox
-        self.faders = faders
-        self.index = index
+        self.fader = fader
         self.pressed.connect(self.clicked)
     
     def clicked(self):
@@ -60,7 +57,7 @@ class EditButton(QPushButton):
             if line.strip() != "":
                 commands.append(line.strip())
         
-        self.faders[self.index] = commands
+        self.fader["commands"] = commands
             
         self.parent.close()
         dlg = QMessageBox(self)

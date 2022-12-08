@@ -125,14 +125,13 @@ RESET_MSGS["/dca/8/fader"] = 0
 RESET_MSGS["/dca/8/on"] = 1
 
 class CueFireButton(QPushButton):
-    def __init__(self, widgets, osc, prevIndex, index, printIndex, cues):
+    def __init__(self, osc, prevIndex, index, printIndex, cues):
         super().__init__("Fire")
         if (len(printIndex) == 1):
             super().setShortcut("ctrl+" + printIndex)
         elif (printIndex == "10"):
             super().setShortcut("ctrl+0")
 
-        self.widgets = widgets
         self.osc = osc
         self.prevIndex = prevIndex
         self.index = index

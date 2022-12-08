@@ -9,9 +9,8 @@ from PyQt6.QtWidgets import (
 from util.customWidgets import ProgressDialog
 
 class SaveAllButton(QPushButton):
-    def __init__(self, widgets, osc, personNames, config):
+    def __init__(self, osc, personNames, config):
         super().__init__("Save All")
-        self.widgets = widgets
         self.osc = osc
         self.personNames = personNames
         self.config = config

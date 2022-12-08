@@ -7,11 +7,11 @@ from PyQt6.QtWidgets import (
 )
 
 class FadersSlider(QSlider):
-    def __init__(self, osc, commands, index):
+    def __init__(self, osc, fader, index):
         super().__init__()
 
         self.osc = osc
-        self.commands = commands
+        self.fader = fader
         self.index = index
 
         self.setRange(0, 127)
@@ -25,7 +25,7 @@ class FadersSlider(QSlider):
 
     def slider(self):
         try:
-            main(self.osc, self.commands[self.index], self)
+            main(self.osc, self.fader["commands"], self)
         except Exception:
             # Fail Quietly
             print(traceback.format_exc())
@@ -34,12 +34,12 @@ class FadersSlider(QSlider):
         if message.channel == 4 and message.control == 13 + self.index:
             self.setValue(message.value)
 
-def main(osc, commands, fader):
+def main(osc, commands, slider):
     # Command should be in following format:
     # [foh|iem] [osc command] [min float] [max float]
     for command in commands:
         components = command.split()
-        faderPosition = float(fader.value()) / 127.0
+        faderPosition = float(slider.value()) / 127.0
         min = float(components[2])
         max = float(components[3])
         arg = (faderPosition * (max - min)) + min

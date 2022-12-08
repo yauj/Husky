@@ -41,7 +41,7 @@ class SnippetSaveButton(QPushButton):
                 )
 
                 if self.page.currentText() != "" and self.cue.currentText() != "":
-                    self.widgets["cue"][self.page.currentText()][self.cue.currentText()].setText(dlg.selectedFiles()[0].split("/")[-1])
+                    self.widgets["cueSnippet"][self.page.currentText()][self.cue.currentText()].setText(dlg.selectedFiles()[0].split("/")[-1])
             except Exception as ex:
                 os.remove(dlg.selectedFiles()[0])
                 

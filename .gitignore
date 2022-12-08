@@ -11,5 +11,5 @@ __pycache__/
 *.osc
 *.cue
 
-# Log File
-*.log
+# Cache File
+*.cache

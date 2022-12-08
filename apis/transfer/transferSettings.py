@@ -9,9 +9,8 @@ from PyQt6.QtWidgets import (
 )
 
 class TransferButton(QPushButton):
-    def __init__(self, widgets, osc):
+    def __init__(self, osc):
         super().__init__("Yes!")
-        self.widgets = widgets
         self.osc = osc
         self.pressed.connect(self.clicked)
     

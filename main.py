@@ -5,7 +5,7 @@ from apis.connection.connectMIDI import ConnectMidiButton
 from apis.connection.connectOSC import ConnectOscButton
 from apis.connection.listenMIDI import ListenMidiButton
 from apis.cues.cueLoad import CueLoadButton
-from apis.cues.cueSave import CueSaveButton
+from apis.cues.cueSave import CueSaveButton, saveCue
 from apis.cues.cueTabs import CueTab
 from apis.cues.faders.fadersEdit import FadersEditButton
 from apis.cues.faders.fadersSlider import FadersSlider
@@ -42,9 +42,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.widgets = {"personal": {}, "cue": {}}
+        self.widgets = {"connection": {}, "personal": {}, "cues": [], "cueSnippet": {}, "faders": []}
         self.osc = {}
-        self.virtualPort = MIDIVirtualPort()
+        self.server = RetryingServer() # Server used for generic calls
+        self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
 
         self.setWindowTitle("X32 Helper")
 
@@ -78,12 +79,13 @@ class MainWindow(QMainWindow):
             address.addItems(validIPs)
             address.setCurrentText(config["osc"][mixerName])
             address.setFixedWidth(300)
+            self.widgets["connection"][mixerName + "Client"] = address
             hlayout.addWidget(address)
 
             status = QLabel()
             hlayout.addWidget(status)
             
-            hlayout.addWidget(ConnectOscButton(self.osc, address, status, mixerName))
+            hlayout.addWidget(ConnectOscButton(self.osc, address, status, mixerName, self.server))
 
             vlayout.addLayout(hlayout)
 
@@ -96,6 +98,7 @@ class MainWindow(QMainWindow):
         port.setEditable(True)
         port.setFixedWidth(300)
         port.setCurrentText(config["serverMidi"])
+        self.widgets["connection"]["serverMidi"] = port
         hlayout.addWidget(port)
 
         status = QLabel()
@@ -118,6 +121,7 @@ class MainWindow(QMainWindow):
             port.setEditable(True)
             port.setFixedWidth(300)
             port.setCurrentText(config["midi"][name])
+            self.widgets["connection"][name + "Midi"] = port
             hlayout.addWidget(port)
 
             status = QLabel()
@@ -176,11 +180,11 @@ class MainWindow(QMainWindow):
             filenames[chName].setCurrentIndex(-1)
             hlayout.addWidget(filenames[chName])
 
-            hlayout.addWidget(LoadButton(self.widgets, self.osc, chName, filenames[chName], self.widgets["personal"][chName]))
+            hlayout.addWidget(LoadButton(self.osc, chName, filenames[chName], self.widgets["personal"][chName]))
 
             vlayout.addLayout(hlayout)
         
-        vlayout.addWidget(LoadAllButton(self.widgets, self.osc, filenames, self.widgets["personal"]))
+        vlayout.addWidget(LoadAllButton(self.osc, filenames, self.widgets["personal"]))
 
         widget = QWidget()
         widget.setLayout(vlayout)
@@ -216,11 +220,11 @@ class MainWindow(QMainWindow):
             self.widgets["personal"][chName].setCurrentIndex(-1)
             hlayout.addWidget(self.widgets["personal"][chName])
 
-            hlayout.addWidget(SaveButton(self.widgets, self.osc, chName, self.widgets["personal"][chName], config["personal"][chName]))
+            hlayout.addWidget(SaveButton(self.osc, chName, self.widgets["personal"][chName], config["personal"][chName]))
 
             vlayout.addLayout(hlayout)
 
-        vlayout.addWidget(SaveAllButton(self.widgets, self.osc, self.widgets["personal"], config["personal"]))
+        vlayout.addWidget(SaveAllButton(self.osc, self.widgets["personal"], config["personal"]))
 
         widget = QWidget()
         widget.setLayout(vlayout)
@@ -241,8 +245,8 @@ class MainWindow(QMainWindow):
         faders = self.cuesFadersLayer()
 
         hlayout = QHBoxLayout()
-        hlayout.addWidget(CueLoadButton(tabs.getCues(), self.faderNames, self.faders))
-        hlayout.addWidget(CueSaveButton(tabs.getCues(), self.faderNames, self.faders))
+        hlayout.addWidget(CueLoadButton(self.widgets))
+        hlayout.addWidget(CueSaveButton(self.widgets))
         vlayout.addLayout(hlayout)
 
         vlayout.addWidget(QLabel("Fire Cues. Green indicates last cue fired was successful. Red indicates failure."))
@@ -264,21 +268,19 @@ class MainWindow(QMainWindow):
 
         hlayout = QHBoxLayout()
 
-        self.faderNames = []
-        self.faders = []
-
         for i, name in enumerate(config["faders"]):
-            self.faders.append(config["faders"][name])
+            fader = {}
+            fader["commands"] = config["faders"][name]
 
             sliderLayout = QVBoxLayout()
 
-            label = QLineEdit(name)
-            self.faderNames.append(label)
+            fader["name"] = QLineEdit(name)
 
-            sliderLayout.addWidget(FadersSlider(self.osc, self.faders, i))
-            sliderLayout.addWidget(label)
-            sliderLayout.addWidget(FadersEditButton(self.osc, self.faders, i))
+            sliderLayout.addWidget(FadersSlider(self.osc, fader, i))
+            sliderLayout.addWidget(fader["name"])
+            sliderLayout.addWidget(FadersEditButton(self.osc, fader))
 
+            self.widgets["faders"].append(fader)
             hlayout.addLayout(sliderLayout)
 
         vlayout.addLayout(hlayout)
@@ -306,13 +308,13 @@ class MainWindow(QMainWindow):
 
         page = QComboBox()
         page.setPlaceholderText("Page")
-        for letter in self.widgets["cue"]:
+        for letter in self.widgets["cueSnippet"]:
             page.addItem(letter)
         hlayout.addWidget(page)
 
         cue = QComboBox()
         cue.setPlaceholderText("Index")
-        for index in self.widgets["cue"][letter]:
+        for index in self.widgets["cueSnippet"][letter]:
             cue.addItem(index)
         hlayout.addWidget(cue)
 
@@ -418,11 +420,21 @@ class MainWindow(QMainWindow):
         vlayout = QVBoxLayout()
 
         vlayout.addWidget(QLabel("Do you want to transfer Channel EQ, Compression, Mute settings from the FOH Mixer to the IEM Mixer?"))
-        vlayout.addWidget(TransferButton(self.widgets, self.osc))
+        vlayout.addWidget(TransferButton(self.osc))
 
         widget = QWidget()
         widget.setLayout(vlayout)
         return widget
+    
+    def closeEvent(self, a0):
+        with open("connection.cache", "w") as file:
+            for param in self.widgets["connection"]:
+                file.write("\n" + param + " " + self.widgets["connection"][param].currentText())
+
+        with open("cue.cache", "w") as file:
+            saveCue(file, self.widgets)
+
+        return super().closeEvent(a0)
 
 app = QApplication(sys.argv)
 window = MainWindow()
