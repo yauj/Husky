@@ -2,11 +2,11 @@ import sys
 import traceback
 sys.path.insert(0, '../')
 
-from util.constants import COPY_CHANNELS, LINK_CHANNELS, SETTINGS
-from util.customWidgets import ProgressDialog
 from PyQt6.QtWidgets import (
     QPushButton,
 )
+from util.constants import COPY_CHANNELS, LINK_CHANNELS, SETTINGS
+from util.customWidgets import ProgressDialog
 
 class TransferButton(QPushButton):
     def __init__(self, osc):

@@ -6,8 +6,8 @@ from apis.cues.cueLayer import CueLayer
 from apis.cues.cueLoad import loadCue
 from apis.cues.cueSave import saveCue
 from apis.menu.Update import UpdateApp
+from apis.misc.miscLayer import MiscLayer
 from apis.snippets.snippetsLayer import SnippetsLayer
-from apis.transfer.transferLayer import TransferLayer
 from config import config
 from util.defaultOSC import MIDIVirtualPort, RetryingServer
 from PyQt6.QtWidgets import (
@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
         tabs.addTab(ConnectionLayer(self.config, self.widgets, self.osc, self.server), "X32 Connection")
         tabs.addTab(SnippetsLayer(self.config, self.widgets, self.osc), "Snippets")
         tabs.addTab(CueLayer(self.config, self.widgets, self.osc), "Cues")
-        tabs.addTab(TransferLayer(self.osc), "FOH->IEM")
+        tabs.addTab(MiscLayer(self.config, self.osc), "Misc")
 
         self.loadCueCache()
 
