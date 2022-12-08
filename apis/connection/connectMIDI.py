@@ -1,11 +1,8 @@
-import sys
-sys.path.insert(0, '../')
-
-from util.defaultOSC import MIDIClient
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
+from util.defaultOSC import MIDIClient
 
 class ConnectMidiButton(QPushButton):
     def __init__(self, osc, name, status, port):

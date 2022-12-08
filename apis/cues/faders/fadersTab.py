@@ -1,6 +1,3 @@
-import sys
-sys.path.insert(0, '../')
-
 from apis.cues.faders.fadersEdit import FadersEditButton
 from apis.cues.faders.fadersSlider import FadersSlider
 from PyQt6.QtGui import (

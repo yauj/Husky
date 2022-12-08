@@ -1,9 +1,4 @@
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 from apis.cues.cueFire import CueFireButton, main
-from util.constants import KEYS
 from PyQt6.QtGui import (
     QAction,
 )
@@ -16,6 +11,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+import traceback
+from util.constants import KEYS
 
 TAB_LAYER_NAMES = ["a", "b", "c", "d", "e"]
 

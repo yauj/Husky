@@ -1,13 +1,10 @@
-import socket
-import sys
-sys.path.insert(0, '../')
-
 from itertools import islice
 from math import ceil
 import mido
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer
+import socket
 import threading
 from time import time, sleep
 

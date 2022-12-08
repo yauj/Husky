@@ -1,11 +1,8 @@
-import sys
-sys.path.insert(0, '../')
-
-from util.defaultOSC import SimpleClient
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
+from util.defaultOSC import SimpleClient
 
 class ConnectOscButton(QPushButton):
     def __init__(self, osc, address, status, mixerName, server):

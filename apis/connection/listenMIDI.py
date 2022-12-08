@@ -1,11 +1,8 @@
-import sys
-sys.path.insert(0, '../')
-
-from util.defaultOSC import MIDIServer
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
+from util.defaultOSC import MIDIServer
 
 class ListenMidiButton(QPushButton):
     def __init__(self, osc, status, port):

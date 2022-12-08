@@ -1,12 +1,9 @@
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 from apis.snippets.saveSingle import appendSettingsToTextbox
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
+import traceback
 
 class SnippetUpdateButton(QPushButton):
     def __init__(self, osc, textbox):

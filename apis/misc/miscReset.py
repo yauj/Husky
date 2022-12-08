@@ -1,11 +1,8 @@
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 import mido
 from PyQt6.QtWidgets import (
     QPushButton,
 )
+import traceback
 from util.customWidgets import ProgressDialog
 
 class ResetButton(QPushButton):

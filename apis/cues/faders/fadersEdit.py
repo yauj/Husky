@@ -1,7 +1,3 @@
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -10,6 +6,7 @@ from PyQt6.QtWidgets import (
     QTextEdit,
     QVBoxLayout,
 )
+import traceback
 
 class FadersEditButton(QPushButton):
     def __init__(self, osc, fader):

@@ -1,15 +1,12 @@
-import os.path
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 from apis.snippets.loadSingle import runSingle
 import mido
-from util.constants import KEYS
+import os.path
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
+import traceback
+from util.constants import KEYS
 
 class CueFireButton(QPushButton):
     def __init__(self, osc, prevIndex, index, printIndex, cues):

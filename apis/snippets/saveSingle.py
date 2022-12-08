@@ -1,14 +1,11 @@
-import os
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 from datetime import date
-from util.constants import ODD_BUSES, ALL_CHANNELS, SETTINGS
+import os
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
+import traceback
+from util.constants import ODD_BUSES, ALL_CHANNELS, SETTINGS
 from util.customWidgets import ProgressDialog
 
 

@@ -1,11 +1,7 @@
-import sys
-
-from apis.cues.faders.fadersTab import FaderTab
-sys.path.insert(0, '../')
-
 from apis.cues.cueLoad import CueLoadButton
 from apis.cues.cueSave import CueSaveButton
 from apis.cues.cueTabs import CueTab
+from apis.cues.faders.fadersTab import FaderTab
 from apis.cues.snippet.snippetAdd import SnippetAddButton
 from apis.cues.snippet.snippetEdit import SnippetEditButton
 from apis.cues.snippet.snippetFire import SnippetFireButton

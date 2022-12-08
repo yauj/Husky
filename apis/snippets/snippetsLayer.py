@@ -1,11 +1,8 @@
-import os
-import sys
-sys.path.insert(0, '../')
-
 from apis.snippets.loadAll import LoadAllButton
 from apis.snippets.loadSingle import LoadButton
 from apis.snippets.saveAll import SaveAllButton
 from apis.snippets.saveSingle import SaveButton
+import os
 from PyQt6.QtWidgets import (
     QComboBox,
     QHBoxLayout,

@@ -1,13 +1,10 @@
-import os.path
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 import mido
+import os.path
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
+import traceback
 from util.customWidgets import ProgressDialog
 
 class LoadButton(QPushButton):

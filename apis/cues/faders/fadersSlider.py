@@ -1,11 +1,8 @@
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 import mido
 from PyQt6.QtWidgets import (
     QSlider,
 )
+import traceback
 
 class FadersSlider(QSlider):
     def __init__(self, osc, fader, index, defaultValue):

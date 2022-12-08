@@ -1,10 +1,9 @@
-import traceback
-
 from PyQt6.QtWidgets import (
     QCheckBox,
     QMessageBox,
     QPushButton,
 )
+import traceback
 
 class TalkbackBox(QCheckBox):
     def __init__(self, config, osc, chName):

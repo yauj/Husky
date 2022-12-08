@@ -1,10 +1,6 @@
-import sys
-sys.path.insert(0, '../')
-
 from apis.connection.connectOSC import ConnectOscButton
 from apis.connection.connectMIDI import ConnectMidiButton
 from apis.connection.listenMIDI import ListenMidiButton
-from util.defaultOSC import AvailableIPs
 from PyQt6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -12,6 +8,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from util.defaultOSC import AvailableIPs
 
 class ConnectionLayer(QWidget):
     def __init__(self, config, widgets, osc, server):

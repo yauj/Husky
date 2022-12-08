@@ -1,6 +1,3 @@
-import sys
-sys.path.insert(0, '../')
-
 from PyQt6.QtWidgets import (
     QFileDialog,
     QPushButton,

@@ -1,6 +1,3 @@
-import sys
-sys.path.insert(0, '../')
-
 from datetime import date, timedelta
 from PyQt6.QtWidgets import (
     QFileDialog,

@@ -1,12 +1,9 @@
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 from apis.snippets.loadSingle import fireLines
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
+import traceback
 
 class SnippetFireButton(QPushButton):
     def __init__(self, osc, textbox):

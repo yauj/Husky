@@ -1,6 +1,3 @@
-import sys
-sys.path.insert(0, '../../')
-
 from apis.misc.miscReset import ResetButton
 from apis.misc.miscTalkback import TalkbackAllButton, TalkbackBox, TalkbackMeButton
 from apis.misc.miscTransfer import TransferButton

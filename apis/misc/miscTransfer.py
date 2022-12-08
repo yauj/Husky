@@ -1,10 +1,7 @@
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 from PyQt6.QtWidgets import (
     QPushButton,
 )
+import traceback
 from util.constants import COPY_CHANNELS, LINK_CHANNELS, SETTINGS
 from util.customWidgets import ProgressDialog
 

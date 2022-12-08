@@ -1,12 +1,9 @@
-import os.path
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 from apis.snippets.loadSingle import loadSingleNumSettings, runSingle
+import os.path
 from PyQt6.QtWidgets import (
     QPushButton,
 )
+import traceback
 from util.customWidgets import ProgressDialog
 
 class LoadAllButton(QPushButton):

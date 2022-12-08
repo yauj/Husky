@@ -1,11 +1,8 @@
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 from apis.snippets.saveSingle import runSingle, saveSingleNumSettings
 from PyQt6.QtWidgets import (
     QPushButton,
 )
+import traceback
 from util.customWidgets import ProgressDialog
 
 class SaveAllButton(QPushButton):

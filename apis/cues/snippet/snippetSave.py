@@ -1,15 +1,12 @@
-import os
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 from apis.snippets.saveSingle import saveChannels, saveIEMBus, saveSettingsToFile
 from datetime import date, timedelta
+import os
 from PyQt6.QtWidgets import (
     QFileDialog,
     QMessageBox,
     QPushButton,
 )
+import traceback
 
 class SnippetSaveButton(QPushButton):
     def __init__(self, widgets, osc, config, options, page, cue):

@@ -1,7 +1,3 @@
-import sys
-import traceback
-sys.path.insert(0, '../')
-
 from apis.snippets.saveSingle import appendSettingsToTextbox
 from PyQt6.QtWidgets import (
     QCheckBox,
@@ -16,6 +12,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+import traceback
 from util.constants import ALL_BUSES, ALL_CHANNELS, AUX_CHANNELS, ODD_BUSES, SETTINGS
 
 class SnippetAddButton(QPushButton):
