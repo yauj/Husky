@@ -60,13 +60,13 @@ config = {
         "light": "Gracepoint‚Äôs Mac mini Bluetooth"
     },
     "faders": {
-        "VOX EQ": ["foh /ch/05/eq/1/g 0.4 0.5"],
-        "VOX Pan": ["foh /ch/06/mix/pan 0.5 0.2", "foh /ch/07/mix/pan 0.5 0.8"],
-        "EG/Keys Pan": ["foh /ch/13/mix/pan 0.5 0.2", "foh /ch/11/mix/pan 0.5 0.8"],
-        "Bass/Drums HPF": ["foh /ch/15/mix/pan 0.3 0.0", "foh /ch/18/mix/pan 0.3 0.0", "foh /ch/20/mix/pan 0.3 0.0"],
-        "VOX Tracks": ["midi audio 2 50"],
-        "EG/Keys Tracks": ["midi audio 2 51"],
-        "Bass Tracks": ["midi audio 2 52"],
-        "Drum Tracks": ["midi audio 2 53"],
+        "VOX EQ": {"commands": ["foh /ch/05/eq/1/g 0.4 0.5"]},
+        "VOX Pan": {"commands": ["foh /ch/06/mix/pan 0.5 0.2", "foh /ch/07/mix/pan 0.5 0.8"]},
+        "EG/Keys Pan": {"commands": ["foh /ch/13/mix/pan 0.5 0.2", "foh /ch/11/mix/pan 0.5 0.8"]},
+        "Bass/Drums HPF": {"commands": ["foh /ch/15/mix/pan 0.3 0.0", "foh /ch/18/mix/pan 0.3 0.0", "foh /ch/20/mix/pan 0.3 0.0"]},
+        "VOX Tracks": {"defaultValue": 63, "commands": ["midi audio 2 50"]},
+        "EG/Keys Tracks": {"defaultValue": 63, "commands": ["midi audio 2 51"]},
+        "Bass Tracks": {"defaultValue": 63, "commands": ["midi audio 2 52"]},
+        "Drum Tracks": {"defaultValue": 63, "commands": ["midi audio 2 53"]},
     }
 }

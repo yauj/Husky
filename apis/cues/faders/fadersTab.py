@@ -37,17 +37,20 @@ class FaderTab(QTabWidget):
 
         for _ in range(0, 4):
             fader = {}
+            defaultValue = None
             try:
                 _, name = itr.__next__()
-                fader["commands"] = self.config["faders"][name]
+                fader["commands"] = self.config["faders"][name]["commands"]
                 fader["name"] = QLineEdit(name)
+                if ("defaultValue" in self.config["faders"][name]):
+                    defaultValue = self.config["faders"][name]["defaultValue"]
             except StopIteration:
                 fader["commands"] = []
                 fader["name"] = QLineEdit()
 
             sliderLayout = QVBoxLayout()
 
-            sliderLayout.addWidget(FadersSlider(self.osc, fader, self.index))
+            sliderLayout.addWidget(FadersSlider(self.osc, fader, self.index, defaultValue))
             sliderLayout.addWidget(fader["name"])
             sliderLayout.addWidget(FadersEditButton(self.osc, fader))
 

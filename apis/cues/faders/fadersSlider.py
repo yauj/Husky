@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
 )
 
 class FadersSlider(QSlider):
-    def __init__(self, osc, fader, index, defaultValue = 0):
+    def __init__(self, osc, fader, index, defaultValue):
         super().__init__()
 
         self.osc = osc
@@ -16,11 +16,14 @@ class FadersSlider(QSlider):
         self.index = index
 
         self.setRange(0, 127)
-        self.setValue(defaultValue)
+        self.setValue(0)
         self.setSingleStep(1)
         self.setTickInterval(21)
         self.setTickPosition(QSlider.TickPosition.TicksRight)
         self.valueChanged.connect(self.slider)
+
+        if defaultValue:
+            self.setValue(defaultValue)
 
         self.osc["serverMidi"].callback(self.callbackFunction)
 

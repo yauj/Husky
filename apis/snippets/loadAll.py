@@ -5,7 +5,6 @@ sys.path.insert(0, '../')
 
 from apis.snippets.loadSingle import loadSingleNumSettings, runSingle
 from PyQt6.QtWidgets import (
-    QMessageBox,
     QPushButton,
 )
 from util.customWidgets import ProgressDialog
