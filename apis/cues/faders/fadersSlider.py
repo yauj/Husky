@@ -2,12 +2,13 @@ import sys
 import traceback
 sys.path.insert(0, '../')
 
+import mido
 from PyQt6.QtWidgets import (
     QSlider,
 )
 
 class FadersSlider(QSlider):
-    def __init__(self, osc, fader, index):
+    def __init__(self, osc, fader, index, defaultValue = 0):
         super().__init__()
 
         self.osc = osc
@@ -15,7 +16,7 @@ class FadersSlider(QSlider):
         self.index = index
 
         self.setRange(0, 127)
-        self.setValue(0)
+        self.setValue(defaultValue)
         self.setSingleStep(1)
         self.setTickInterval(21)
         self.setTickPosition(QSlider.TickPosition.TicksRight)
@@ -37,14 +38,20 @@ class FadersSlider(QSlider):
 def main(osc, commands, slider):
     # Command should be in following format:
     # [foh|iem] [osc command] [min float] [max float]
+    # OR
+    # midi audio [channel] [control]
+    #   (Fader only makes sense for control change commands)
     for command in commands:
         components = command.split()
-        faderPosition = float(slider.value()) / 127.0
-        min = float(components[2])
-        max = float(components[3])
-        arg = (faderPosition * (max - min)) + min
-        
-        if components[0] == "foh":
-            osc["fohClient"].send_message(components[1], arg)
-        elif components[0] == "iem":
-            osc["iemClient"].send_message(components[1], arg)
+        if components[0] == "midi":
+            osc[components[1] + "Midi"].send(mido.Message("control_change", channel = int(components[2]) - 1, control = int(components[3]), value = slider.value()))
+        else:
+            faderPosition = float(slider.value()) / 127.0
+            min = float(components[2])
+            max = float(components[3])
+            arg = (faderPosition * (max - min)) + min
+            
+            if components[0] == "foh":
+                osc["fohClient"].send_message(components[1], arg)
+            elif components[0] == "iem":
+                osc["iemClient"].send_message(components[1], arg)

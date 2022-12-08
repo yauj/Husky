@@ -7,7 +7,6 @@ from apis.cues.cueLoad import loadCue
 from apis.cues.cueSave import saveCue
 from apis.menu.Update import UpdateApp
 from apis.snippets.snippetsLayer import SnippetsLayer
-from apis.tracks.tracksLayer import TracksLayer
 from apis.transfer.transferLayer import TransferLayer
 from config import config
 from util.defaultOSC import MIDIVirtualPort, RetryingServer
@@ -36,7 +35,6 @@ class MainWindow(QMainWindow):
         tabs.addTab(ConnectionLayer(self.config, self.widgets, self.osc, self.server), "X32 Connection")
         tabs.addTab(SnippetsLayer(self.config, self.widgets, self.osc), "Snippets")
         tabs.addTab(CueLayer(self.config, self.widgets, self.osc), "Cues")
-        tabs.addTab(TracksLayer(self.osc), "Tracks")
         tabs.addTab(TransferLayer(self.osc), "FOH->IEM")
 
         self.loadCueCache()

@@ -91,13 +91,12 @@ class UpdateButton(QPushButton):
         iemSettings = {}
         for line in self.textbox.toPlainText().splitlines():
             if line.strip() != "":
+                lines.append(line)
                 components = line.split()
                 if components[0] == "foh":
                     fohSettings[components[1]] = None
-                    lines.append(line)
                 elif components[0] == "iem":
                     iemSettings[components[1]] = None
-                    lines.append(line)
                 
         fohValues = self.osc["fohClient"].bulk_send_messages(fohSettings)
         iemValues = self.osc["iemClient"].bulk_send_messages(iemSettings)
@@ -105,13 +104,16 @@ class UpdateButton(QPushButton):
         self.textbox.clear()
         for line in lines:
             components = line.split()
-            value = components[2]
-            if components[0] == "foh":
-                value = fohValues[components[1]]
-            elif components[0] == "iem":
-                value = iemValues[components[1]]
+            if components[0] == "midi":
+                self.textbox.append(line)
+            else:
+                value = components[2]
+                if components[0] == "foh":
+                    value = fohValues[components[1]]
+                elif components[0] == "iem":
+                    value = iemValues[components[1]]
 
-            if self.name == "Minimum":
-                self.textbox.append(components[0] + " " + components[1] + " " + str(value) + " " + components[3])
-            if self.name == "Maximum":
-                self.textbox.append(components[0] + " " + components[1] + " " + components[2] + " " + str(value))
+                if self.name == "Minimum":
+                    self.textbox.append(components[0] + " " + components[1] + " " + str(value) + " " + components[3])
+                if self.name == "Maximum":
+                    self.textbox.append(components[0] + " " + components[1] + " " + components[2] + " " + str(value))

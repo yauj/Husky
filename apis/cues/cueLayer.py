@@ -1,4 +1,6 @@
 import sys
+
+from apis.cues.faders.fadersTab import FaderTab
 sys.path.insert(0, '../')
 
 from apis.cues.cueLoad import CueLoadButton
@@ -38,7 +40,7 @@ class CueLayer(QTabWidget):
         vlayout = QVBoxLayout()
 
         tabs = CueTab(self.osc, self.widgets)
-        faders = self.fadersLayer()
+        faders = FaderTab(self.config, self.widgets, self.osc)
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(CueLoadButton(self.widgets))
@@ -52,34 +54,6 @@ class CueLayer(QTabWidget):
         subLayer.addTab(faders, "Faders")
 
         vlayout.addWidget(subLayer)
-
-        widget = QWidget()
-        widget.setLayout(vlayout)
-        return widget
-    
-    def fadersLayer(self):
-        vlayout = QVBoxLayout()
-
-        vlayout.addWidget(QLabel("Volume Sliders for tracks"))
-
-        hlayout = QHBoxLayout()
-
-        for i, name in enumerate(self.config["faders"]):
-            fader = {}
-            fader["commands"] = self.config["faders"][name]
-
-            sliderLayout = QVBoxLayout()
-
-            fader["name"] = QLineEdit(name)
-
-            sliderLayout.addWidget(FadersSlider(self.osc, fader, i))
-            sliderLayout.addWidget(fader["name"])
-            sliderLayout.addWidget(FadersEditButton(self.osc, fader))
-
-            self.widgets["faders"].append(fader)
-            hlayout.addLayout(sliderLayout)
-
-        vlayout.addLayout(hlayout)
 
         widget = QWidget()
         widget.setLayout(vlayout)
