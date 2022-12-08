@@ -1,9 +1,11 @@
 import sys
-from apis.misc.miscReset import ResetButton
-sys.path.insert(0, '../')
+sys.path.insert(0, '../../')
 
+from apis.misc.miscReset import ResetButton
+from apis.misc.miscTalkback import TalkbackAllButton, TalkbackBox, TalkbackMeButton
 from apis.misc.miscTransfer import TransferButton
 from PyQt6.QtWidgets import (
+    QHBoxLayout,
     QLabel,
     QTabWidget,
     QVBoxLayout,
@@ -17,6 +19,7 @@ class MiscLayer(QTabWidget):
         self.osc = osc
 
         self.addTab(self.transferLayer(), "FOH->IEM")
+        self.addTab(self.talkbackLayer(), "Talkback")
         self.addTab(self.resetLayer(), "Reset")
         
     def transferLayer(self):
@@ -24,6 +27,29 @@ class MiscLayer(QTabWidget):
 
         vlayout.addWidget(QLabel("Do you want to transfer Channel EQ, Compression, Mute settings from the FOH Mixer to the IEM Mixer?"))
         vlayout.addWidget(TransferButton(self.osc))
+
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        return widget
+
+    def talkbackLayer(self):
+        vlayout = QVBoxLayout()
+
+        label = QLabel("Specify who to talkback to. A checked box indicates that talkback is active for channel.")
+        label.setMaximumHeight(20)
+        vlayout.addWidget(label)
+   
+        self.talkbacks = {}
+
+        vlayout.addWidget(TalkbackAllButton(self.osc, self.talkbacks))
+        for chName in self.config["personal"]:
+            if "iem_bus" in self.config["personal"][chName]:
+                hlayout = QHBoxLayout()
+                hlayout.addWidget(QLabel(chName + ":"))
+                hlayout.addWidget(TalkbackMeButton(self.osc, self.talkbacks, chName))
+                self.talkbacks[chName] = TalkbackBox(self.config, self.osc, chName)
+                hlayout.addWidget(self.talkbacks[chName])
+                vlayout.addLayout(hlayout)
 
         widget = QWidget()
         widget.setLayout(vlayout)
