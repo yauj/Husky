@@ -105,7 +105,7 @@ def getSettings(osc, prefix, settings, dlg = None):
         elif (isinstance(value, float)):
             type = "float"
 
-        lines.append(prefix + " " + setting + " " + str(value) + " " + type)
+        lines.append(prefix + " " + setting + " " + type + " " + str(value))
     
     lines.sort()
     return lines

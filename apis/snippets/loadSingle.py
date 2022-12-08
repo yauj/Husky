@@ -75,10 +75,10 @@ def fireLines(osc, lines, iemCopy, dlg = None):
                 else:
                     osc["lightMidi"].send(mido.Message("note_on", channel = channel, note = control))
         else:
-            arg = components[2]
-            if (components[3] == "int"):
+            arg = " ".join(components[3:])
+            if (components[2] == "int"):
                 arg = int(arg)
-            elif (components[3] == "float"):
+            elif (components[2] == "float"):
                 arg = float(arg)
 
             if (components[0] == "foh"):

@@ -36,7 +36,7 @@ Data directory contains files that are created and used by this program. The dir
 These contain osc commands in the following format:
 
 ```
-[foh|iem] [command] [argument] [str|int|float]
+[foh|iem] [command] [str|int|float] [argument]
 ```
 
 You are also able to fire MIDI cues, by putting commands in the following format:
