@@ -1,6 +1,3 @@
-import os
-import sys
-
 from apis.connection.connectionLayer import ConnectionLayer
 from apis.cues.cueLayer import CueLayer
 from apis.cues.cueLoad import loadCue
@@ -9,12 +6,14 @@ from apis.menu.Update import UpdateApp
 from apis.misc.miscLayer import MiscLayer
 from apis.snippets.snippetsLayer import SnippetsLayer
 from config import config
-from util.defaultOSC import MIDIVirtualPort, RetryingServer
+import os
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
     QTabWidget,
 )
+import sys
+from util.defaultOSC import MIDIVirtualPort, RetryingServer
 
 class MainWindow(QMainWindow):
     def __init__(self):
