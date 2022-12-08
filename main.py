@@ -4,7 +4,7 @@ import sys
 from apis.connection.connectMIDI import ConnectMidiButton
 from apis.connection.connectOSC import ConnectOscButton
 from apis.connection.listenMIDI import ListenMidiButton
-from apis.cues.cueLoad import CueLoadButton
+from apis.cues.cueLoad import CueLoadButton, loadCue
 from apis.cues.cueSave import CueSaveButton, saveCue
 from apis.cues.cueTabs import CueTab
 from apis.cues.faders.fadersEdit import FadersEditButton
@@ -42,12 +42,15 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.config = config
         self.widgets = {"connection": {}, "personal": {}, "cues": [], "cueSnippet": {}, "faders": []}
         self.osc = {}
         self.server = RetryingServer() # Server used for generic calls
         self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
 
         self.setWindowTitle("X32 Helper")
+
+        self.loadConnectionCache()
 
         tabs = QTabWidget()
 
@@ -56,7 +59,9 @@ class MainWindow(QMainWindow):
         tabs.addTab(self.cuesLayer(), "Cues")
         tabs.addTab(self.tracksLayer(), "Tracks")
         tabs.addTab(self.transferLayer(), "FOH->IEM")
-        
+
+        self.loadCueCache()
+
         self.setCentralWidget(tabs)
         
         menu = self.menuBar().addMenu("&X32 Helper")
@@ -67,7 +72,7 @@ class MainWindow(QMainWindow):
 
         validIPs = AvailableIPs().get()
 
-        for mixerName in config["osc"]:
+        for mixerName in self.config["osc"]:
             hlayout = QHBoxLayout()
 
             label = QLabel(mixerName.upper() + " Mixer IP Address:")
@@ -77,7 +82,7 @@ class MainWindow(QMainWindow):
             address = QComboBox()
             address.setEditable(True)
             address.addItems(validIPs)
-            address.setCurrentText(config["osc"][mixerName])
+            address.setCurrentText(self.config["osc"][mixerName])
             address.setFixedWidth(300)
             self.widgets["connection"][mixerName + "Client"] = address
             hlayout.addWidget(address)
@@ -97,7 +102,7 @@ class MainWindow(QMainWindow):
         port = QComboBox()
         port.setEditable(True)
         port.setFixedWidth(300)
-        port.setCurrentText(config["serverMidi"])
+        port.setCurrentText(self.config["serverMidi"])
         self.widgets["connection"]["serverMidi"] = port
         hlayout.addWidget(port)
 
@@ -107,11 +112,11 @@ class MainWindow(QMainWindow):
         hlayout.addWidget(ListenMidiButton(self.osc, status, port))
 
         port.addItems(self.osc["serverMidi"].get_input_names())
-        port.setCurrentText(config["serverMidi"])
+        port.setCurrentText(self.config["serverMidi"])
 
         vlayout.addLayout(hlayout)
         
-        for name in config["midi"]:
+        for name in self.config["midi"]:
             hlayout = QHBoxLayout()
             label = QLabel(name.capitalize() + " MIDI: ")
             label.setFixedWidth(150)
@@ -120,7 +125,7 @@ class MainWindow(QMainWindow):
             port = QComboBox()
             port.setEditable(True)
             port.setFixedWidth(300)
-            port.setCurrentText(config["midi"][name])
+            port.setCurrentText(self.config["midi"][name])
             self.widgets["connection"][name + "Midi"] = port
             hlayout.addWidget(port)
 
@@ -130,7 +135,7 @@ class MainWindow(QMainWindow):
             hlayout.addWidget(ConnectMidiButton(self.osc, name, status, port))
 
             port.addItems(self.osc[name + "Midi"].get_output_names())
-            port.setCurrentText(config["midi"][name])
+            port.setCurrentText(self.config["midi"][name])
 
             vlayout.addLayout(hlayout)
 
@@ -158,7 +163,7 @@ class MainWindow(QMainWindow):
 
         filenames = {}
 
-        for chName in config["personal"]:
+        for chName in self.config["personal"]:
             hlayout = QHBoxLayout()
 
             hlayout.addWidget(QLabel(chName + ":"))
@@ -196,7 +201,7 @@ class MainWindow(QMainWindow):
         vlayout.addWidget(QLabel("Enter name of person in textbox in the following format: 'FirstnameLastname'."))
         vlayout.addWidget(QLabel("Leave textbox blank if you don't want to save."))
 
-        for chName in config["personal"]:
+        for chName in self.config["personal"]:
             hlayout = QHBoxLayout()
 
             hlayout.addWidget(QLabel(chName + ":"))
@@ -220,11 +225,11 @@ class MainWindow(QMainWindow):
             self.widgets["personal"][chName].setCurrentIndex(-1)
             hlayout.addWidget(self.widgets["personal"][chName])
 
-            hlayout.addWidget(SaveButton(self.osc, chName, self.widgets["personal"][chName], config["personal"][chName]))
+            hlayout.addWidget(SaveButton(self.osc, chName, self.widgets["personal"][chName], self.config["personal"][chName]))
 
             vlayout.addLayout(hlayout)
 
-        vlayout.addWidget(SaveAllButton(self.osc, self.widgets["personal"], config["personal"]))
+        vlayout.addWidget(SaveAllButton(self.osc, self.widgets["personal"], self.config["personal"]))
 
         widget = QWidget()
         widget.setLayout(vlayout)
@@ -268,9 +273,9 @@ class MainWindow(QMainWindow):
 
         hlayout = QHBoxLayout()
 
-        for i, name in enumerate(config["faders"]):
+        for i, name in enumerate(self.config["faders"]):
             fader = {}
-            fader["commands"] = config["faders"][name]
+            fader["commands"] = self.config["faders"][name]
 
             sliderLayout = QVBoxLayout()
 
@@ -325,7 +330,7 @@ class MainWindow(QMainWindow):
             "settings": {}
         }
 
-        for chName in config["personal"]:
+        for chName in self.config["personal"]:
             hlayout = QHBoxLayout()
 
             hlayout.addWidget(QLabel(chName + ":"))
@@ -333,14 +338,14 @@ class MainWindow(QMainWindow):
             options["personal"][chName] = {}
 
             hlayout.addWidget(QLabel("FOH"))
-            if "channels" in config["personal"][chName]:
+            if "channels" in self.config["personal"][chName]:
                 options["personal"][chName]["channels"] = QCheckBox()
                 hlayout.addWidget(options["personal"][chName]["channels"])
             else:
                 hlayout.addWidget(QLabel("-"))
 
             hlayout.addWidget(QLabel("IEM"))
-            if "iem_bus" in config["personal"][chName]:
+            if "iem_bus" in self.config["personal"][chName]:
                 options["personal"][chName]["iem_bus"] = QCheckBox()
                 hlayout.addWidget(options["personal"][chName]["iem_bus"])
             else:
@@ -348,7 +353,7 @@ class MainWindow(QMainWindow):
             
             vlayout.addLayout(hlayout)
 
-        for setting in config["settings"]:
+        for setting in self.config["settings"]:
             hlayout = QHBoxLayout()
 
             hlayout.addWidget(QLabel(setting + ":"))
@@ -357,7 +362,7 @@ class MainWindow(QMainWindow):
 
             vlayout.addLayout(hlayout)
         
-        vlayout.addWidget(SnippetSaveButton(self.widgets, self.osc, config, options, page, cue))
+        vlayout.addWidget(SnippetSaveButton(self.widgets, self.osc, self.config, options, page, cue))
 
         widget = QWidget()
         widget.setLayout(vlayout)
@@ -426,6 +431,34 @@ class MainWindow(QMainWindow):
         widget.setLayout(vlayout)
         return widget
     
+    # Load Connection Cache
+    def loadConnectionCache(self):
+        if os.path.exists("connection.cache"):
+            connections = {}
+            with open("connection.cache") as file:
+                file.readline() # Skip Header Line
+                while (line := file.readline().strip()):
+                    components = line.split()
+                    connections[components[0]] = " ".join(components[1:])
+            
+            for mixerName in self.config["osc"]:
+                if mixerName + "Client" in connections:
+                    self.config["osc"][mixerName] = connections[mixerName + "Client"]
+
+            if "serverMidi" in connections:
+                self.config["serverMidi"] = connections["serverMidi"]
+
+            for name in self.config["midi"]:
+                if name + "Midi" in connections:
+                    self.config["midi"][name] = connections[name + "Midi"]
+
+    # Load Cue Cache
+    def loadCueCache(self):
+        if os.path.exists("cue.cache"):
+            with open("cue.cache") as file:
+                loadCue(file, self.widgets)
+
+    # Save Cache
     def closeEvent(self, a0):
         with open("connection.cache", "w") as file:
             for param in self.widgets["connection"]:

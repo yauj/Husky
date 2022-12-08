@@ -20,38 +20,41 @@ class CueLoadButton(QPushButton):
         dlg.setNameFilter("*.cue")
         if dlg.exec():
             with open(dlg.selectedFiles()[0]) as file:
-                file.readline() # Skip Header Line
-                cueIdx = 0
-                faderIdx = -1
-                lastFaderName = None
-                while (line := file.readline().strip()):
-                    components = line.split()
-
-                    if components[0] == "cue":
-                        if components[1] == "N":
-                            self.widgets["cues"][cueIdx]["key"].setCurrentIndex(-1)
-                        else:
-                            self.widgets["cues"][cueIdx]["key"].setCurrentText(components[1])
-
-                        if components[2] == "N":
-                            self.widgets["cues"][cueIdx]["lead"].setCurrentIndex(-1)
-                        else:
-                            self.widgets["cues"][cueIdx]["lead"].setCurrentText(components[2])
-
-                        if components[3] == "N":
-                            self.widgets["cues"][cueIdx]["snippet"].setText("")
-                        else:
-                            self.widgets["cues"][cueIdx]["snippet"].setText(components[3])
-
-                        cueIdx = cueIdx + 1
-                    elif components[0] == "fader":
-                        command = " ".join(components[1:5])
-                        name = " ".join(components[5:])
-                        if lastFaderName != name:
-                            faderIdx = faderIdx + 1
-                            self.widgets["faders"][faderIdx]["commands"] = []
-                            lastFaderName = name
-                        self.widgets["faders"][faderIdx]["name"].setText(name)
-                        self.widgets["faders"][faderIdx]["commands"].append(command)
+                loadCue(file, self.widgets)
         
         self.setDown(False)
+
+def loadCue(file, widgets):
+    file.readline() # Skip Header Line
+    cueIdx = 0
+    faderIdx = -1
+    lastFaderName = None
+    while (line := file.readline().strip()):
+        components = line.split()
+
+        if components[0] == "cue":
+            if components[1] == "N":
+                widgets["cues"][cueIdx]["key"].setCurrentIndex(-1)
+            else:
+                widgets["cues"][cueIdx]["key"].setCurrentText(components[1])
+
+            if components[2] == "N":
+                widgets["cues"][cueIdx]["lead"].setCurrentIndex(-1)
+            else:
+                widgets["cues"][cueIdx]["lead"].setCurrentText(components[2])
+
+            if components[3] == "N":
+                widgets["cues"][cueIdx]["snippet"].setText("")
+            else:
+                widgets["cues"][cueIdx]["snippet"].setText(components[3])
+
+            cueIdx = cueIdx + 1
+        elif components[0] == "fader":
+            command = " ".join(components[1:5])
+            name = " ".join(components[5:])
+            if lastFaderName != name:
+                faderIdx = faderIdx + 1
+                widgets["faders"][faderIdx]["commands"] = []
+                lastFaderName = name
+            widgets["faders"][faderIdx]["name"].setText(name)
+            widgets["faders"][faderIdx]["commands"].append(command)
