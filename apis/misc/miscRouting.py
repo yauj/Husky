@@ -78,6 +78,10 @@ def getCurrentRouting(osc, mixerName, dlg = None):
         settings["/outputs/p16/" + "{:02d}".format(idx) + "/src"] = None
     for idx in range(1, 7):
         settings["/outputs/aux/" + "{:02d}".format(idx) + "/src"] = None
+    for idx in range(1, 3):
+        settings["/outputs/aes/" + "{:02d}".format(idx) + "/src"] = None
+    for idx in range(1, 3):
+        settings["/outputs/rec/" + "{:02d}".format(idx) + "/src"] = None
     for idx in range(1, 33):
         settings["/config/userrout/in/" + "{:02d}".format(idx)] = None
     for idx in range(1, 49):

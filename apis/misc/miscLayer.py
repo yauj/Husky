@@ -187,6 +187,7 @@ class MiscLayer(QTabWidget):
         tabs.addTab(self.routingOutputCardLayer(mixerName, initValues), "Card")
         tabs.addTab(self.routingOutputLocalLayer(mixerName, initValues), "Local")
         tabs.addTab(self.routingOutputP16Layer(mixerName, initValues), "P16")
+        tabs.addTab(self.routingOutputOtherLayer(mixerName, initValues), "Other")
 
         return tabs
 
@@ -264,6 +265,33 @@ class MiscLayer(QTabWidget):
             hlayout.addWidget(QLabel("P16 " + str(idx) + ":"))
             option = RoutingBox(self.osc, mixerName, "/outputs/p16/" + "{:02d}".format(idx) + "/src", ROUTING_OUT_DIGITAL, initValues)
             self.widgets["routing"][mixerName]["/outputs/p16/" + "{:02d}".format(idx) + "/src"] = option
+            hlayout.addWidget(option)
+            vlayout.addLayout(hlayout)
+        
+        widget = QWidget()
+        widget.setLayout(vlayout)
+
+        scroll = QScrollArea()
+        scroll.setWidget(widget)
+        scroll.setWidgetResizable(True)
+        return scroll
+
+    def routingOutputOtherLayer(self, mixerName, initValues):
+        vlayout = QVBoxLayout()
+        
+        for idx, label in enumerate(["L", "R"]):
+            hlayout = QHBoxLayout()
+            hlayout.addWidget(QLabel("AES " + label + ":"))
+            option = RoutingBox(self.osc, mixerName, "/outputs/aes/" + "{:02d}".format(idx + 1) + "/src", ROUTING_OUT_DIGITAL, initValues)
+            self.widgets["routing"][mixerName]["/outputs/aes/" + "{:02d}".format(idx + 1) + "/src"] = option
+            hlayout.addWidget(option)
+            vlayout.addLayout(hlayout)
+
+        for idx, label in enumerate(["L", "R"]):
+            hlayout = QHBoxLayout()
+            hlayout.addWidget(QLabel("USB Recording " + label + ":"))
+            option = RoutingBox(self.osc, mixerName, "/outputs/rec/" + "{:02d}".format(idx + 1) + "/src", ROUTING_OUT_DIGITAL, initValues)
+            self.widgets["routing"][mixerName]["/outputs/rec/" + "{:02d}".format(idx + 1) + "/src"] = option
             hlayout.addWidget(option)
             vlayout.addLayout(hlayout)
         
