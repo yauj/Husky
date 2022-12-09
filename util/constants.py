@@ -6,12 +6,6 @@ ALL_CHANNELS = [
     "/auxin/01", "/auxin/02", "/auxin/03", "/auxin/04", "/auxin/05", "/auxin/06", "/auxin/07", "/auxin/08",
     "/fxrtn/01", "/fxrtn/02", "/fxrtn/03", "/fxrtn/04", "/fxrtn/05", "/fxrtn/06", "/fxrtn/07", "/fxrtn/08"
 ]
-COPY_CHANNELS = [
-    "/ch/01", "/ch/02", "/ch/03", "/ch/04", "/ch/05", "/ch/06", "/ch/07", "/ch/08",
-    "/ch/09", "/ch/10", "/ch/11", "/ch/12", "/ch/13", "/ch/14", "/ch/15", "/ch/16",
-    "/ch/17", "/ch/18", "/ch/19", "/ch/20", "/ch/21", "/ch/22", "/ch/23", "/ch/24",
-    "/ch/25", "/ch/26", "/ch/27", "/ch/28", "/ch/29", "/ch/31", "/ch/32"
-]
 AUX_CHANNELS = [
     "/auxin/01", "/auxin/02", "/auxin/03", "/auxin/04", "/auxin/05", "/auxin/06", "/auxin/07", "/auxin/08",
     "/fxrtn/01", "/fxrtn/02", "/fxrtn/03", "/fxrtn/04", "/fxrtn/05", "/fxrtn/06", "/fxrtn/07", "/fxrtn/08"

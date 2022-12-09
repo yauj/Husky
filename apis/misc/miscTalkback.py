@@ -22,7 +22,7 @@ class TalkbackBox(QCheckBox):
     def clicked(self, value):
         try:
             arg = 1 if value == 2 else 0
-            self.osc["iemClient"].send_message("/ch/30/mix/" + self.config["personal"][self.chName]["iem_bus"] + "/on", arg)
+            self.osc["iemClient"].send_message(self.config["talkbackChannel"] + "/mix/" + self.config["personal"][self.chName]["iem_bus"] + "/on", arg)
         except Exception as ex:
             print(traceback.format_exc())
             dlg = QMessageBox(self)

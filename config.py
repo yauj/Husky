@@ -60,7 +60,7 @@ config = {
         ]
     },
     "faders": {
-        "VOX EQ": {"commands": ["foh /ch/05/eq/1/g 0.4 0.5"]},
+        "VOX EQ": {"commands": ["foh /ch/05/eq/1/g 0.2 0.5"]},
         "VOX Pan": {"commands": ["foh /ch/06/mix/pan 0.5 0.2", "foh /ch/07/mix/pan 0.5 0.8"]},
         "EG/Keys Pan": {"commands": ["foh /ch/13/mix/pan 0.5 0.2", "foh /ch/11/mix/pan 0.5 0.8"]},
         "Bass/Drums HPF": {"commands": ["foh /ch/15/preamp/hpf 0.3 0.0", "foh /ch/18/preamp/hpf 0.3 0.0", "foh /ch/20/preamp/hpf 0.3 0.0"]},
@@ -69,6 +69,7 @@ config = {
         "Bass Tracks": {"defaultValue": 63, "commands": ["midi audio 2 52"]},
         "Drum Tracks": {"defaultValue": 63, "commands": ["midi audio 2 53"]},
     },
+    "talkbackChannel": "/ch/30",
     "resetCommands": {
         "/ch/01/mix/fader": 0.75, "/ch/01/mix/pan": 0.5, "/ch/01/mix/on": 1,
         "/ch/02/mix/fader": 0.75, "/ch/02/mix/pan": 0.5, "/ch/02/mix/on": 1,

@@ -2,12 +2,13 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
-from util.constants import COPY_CHANNELS, LINK_CHANNELS, SETTINGS
+from util.constants import ALL_CHANNELS, AUX_CHANNELS, LINK_CHANNELS, SETTINGS
 from util.customWidgets import ProgressDialog
 
 class TransferButton(QPushButton):
-    def __init__(self, osc):
+    def __init__(self, config, osc):
         super().__init__("Yes!")
+        self.config = config
         self.osc = osc
         self.pressed.connect(self.clicked)
     
@@ -26,7 +27,8 @@ class TransferButton(QPushButton):
                 settings["/config/chlink/" + chlink] = None
 
             # COPY_CHANNELS excludes FOH talkback channel
-            for channel in COPY_CHANNELS:
+            channels = set(ALL_CHANNELS) - set(AUX_CHANNELS) - set([self.config["talkbackChannel"]])
+            for channel in channels:
                 for category in SETTINGS:
                     for param in SETTINGS[category]:
                         settings[channel + param] = None

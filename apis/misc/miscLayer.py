@@ -15,19 +15,9 @@ class MiscLayer(QTabWidget):
         self.config = config
         self.osc = osc
 
-        self.addTab(self.transferLayer(), "FOH->IEM")
         self.addTab(self.talkbackLayer(), "Talkback")
+        self.addTab(self.transferLayer(), "FOH->IEM")
         self.addTab(self.resetLayer(), "Reset")
-        
-    def transferLayer(self):
-        vlayout = QVBoxLayout()
-
-        vlayout.addWidget(QLabel("Do you want to transfer Channel EQ, Compression, Mute settings from the FOH Mixer to the IEM Mixer?"))
-        vlayout.addWidget(TransferButton(self.osc))
-
-        widget = QWidget()
-        widget.setLayout(vlayout)
-        return widget
 
     def talkbackLayer(self):
         vlayout = QVBoxLayout()
@@ -50,6 +40,16 @@ class MiscLayer(QTabWidget):
                 hlayout.addWidget(spacer)
                 hlayout.addWidget(self.talkbacks[chName])
                 vlayout.addLayout(hlayout)
+
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        return widget
+        
+    def transferLayer(self):
+        vlayout = QVBoxLayout()
+
+        vlayout.addWidget(QLabel("Do you want to transfer Channel EQ, Compression, Mute settings from the FOH Mixer to the IEM Mixer?"))
+        vlayout.addWidget(TransferButton(self.config, self.osc))
 
         widget = QWidget()
         widget.setLayout(vlayout)
