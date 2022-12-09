@@ -11,6 +11,7 @@ class TalkbackBox(QCheckBox):
         self.config = config
         self.osc = osc
         self.chName = chName
+        self.setFixedWidth(20)
         if self.osc["iemClient"].connected:
             self.stateChanged.connect(self.clicked)
             self.setChecked(True)
@@ -56,6 +57,7 @@ class TalkbackMeButton(QPushButton):
         self.boxes = boxes
         self.chName = chName
         self.pressed.connect(self.clicked)
+        self.setFixedWidth(150)
     
     def clicked(self):
         if not self.osc["iemClient"].connected:

@@ -45,6 +45,9 @@ class MiscLayer(QTabWidget):
                 hlayout.addWidget(QLabel(chName + ":"))
                 hlayout.addWidget(TalkbackMeButton(self.osc, self.talkbacks, chName))
                 self.talkbacks[chName] = TalkbackBox(self.config, self.osc, chName)
+                spacer = QWidget()
+                spacer.setFixedWidth(30)
+                hlayout.addWidget(spacer)
                 hlayout.addWidget(self.talkbacks[chName])
                 vlayout.addLayout(hlayout)
 
