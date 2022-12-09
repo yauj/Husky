@@ -17,6 +17,7 @@ class SaveButton(QPushButton):
         self.personName = personName
         self.config = config
         self.pressed.connect(self.clicked)
+        self.setFixedWidth(80)
     
     def clicked(self):
         if (self.personName.currentText() != ""):

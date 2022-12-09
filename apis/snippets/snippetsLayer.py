@@ -29,15 +29,21 @@ class SnippetsLayer(QTabWidget):
     def loadLayer(self):
         vlayout = QVBoxLayout()
 
-        vlayout.addWidget(QLabel("Enter filename in textbox."))
-        vlayout.addWidget(QLabel("Leave textbox blank if you don't want to load."))
+        label = QLabel(
+            "Enter filename in textbox.\n"
+            + "Leave textbox blank if you don't want to load."
+        )
+        label.setFixedHeight(30)
+        vlayout.addWidget(label)
 
         filenames = {}
 
         for chName in self.config["personal"]:
             hlayout = QHBoxLayout()
 
-            hlayout.addWidget(QLabel(chName + ":"))
+            label = QLabel(chName + ":")
+            label.setFixedWidth(100)
+            hlayout.addWidget(label)
 
             files = []
             for filename in os.listdir("data"):
@@ -52,7 +58,7 @@ class SnippetsLayer(QTabWidget):
             filenames[chName].addItems(files)
             filenames[chName].setEditable(True)
             filenames[chName].setMaxCount(10)
-            filenames[chName].setFixedWidth(300)
+            filenames[chName].setMinimumWidth(300)
             filenames[chName].setCurrentIndex(-1)
             hlayout.addWidget(filenames[chName])
 
@@ -69,13 +75,19 @@ class SnippetsLayer(QTabWidget):
     def saveLayer(self):
         vlayout = QVBoxLayout()
 
-        vlayout.addWidget(QLabel("Enter name of person in textbox in the following format: 'FirstnameLastname'."))
-        vlayout.addWidget(QLabel("Leave textbox blank if you don't want to save."))
+        label = QLabel(
+            "Enter name of person in textbox in the following format: 'FirstnameLastname'.\n"
+            + "Leave textbox blank if you don't want to save."
+        )
+        label.setFixedHeight(30)
+        vlayout.addWidget(label)
 
         for chName in self.config["personal"]:
             hlayout = QHBoxLayout()
 
-            hlayout.addWidget(QLabel(chName + ":"))
+            label = QLabel(chName + ":")
+            label.setFixedWidth(100)
+            hlayout.addWidget(label)
 
             names = []
             for filename in os.listdir("data"):
@@ -92,7 +104,7 @@ class SnippetsLayer(QTabWidget):
             self.widgets["personal"][chName].addItems(names)
             self.widgets["personal"][chName].setEditable(True)
             self.widgets["personal"][chName].setMaxCount(10)
-            self.widgets["personal"][chName].setFixedWidth(300)
+            self.widgets["personal"][chName].setMinimumWidth(300)
             self.widgets["personal"][chName].setCurrentIndex(-1)
             hlayout.addWidget(self.widgets["personal"][chName])
 

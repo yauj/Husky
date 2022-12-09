@@ -22,6 +22,7 @@ class CueFireButton(QPushButton):
         self.printIndex = printIndex
         self.cues = cues
         self.pressed.connect(self.clicked)
+        self.setFixedWidth(80)
     
     def clicked(self):
         try:

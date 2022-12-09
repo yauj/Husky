@@ -1,6 +1,8 @@
+from apis.cues.cueClear import CueClearButton
 from apis.cues.cueLoad import CueLoadButton
 from apis.cues.cueSave import CueSaveButton
 from apis.cues.cueTabs import CueTab
+from apis.cues.faders.fadersReset import FadersResetButton
 from apis.cues.faders.fadersTab import FaderTab
 from apis.cues.snippet.snippetAdd import SnippetAddButton
 from apis.cues.snippet.snippetEdit import SnippetEditButton
@@ -33,21 +35,47 @@ class CueLayer(QTabWidget):
     def mainLayer(self):
         vlayout = QVBoxLayout()
 
-        tabs = CueTab(self.osc, self.widgets)
-        faders = FaderTab(self.config, self.widgets, self.osc)
+        tabs = self.cueTab()
+        faders = self.faderTab()
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(CueLoadButton(self.widgets))
         hlayout.addWidget(CueSaveButton(self.widgets))
         vlayout.addLayout(hlayout)
 
-        vlayout.addWidget(QLabel("Fire Cues. Green indicates last cue fired was successful. Red indicates failure."))
-
         subLayer = QTabWidget()
         subLayer.addTab(tabs, "Cues")
         subLayer.addTab(faders, "Faders")
 
         vlayout.addWidget(subLayer)
+
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        return widget
+
+    def cueTab(self):
+        vlayout = QVBoxLayout()
+
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(QLabel("Fire Cues. Green indicates last cue fired was successful. Red indicates failure."))
+        hlayout.addWidget(CueClearButton(self.widgets))
+        vlayout.addLayout(hlayout)
+
+        vlayout.addWidget(CueTab(self.osc, self.widgets))
+
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        return widget
+    
+    def faderTab(self):
+        vlayout = QVBoxLayout()
+
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(QLabel("Configurable OSC and MIDI Faders"))
+        hlayout.addWidget(FadersResetButton(self.config, self.widgets))
+        vlayout.addLayout(hlayout)
+
+        vlayout.addWidget(FaderTab(self.config, self.widgets, self.osc))
 
         widget = QWidget()
         widget.setLayout(vlayout)

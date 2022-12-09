@@ -15,6 +15,7 @@ class LoadButton(QPushButton):
         self.filename = filename
         self.person = person
         self.pressed.connect(self.clicked)
+        self.setFixedWidth(80)
 
     def clicked(self):
         if (self.filename.currentText() != "" and os.path.exists("data/" + self.filename.currentText())):

@@ -45,9 +45,10 @@ class FaderTab(QTabWidget):
                 fader["commands"] = []
                 fader["name"] = QLineEdit()
 
-            sliderLayout = QVBoxLayout()
+            fader["slider"] = FadersSlider(self.osc, fader, self.index, defaultValue)
 
-            sliderLayout.addWidget(FadersSlider(self.osc, fader, self.index, defaultValue))
+            sliderLayout = QVBoxLayout()
+            sliderLayout.addWidget(fader["slider"])
             sliderLayout.addWidget(fader["name"])
             sliderLayout.addWidget(FadersEditButton(self.osc, fader))
 

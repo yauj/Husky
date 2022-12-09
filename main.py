@@ -83,5 +83,6 @@ class MainWindow(QMainWindow):
 
 app = QApplication(sys.argv)
 window = MainWindow()
+window.resize(1, 1) # Open in smallest size
 window.show()
 app.exec()

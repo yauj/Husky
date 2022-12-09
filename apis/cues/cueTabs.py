@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QScrollArea,
     QTabWidget,
     QVBoxLayout,
     QWidget,
@@ -56,7 +57,6 @@ class CueTab(QTabWidget):
 
             snippet = QLineEdit()
             snippet.setPlaceholderText("Snippet Filename")
-            snippet.setFixedWidth(150)
             hlayout.addWidget(snippet)
             options["snippet"] = snippet
             self.widgets["cueSnippet"][pageName][printIndex] = snippet
@@ -68,7 +68,11 @@ class CueTab(QTabWidget):
 
         widget = QWidget()
         widget.setLayout(vlayout)
-        return widget
+
+        scroll = QScrollArea()
+        scroll.setWidget(widget)
+        scroll.setWidgetResizable(True)
+        return scroll
 
     def callbackFunction(self, message):
         if message.channel == 4 and message.value > 0:

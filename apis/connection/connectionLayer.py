@@ -33,11 +33,12 @@ class ConnectionLayer(QWidget):
             address.setEditable(True)
             address.addItems(validIPs)
             address.setCurrentText(self.config["osc"][mixerName])
-            address.setFixedWidth(300)
+            address.setMinimumWidth(300)
             self.widgets["connection"][mixerName + "Client"] = address
             hlayout.addWidget(address)
 
             status = QLabel()
+            status.setFixedWidth(80)
             hlayout.addWidget(status)
             
             hlayout.addWidget(ConnectOscButton(self.osc, address, status, mixerName, self.server))
@@ -51,12 +52,13 @@ class ConnectionLayer(QWidget):
 
         port = QComboBox()
         port.setEditable(True)
-        port.setFixedWidth(300)
+        port.setMinimumWidth(300)
         port.setCurrentText(self.config["serverMidi"])
         self.widgets["connection"]["serverMidi"] = port
         hlayout.addWidget(port)
 
         status = QLabel()
+        status.setFixedWidth(80)
         hlayout.addWidget(status)
 
         hlayout.addWidget(ListenMidiButton(self.osc, status, port))
@@ -74,12 +76,13 @@ class ConnectionLayer(QWidget):
 
             port = QComboBox()
             port.setEditable(True)
-            port.setFixedWidth(300)
+            port.setMinimumWidth(300)
             port.setCurrentText(self.config["midi"][name])
             self.widgets["connection"][name + "Midi"] = port
             hlayout.addWidget(port)
 
             status = QLabel()
+            status.setFixedWidth(80)
             hlayout.addWidget(status)
 
             hlayout.addWidget(ConnectMidiButton(self.osc, name, status, port))

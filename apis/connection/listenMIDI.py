@@ -13,6 +13,7 @@ class ListenMidiButton(QPushButton):
         self.osc["serverMidi"] = MIDIServer(self.port)
         self.init()
         self.pressed.connect(self.connect)
+        self.setFixedWidth(80)
     
     def connect(self):
         if (self.init()):

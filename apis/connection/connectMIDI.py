@@ -13,6 +13,7 @@ class ConnectMidiButton(QPushButton):
         self.port = port
         self.init()
         self.pressed.connect(self.connect)
+        self.setFixedWidth(80)
     
     def connect(self):
         if (self.init()):

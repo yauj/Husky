@@ -14,6 +14,7 @@ class ConnectOscButton(QPushButton):
         self.server = server
         self.init()
         self.pressed.connect(self.connect)
+        self.setFixedWidth(80)
     
     def connect(self):
         if (self.init()):
