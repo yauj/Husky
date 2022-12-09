@@ -20,7 +20,9 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.config = config
-        self.widgets = {"connection": {}, "personal": {}, "cues": [], "cueSnippet": {}, "faders": []}
+        self.widgets = {"connection": {}, "personal": {}, "cues": [], "cueSnippet": {}, "faders": [], "routing": {}}
+        for mixerName in self.config["osc"]:
+            self.widgets["routing"][mixerName] = {}
         self.osc = {}
         self.server = RetryingServer() # Server used for generic calls
         self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
@@ -34,7 +36,7 @@ class MainWindow(QMainWindow):
         tabs.addTab(ConnectionLayer(self.config, self.widgets, self.osc, self.server), "X32 Connection")
         tabs.addTab(SnippetsLayer(self.config, self.widgets, self.osc), "Snippets")
         tabs.addTab(CueLayer(self.config, self.widgets, self.osc), "Cues")
-        tabs.addTab(MiscLayer(self.config, self.osc), "Misc")
+        tabs.addTab(MiscLayer(self.config, self.widgets, self.osc), "Misc")
 
         self.loadCueCache()
 

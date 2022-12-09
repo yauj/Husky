@@ -21,6 +21,8 @@ class FadersSlider(QSlider):
 
         if defaultValue:
             self.setValue(defaultValue)
+        # TODO: ENHANCEMENT - initialize slider based off of first command
+        # TODO: ENHANCEMENT - feedback current slider value to MIDI input during init
 
         self.osc["serverMidi"].callback(self.callbackFunction)
 

@@ -41,7 +41,7 @@ class ConnectionLayer(QWidget):
             status.setFixedWidth(80)
             hlayout.addWidget(status)
             
-            hlayout.addWidget(ConnectOscButton(self.osc, address, status, mixerName, self.server))
+            hlayout.addWidget(ConnectOscButton(self.osc, address, status, mixerName, self.server, self.widgets))
 
             vlayout.addLayout(hlayout)
 
