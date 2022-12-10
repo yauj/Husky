@@ -1,5 +1,5 @@
 from apis.misc.miscReset import ResetButton
-from apis.misc.miscRouting import RoutingBox, RoutingSyncButton, getCurrentRouting
+from apis.misc.miscRouting import RoutingBox, RoutingPresetButton, RoutingSyncButton, getCurrentRouting
 from apis.misc.miscTalkback import TalkbackAllButton, TalkbackBox, TalkbackMeButton
 from apis.misc.miscTransfer import TransferButton
 from PyQt6.QtWidgets import (
@@ -89,6 +89,13 @@ class MiscLayer(QTabWidget):
 
     def routingInLayer(self, mixerName, initValues):
         vlayout = QVBoxLayout()
+
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(RoutingPresetButton("AES-A", mixerName, self.widgets, range(4, 8)))
+        hlayout.addWidget(RoutingPresetButton("AES-B", mixerName, self.widgets, range(10, 14)))
+        hlayout.addWidget(RoutingPresetButton("Card", mixerName, self.widgets, range(16, 20)))
+        hlayout.addWidget(RoutingPresetButton("User In", mixerName, self.widgets, range(20, 24)))
+        vlayout.addLayout(hlayout)
         
         for bank in BANKS_32:
             hlayout = QHBoxLayout()

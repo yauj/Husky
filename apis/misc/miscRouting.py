@@ -32,6 +32,33 @@ class RoutingBox(QComboBox):
             dlg.setText("Error: " + str(ex))
             dlg.exec()
 
+class RoutingPresetButton(QPushButton):
+    def __init__(self, name, mixerName, widgets, indexes):
+        super().__init__(name + " Routing")
+        self.name = name
+        self.mixerName = mixerName
+        self.widgets = widgets
+        self.indexes = indexes
+        self.pressed.connect(self.clicked)
+    
+    def clicked(self):
+        try:
+            for idx, bank in enumerate(BANKS_32):
+                self.widgets["routing"][self.mixerName]["/config/routing/IN/" + bank].setCurrentIndex(self.indexes[idx])
+            
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Routing")
+            dlg.setText(self.mixerName.upper() + " " + self.name + " Preset Loaded")
+            dlg.exec()
+        except Exception as ex:
+            print(traceback.format_exc())
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Routing")
+            dlg.setText("Error: " + str(ex))
+            dlg.exec()
+        
+        self.setDown(False)
+
 class RoutingSyncButton(QPushButton):
     def __init__(self, osc, mixerName, widgets):
         super().__init__("Sync")

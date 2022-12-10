@@ -7,7 +7,7 @@ config = {
     "midi": {
         "audio": "X32Helper",
         "video": "Network Session 1",
-        "light": "Gracepoint‚Äôs Mac mini Bluetooth"
+        "light": "USB MIDI Interface"
     },
     "personal": {
         "DPA": {
