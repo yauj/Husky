@@ -1,3 +1,4 @@
+from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
     QComboBox,
     QMessageBox,
@@ -31,6 +32,51 @@ class RoutingBox(QComboBox):
             dlg.setWindowTitle("Routing")
             dlg.setText("Error: " + str(ex))
             dlg.exec()
+
+class RoutingSwitchButton(QPushButton):
+    def __init__(self, osc, mixerName, tabs):
+        super().__init__("Switch Between Record/Play")
+        self.osc = osc
+        self.mixerName = mixerName
+        self.tabs = tabs
+        self.pressed.connect(self.clicked)
+        self.updateState()
+
+    def clicked(self):
+        try:
+            newValue = 1 if self.isRecord() else 0
+            self.osc[self.mixerName + "Client"].send_message("/config/routing/routswitch", newValue)
+            self.updateState()
+
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Routing")
+            dlg.setText(self.mixerName.upper() + " Routing Swapped")
+            dlg.exec()
+        except Exception as ex:
+            print(traceback.format_exc())
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Routing")
+            dlg.setText("Error: " + str(ex))
+            dlg.exec()
+        
+        self.setDown(False)
+    
+    def isRecord(self):
+        settings = {"/config/routing/routswitch": None}
+        values = self.osc[self.mixerName + "Client"].bulk_send_messages(settings)
+        return values["/config/routing/routswitch"] == 0
+
+    def updateState(self):
+        try:
+            if self.isRecord():
+                self.tabs.tabBar().setTabTextColor(0, QColor(0, 255, 0))
+                self.tabs.tabBar().setTabTextColor(1, QColor())
+            else:
+                self.tabs.tabBar().setTabTextColor(0, QColor())
+                self.tabs.tabBar().setTabTextColor(1, QColor(0, 255, 0))
+        except:
+            self.tabs.tabBar().setTabTextColor(0, QColor())
+            self.tabs.tabBar().setTabTextColor(1, QColor())
 
 class RoutingPresetButton(QPushButton):
     def __init__(self, name, mixerName, widgets, indexes):
@@ -93,8 +139,10 @@ def getCurrentRouting(osc, mixerName, dlg = None):
     settings = {}
     for bank in BANKS_32:
         settings["/config/routing/IN/" + bank] = None
+        settings["/config/routing/PLAY/" + bank] = None
         settings["/config/routing/CARD/" + bank] = None
     settings["/config/routing/IN/AUX"] = None
+    settings["/config/routing/PLAY/AUX"] = None
     for bank in BANKS_48:
         settings["/config/routing/AES50A/" + bank] = None
         settings["/config/routing/AES50B/" + bank] = None

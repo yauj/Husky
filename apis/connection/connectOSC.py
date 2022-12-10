@@ -31,6 +31,7 @@ class ConnectOscButton(QPushButton):
             dlg.exec()
         
         syncRouting(self.osc, self.mixerName, self.widgets)
+        self.widgets["routingSwap"][self.mixerName].updateState()
         self.setDown(False)
 
     def init(self):

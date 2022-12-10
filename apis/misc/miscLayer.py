@@ -1,5 +1,5 @@
 from apis.misc.miscReset import ResetButton
-from apis.misc.miscRouting import RoutingBox, RoutingPresetButton, RoutingSyncButton, getCurrentRouting
+from apis.misc.miscRouting import RoutingBox, RoutingPresetButton, RoutingSwitchButton, RoutingSyncButton, getCurrentRouting
 from apis.misc.miscTalkback import TalkbackAllButton, TalkbackBox, TalkbackMeButton
 from apis.misc.miscTransfer import TransferButton
 from PyQt6.QtWidgets import (
@@ -90,6 +90,22 @@ class MiscLayer(QTabWidget):
     def routingInLayer(self, mixerName, initValues):
         vlayout = QVBoxLayout()
 
+        tabs = QTabWidget()
+        tabs.addTab(self.routingInTabLayer(mixerName, initValues, "IN"), "Record")
+        tabs.addTab(self.routingInTabLayer(mixerName, initValues, "PLAY"), "Play")
+
+        self.widgets["routingSwap"][mixerName] = RoutingSwitchButton(self.osc, mixerName, tabs)
+
+        vlayout.addWidget(self.widgets["routingSwap"][mixerName])
+        vlayout.addWidget(tabs)
+        
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        return widget
+
+    def routingInTabLayer(self, mixerName, initValues, mapping):
+        vlayout = QVBoxLayout()
+
         hlayout = QHBoxLayout()
         hlayout.addWidget(RoutingPresetButton("AES-A", mixerName, self.widgets, range(4, 8)))
         hlayout.addWidget(RoutingPresetButton("AES-B", mixerName, self.widgets, range(10, 14)))
@@ -100,15 +116,15 @@ class MiscLayer(QTabWidget):
         for bank in BANKS_32:
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("Channels " + bank + ":"))
-            option = RoutingBox(self.osc, mixerName, "/config/routing/IN/" + bank, ROUTING_IN, initValues)
-            self.widgets["routing"][mixerName]["/config/routing/IN/" + bank] = option
+            option = RoutingBox(self.osc, mixerName, "/config/routing/" + mapping + "/" + bank, ROUTING_IN, initValues)
+            self.widgets["routing"][mixerName]["/config/routing/" + mapping + "/" + bank] = option
             hlayout.addWidget(option)
             vlayout.addLayout(hlayout)
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(QLabel("AUX Channels:"))
-        option = RoutingBox(self.osc, mixerName, "/config/routing/IN/AUX", ROUTING_IN_AUX, initValues)
-        self.widgets["routing"][mixerName]["/config/routing/IN/AUX"] = option
+        option = RoutingBox(self.osc, mixerName, "/config/routing/" + mapping + "/AUX", ROUTING_IN_AUX, initValues)
+        self.widgets["routing"][mixerName]["/config/routing/" + mapping + "/AUX"] = option
         hlayout.addWidget(option)
         vlayout.addLayout(hlayout)
         
