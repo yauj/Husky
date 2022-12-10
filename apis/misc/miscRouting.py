@@ -46,7 +46,6 @@ class RoutingSwitchButton(QPushButton):
         try:
             newValue = 1 if self.isRecord() else 0
             self.osc[self.mixerName + "Client"].send_message("/config/routing/routswitch", newValue)
-            self.updateState()
 
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Routing")
@@ -59,6 +58,7 @@ class RoutingSwitchButton(QPushButton):
             dlg.setText("Error: " + str(ex))
             dlg.exec()
         
+        self.updateState()
         self.setDown(False)
     
     def isRecord(self):
