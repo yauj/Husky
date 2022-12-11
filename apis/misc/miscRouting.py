@@ -8,6 +8,7 @@ import traceback
 from util.constants import BANKS_16, BANKS_32, BANKS_48
 from util.customWidgets import ProgressDialog
 
+# TODO: Create subscription, to change routing if routing changes
 class RoutingBox(QComboBox):
     def __init__(self, osc, mixerName, command, options, initValues):
         super().__init__()
