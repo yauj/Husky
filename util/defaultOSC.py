@@ -153,20 +153,20 @@ class SubscriptionServer(ThreadingOSCUDPServer):
         self.mixerName = mixerName
         self.ipAddress = None
         self.subscriptions = {}
-        self.mainThread = threading.Thread(target = self.serve_forever)
-        self.mainThread.start()
+        self.activeSubscriptions = {} # Internal
+        self.shutdownFlag = False
+        threading.Thread(target = self.serve_forever).start()
+        threading.Thread(target = self.renewThread).start()
 
     def initIpAddress(self, ipAddress):
+        self.activeSubscriptions = {} # Kill all current renewals
         self.ipAddress = ipAddress
         if self.ipAddress is not None:
-            client = SimpleUDPClient(self.ipAddress, 10023)
-            client._sock = self.socket
-            for address in self.subscriptions:
-                client.send_message("/subscribe", address)
+            threading.Thread(target = self.subscribeThread).start()
     
     def shutdown(self):
-        self.subscriptions = {}
-        super().shutdown()
+        self.shutdownFlag = True # Finishes up renew thread
+        super().shutdown() # Finishes up server thread
 
     def functionHandler(self, address, *args):
         if address in self.subscriptions:
@@ -174,26 +174,68 @@ class SubscriptionServer(ThreadingOSCUDPServer):
 
     def add(self, address, command):
         self.subscriptions[address] = command
-        threading.Thread(target = self.renewThread, args = (address,)).start()
-    
-    def remove(self, address):
-        return self.subscriptions.pop(address, None)
-        # self.client.send_message("/unsubscribe", address) Just allow subscription to expire
-
-    def renewThread(self, address):
         if self.ipAddress is not None:
             client = SimpleUDPClient(self.ipAddress, 10023)
             client._sock = self.socket
             client.send_message("/subscribe", address)
-        while True:
-            for _ in range(0, 15):
-                sleep(0.5)
-                if address not in self.subscriptions:
-                    return
-            if self.ipAddress is not None:
-                client = SimpleUDPClient(self.ipAddress, 10023)
-                client._sock = self.socket
-                client.send_message("/renew", address)
+            self.activeSubscriptions[address] = command
+    
+    def remove(self, address):
+        self.activeSubscriptions.pop(address, None)
+        self.subscriptions.pop(address, None)
+        # self.client.send_message("/unsubscribe", address) Just allow subscription to expire
+    
+    def subscribeThread(self):
+        for th in self.parentThread("/subscribe", self.subscriptions):
+            th.join()
+        self.activeSubscriptions = self.subscriptions.copy()
+
+    def renewThread(self):
+        while not self.shutdownFlag:
+            startTime = time()
+            for th in self.parentThread("/renew", self.activeSubscriptions):
+                th.join()
+            print(str(time() - startTime))
+
+    def parentThread(self, command, subs):
+        subs = subs.copy()
+        itr = iter(subs)
+        size = ceil(len(subs) / NUM_THREADS)
+        threads = []
+        for _ in range(0, NUM_THREADS):
+            slice = []
+            for address in islice(itr, size):
+                slice.append(address)
+            th = threading.Thread(target = self.childThread, args = (command, slice))
+            th.start()
+            threads.append(th)
+        return threads
+    
+    def childThread(self, command, args):
+        startTime = time()
+        if self.ipAddress is not None and len(args) > 0:
+            client = SimpleUDPClient(self.ipAddress, 10023)
+            client._sock = self.socket
+            sleepTime = 4.0 / len(args) # Spread out commands across approx 4.0 seconds
+            for arg in args:
+                itrTime = time()
+            
+                if self.shutdownFlag or len(self.activeSubscriptions) == 0:
+                    return # Exit early if shutdown or reconnection going on
+
+                client.send_message(command, arg)
+
+                # If time to run is over sleep time, want to just skip sleep
+                # If over 4.0 seconds already, just want to spew the rest out.
+                while time() - startTime < 4.0 and time() - itrTime < sleepTime:
+                    if self.shutdownFlag or len(self.activeSubscriptions) == 0:
+                        return # Exit early if shutdown or reconnection going on
+                    sleep(min(sleepTime - (time() - itrTime), 0.1))
+
+        while time() - startTime < 4.0: # If still under 4.0 seconds, then we want to wait the rest out.
+            if self.shutdownFlag:
+                return # Exit early if shutdown
+            sleep(0.1)
 
 class AvailableIPs:
     def get(self):
