@@ -51,13 +51,14 @@ class FadersSlider(QSlider):
     
     def processSubscription(self, arg):
         components = self.fader["commands"][0].split()
+        margin = abs(max - min) / 127.0
         min = float(components[2])
         max = float(components[3])
         increasingFader = max >= min
-        if (increasingFader and arg > max) or (not increasingFader and arg < max):
+        if (increasingFader and arg > max + margin) or (not increasingFader and arg < max - margin):
             self.fader["commands"][0] = components[0] + " " + components[1] + " " + components[2] + " " + str(arg)
             max = arg
-        elif (increasingFader and arg < min) or (not increasingFader and arg > min):
+        elif (increasingFader and arg < min - margin) or (not increasingFader and arg > min + margin):
             self.fader["commands"][0] = components[0] + " " + components[1] + " " + str(arg) + " " + components[3]
             min = arg
         
