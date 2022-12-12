@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import (
 import traceback
 from util.constants import BANKS_16, BANKS_32, BANKS_48
 from util.customWidgets import ProgressDialog
+from util.lock import OwnerLock
 
 # TODO: Create subscription, to change routing if routing changes
 class RoutingBox(QComboBox):
@@ -15,6 +16,7 @@ class RoutingBox(QComboBox):
         self.osc = osc
         self.mixerName = mixerName
         self.command = command
+        self.lock = OwnerLock()
         self.setFixedWidth(300)
         self.addItems(options)
         if initValues[command] is None:
@@ -22,10 +24,11 @@ class RoutingBox(QComboBox):
         else:
             self.setCurrentIndex(initValues[command])
         self.currentIndexChanged.connect(self.changed)
+        osc[mixerName + "Server"].subscription.add(self.command, self.processSubscription)
     
     def changed(self, index):
         try:
-            if index >= 0:
+            if index >= 0 and self.lock.acquire("button"):
                 self.osc[self.mixerName + "Client"].send_message(self.command, index)
         except Exception as ex:
             print(traceback.format_exc())
@@ -33,6 +36,11 @@ class RoutingBox(QComboBox):
             dlg.setWindowTitle("Routing")
             dlg.setText("Error: " + str(ex))
             dlg.exec()
+
+    def processSubscription(self, mixerName, message, arg):
+        if mixerName == self.mixerName and message == self.command and arg != self.currentIndex():
+            if self.lock.acquire(mixerName + " " + message):
+                self.setCurrentIndex(arg)
 
 class RoutingSwitchButton(QPushButton):
     def __init__(self, osc, mixerName, tabs):
