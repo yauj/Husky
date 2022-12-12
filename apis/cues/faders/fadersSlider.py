@@ -38,12 +38,7 @@ class FadersSlider(QSlider):
 
     def slider(self, value):
         try:
-            midiCmd = False if self.lastMidiTime is None else time() - self.lastMidiTime < 0.15
-
-            # THIS IS HARDCODED
-            if not midiCmd and self.oscFeedback is not None and self.osc["serverMidi"].input is not None:
-                self.osc["fohClient"].send_message(self.oscFeedback, value)
-
+            midiCmd = False if self.lastMidiTime is None else time() - self.lastMidiTime < 0.15            
             main(self.osc, self.fader["commands"], value, not self.isSliderDown() and not midiCmd)
         except Exception:
             # Fail Quietly
@@ -66,7 +61,12 @@ class FadersSlider(QSlider):
             self.fader["commands"][0] = components[0] + " " + components[1] + " " + str(arg) + " " + components[3]
             min = arg
         
-        self.setValue(round(((arg - min) / (max - min)) * 127.0))
+        midiVal = round(((arg - min) / (max - min)) * 127.0)
+        self.setValue(midiVal)
+
+        midiCmd = False if self.lastMidiTime is None else time() - self.lastMidiTime < 0.15    
+        if self.osc["serverMidi"].input is not None and not midiCmd and self.oscFeedback is not None:
+            self.osc["fohClient"].send_message(self.oscFeedback, midiVal)
     
     def refreshSubscription(self, oldCommand, newCommand):
         oldComponents = oldCommand.split()
