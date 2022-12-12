@@ -25,7 +25,7 @@ class OwnerLock():
                 self.timer = time()
                 return True
             elif self.owner == "master":
-                # Unable to override slider lock
+                # Unable to override master lock
                 return False
             elif time() - self.timer < 0.5:
                 # Lock hasn't expired

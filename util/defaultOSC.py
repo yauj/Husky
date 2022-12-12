@@ -1,7 +1,6 @@
 from itertools import islice
 from math import ceil
 import mido
-import multiprocessing
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer, ThreadingOSCUDPServer
@@ -213,7 +212,7 @@ class SubscriptionServer(ThreadingOSCUDPServer):
                 while time() - startTime < 4.0 and time() - itrTime < sleepTime:
                     if self.shutdownFlag or len(self.activeSubscriptions) == 0:
                         return # Exit early if shutdown or reconnection going on
-                    sleep(min(sleepTime - (time() - itrTime), 0.1))
+                    sleep(max(min(sleepTime - (time() - itrTime), 0.1), 0))
 
         while time() - startTime < 4.0: # If still under 4.0 seconds, then we want to wait the rest out.
             if self.shutdownFlag:

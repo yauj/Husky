@@ -2,6 +2,8 @@ from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import ThreadingOSCUDPServer
 from pythonosc.udp_client import SimpleUDPClient
 
+DEBUG = False
+
 class X32Emulator():
     def __init__(self):
         dispatcher = Dispatcher()
@@ -22,10 +24,12 @@ class X32Emulator():
         elif address == "/subscribe" or address == "/renew":
             client.send_message("/xinfo", None) # Simulate metadata calls
             client.send_message(args[0], 0.0)
+            if DEBUG: print(f"Sending {args[0]}: 0.0")
         elif args:
             print(f"{address}: {args}")
         else:
             client.send_message("/xinfo", None) # Simulate metadata calls
             client.send_message(address, 0.0)
+            if DEBUG: print(f"Sending {address}: 0.0")
 
 X32Emulator().start()

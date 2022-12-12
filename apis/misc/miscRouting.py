@@ -15,16 +15,15 @@ class RoutingBox(QComboBox):
         self.osc = osc
         self.mixerName = mixerName
         self.command = command
-        self.lock = OwnerLock()
         self.setFixedWidth(300)
         self.addItems(options)
         self.setCurrentIndex(-1)
-        self.currentIndexChanged.connect(self.changed)
+        self.activated.connect(self.changed)
         osc[mixerName + "Server"].subscription.add(command, self.processSubscription)
     
     def changed(self, index):
         try:
-            if index >= 0 and self.lock.acquire("button"):
+            if index >= 0:
                 self.osc[self.mixerName + "Client"].send_message(self.command, index)
         except Exception as ex:
             print(traceback.format_exc())
@@ -35,8 +34,7 @@ class RoutingBox(QComboBox):
 
     def processSubscription(self, mixerName, message, arg):
         if mixerName == self.mixerName and message == self.command and arg != self.currentIndex():
-            if self.lock.acquire(mixerName + " " + message):
-                self.setCurrentIndex(arg)
+            self.setCurrentIndex(arg)
 
 class RoutingSwitchButton(QPushButton):
     def __init__(self, osc, mixerName, tabs):
@@ -44,13 +42,15 @@ class RoutingSwitchButton(QPushButton):
         self.osc = osc
         self.mixerName = mixerName
         self.tabs = tabs
-        self.pressed.connect(self.clicked)
-        self.updateState()
+        self.isRecord = True
+        self.pressed.connect(self.onPressed)
+        osc[mixerName + "Server"].subscription.add("/config/routing/routswitch", self.processSubscription)
 
-    def clicked(self):
+    def onPressed(self):
         try:
-            newValue = 1 if self.isRecord() else 0
+            newValue = 1 if self.isRecord else 0
             self.osc[self.mixerName + "Client"].send_message("/config/routing/routswitch", newValue)
+            self.isRecord = not self.isRecord
 
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Routing")
@@ -66,14 +66,13 @@ class RoutingSwitchButton(QPushButton):
         self.updateState()
         self.setDown(False)
     
-    def isRecord(self):
-        settings = {"/config/routing/routswitch": None}
-        values = self.osc[self.mixerName + "Client"].bulk_send_messages(settings)
-        return values["/config/routing/routswitch"] == 0
+    def processSubscription(self, mixerName, message, arg):
+        self.isRecord = arg == 0
+        self.updateState()
 
     def updateState(self):
         try:
-            if self.isRecord():
+            if self.isRecord:
                 self.tabs.tabBar().setTabTextColor(0, QColor(0, 255, 0))
                 self.tabs.tabBar().setTabTextColor(1, QColor())
             else:
