@@ -66,7 +66,7 @@ class FadersSlider(QSlider):
             self.fader["commands"][0] = components[0] + " " + components[1] + " " + str(arg) + " " + components[3]
             min = arg
         
-        self.setValue(((arg - min) / (max - min)) * 127.0)
+        self.setValue(round(((arg - min) / (max - min)) * 127.0))
     
     def refreshSubscription(self, oldCommand, newCommand):
         oldComponents = oldCommand.split()
