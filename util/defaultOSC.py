@@ -186,32 +186,15 @@ class SubscriptionServer(ThreadingOSCUDPServer):
         # self.client.send_message("/unsubscribe", address) Just allow subscription to expire
     
     def subscribeThread(self):
-        for th in self.parentThread("/subscribe", self.subscriptions):
-            th.join()
+        self.sendCommands("/subscribe", self.subscriptions)
         self.activeSubscriptions = self.subscriptions.copy()
 
     def renewThread(self):
         while not self.shutdownFlag:
-            startTime = time()
-            for th in self.parentThread("/renew", self.activeSubscriptions):
-                th.join()
-            print(str(time() - startTime))
-
-    def parentThread(self, command, subs):
-        subs = subs.copy()
-        itr = iter(subs)
-        size = ceil(len(subs) / NUM_THREADS)
-        threads = []
-        for _ in range(0, NUM_THREADS):
-            slice = []
-            for address in islice(itr, size):
-                slice.append(address)
-            th = threading.Thread(target = self.childThread, args = (command, slice))
-            th.start()
-            threads.append(th)
-        return threads
+            self.sendCommands("/renew", self.activeSubscriptions)
     
-    def childThread(self, command, args):
+    def sendCommands(self, command, args):
+        args = args.copy()
         startTime = time()
         if self.ipAddress is not None and len(args) > 0:
             client = SimpleUDPClient(self.ipAddress, 10023)
