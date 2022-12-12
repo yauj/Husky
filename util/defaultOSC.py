@@ -161,7 +161,7 @@ class SubscriptionServer(ThreadingOSCUDPServer):
         client = SimpleUDPClient(self.ipAddress, 10023)
         client._sock = self.socket
         for address in self.subscriptions:
-            client.send_message("/subscribe", (address, 2)) # 100 Commands in 10 seconds
+            client.send_message("/subscribe", address)
     
     def shutdown(self):
         self.subscriptions = {}
@@ -183,7 +183,7 @@ class SubscriptionServer(ThreadingOSCUDPServer):
         if self.ipAddress is not None:
             client = SimpleUDPClient(self.ipAddress, 10023)
             client._sock = self.socket
-            client.send_message("/subscribe", (address, 2)) # 100 Commands in 10 seconds
+            client.send_message("/subscribe", address)
         while True:
             for _ in range(0, 15):
                 sleep(0.5)
