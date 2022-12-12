@@ -188,7 +188,6 @@ class SubscriptionServer(ThreadingOSCUDPServer):
             for _ in range(0, 15):
                 sleep(0.5)
                 if address not in self.subscriptions:
-                    print("done with " + address)
                     return
             if self.ipAddress is not None:
                 client = SimpleUDPClient(self.ipAddress, 10023)

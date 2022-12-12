@@ -6,13 +6,14 @@ from time import time
 import traceback
 
 class FadersSlider(QSlider):
-    def __init__(self, osc, fader, index, defaultValue):
+    def __init__(self, osc, fader, index, defaultValue, oscFeedback):
         super().__init__()
 
         self.osc = osc
         self.fader = fader
         self.index = index
         self.lastMidiTime = None
+        self.oscFeedback = oscFeedback # MIDI knob on X32 is controlled through OSC, not MIDI
 
         self.setRange(0, 127)
         self.setValue(0)
@@ -21,9 +22,7 @@ class FadersSlider(QSlider):
         self.setTickPosition(QSlider.TickPosition.TicksRight)
         self.valueChanged.connect(self.slider)
 
-        if defaultValue:
-            self.setValue(defaultValue)
-        # TODO: ENHANCEMENT - feedback current slider value to MIDI input
+        # Create Subscription if OSC command
         if len(self.fader["commands"]) > 0:
             components = self.fader["commands"][0].split()
             if components[0] == "foh":
@@ -31,11 +30,20 @@ class FadersSlider(QSlider):
             elif components[0] == "iem":
                 self.osc["iemServer"].subscription.add(components[1], self.processSubscription)
 
+        # Set Default Value if specified
+        if defaultValue:
+            self.setValue(defaultValue)
+
         self.osc["serverMidi"].callback(self.midiInput)
 
     def slider(self, value):
         try:
             midiCmd = False if self.lastMidiTime is None else time() - self.lastMidiTime < 0.15
+
+            # THIS IS HARDCODED
+            if not midiCmd and self.oscFeedback is not None and self.osc["serverMidi"].input is not None:
+                self.osc["fohClient"].send_message(self.oscFeedback, value)
+
             main(self.osc, self.fader["commands"], value, not self.isSliderDown() and not midiCmd)
         except Exception:
             # Fail Quietly

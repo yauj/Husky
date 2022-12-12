@@ -60,10 +60,10 @@ config = {
         ]
     },
     "faders": {
-        "VOX EQ": {"commands": ["foh /ch/05/eq/1/g 0.2 0.5"]},
-        "VOX Pan": {"commands": ["foh /ch/06/mix/pan 0.5 0.2", "foh /ch/07/mix/pan 0.5 0.8"]},
-        "EG/Keys Pan": {"commands": ["foh /ch/13/mix/pan 0.5 0.2", "foh /ch/11/mix/pan 0.5 0.8"]},
-        "Bass/Drums HPF": {"commands": ["foh /ch/15/preamp/hpf 0.3 0.0", "foh /ch/18/preamp/hpf 0.3 0.0", "foh /ch/20/preamp/hpf 0.3 0.0"]},
+        "VOX EQ": {"oscFeedback": "/-stat/userpar/29/value", "commands": ["foh /ch/05/eq/1/g 0.2 0.5"]},
+        "VOX Pan": {"oscFeedback": "/-stat/userpar/30/value", "commands": ["foh /ch/06/mix/pan 0.5 0.2", "foh /ch/07/mix/pan 0.5 0.8"]},
+        "EG/Keys Pan": {"oscFeedback": "/-stat/userpar/31/value", "commands": ["foh /ch/13/mix/pan 0.5 0.2", "foh /ch/11/mix/pan 0.5 0.8"]},
+        "Bass/Drums HPF": {"oscFeedback": "/-stat/userpar/32/value", "commands": ["foh /ch/15/preamp/hpf 0.3 0.0", "foh /ch/18/preamp/hpf 0.3 0.0", "foh /ch/20/preamp/hpf 0.3 0.0"]},
         "VOX Tracks": {"defaultValue": 63, "commands": ["midi audio 2 50"]},
         "EG/Keys Tracks": {"defaultValue": 63, "commands": ["midi audio 2 51"]},
         "Bass Tracks": {"defaultValue": 63, "commands": ["midi audio 2 52"]},
