@@ -11,7 +11,7 @@ from util.lock import OwnerLock
 
 # TODO: Create subscription, to change routing if routing changes
 class RoutingBox(QComboBox):
-    def __init__(self, osc, mixerName, command, options, initValues):
+    def __init__(self, osc, mixerName, command, options):
         super().__init__()
         self.osc = osc
         self.mixerName = mixerName
@@ -19,12 +19,9 @@ class RoutingBox(QComboBox):
         self.lock = OwnerLock()
         self.setFixedWidth(300)
         self.addItems(options)
-        if initValues[command] is None:
-            self.setCurrentIndex(-1)
-        else:
-            self.setCurrentIndex(initValues[command])
+        self.setCurrentIndex(-1)
         self.currentIndexChanged.connect(self.changed)
-        osc[mixerName + "Server"].subscription.add(self.command, self.processSubscription)
+        osc[mixerName + "Server"].subscription.add(command, self.processSubscription)
     
     def changed(self, index):
         try:

@@ -4,32 +4,33 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
+from util.lock import OwnerLock
 
 class TalkbackBox(QCheckBox):
     def __init__(self, config, osc, chName):
         super().__init__()
-        self.config = config
         self.osc = osc
-        self.chName = chName
+        self.command = config["talkbackChannel"] + "/mix/" + config["personal"][chName]["iem_bus"] + "/on"
+        self.lock = OwnerLock()
         self.setFixedWidth(20)
-        if self.osc["iemClient"].connected:
-            self.stateChanged.connect(self.clicked)
-            self.setChecked(True)
-        else:
-            self.setChecked(True)
-            self.stateChanged.connect(self.clicked)
+        self.stateChanged.connect(self.clicked)
+        osc["iemServer"].subscription.add(self.command, self.processSubscription)
     
     def clicked(self, value):
         try:
-            arg = 1 if value == 2 else 0
-            self.osc["iemClient"].send_message(self.config["talkbackChannel"] + "/mix/" + self.config["personal"][self.chName]["iem_bus"] + "/on", arg)
+            if self.lock.acquire("button"):
+                arg = 1 if value == 2 else 0
+                self.osc["iemClient"].send_message(self.command, arg)
         except Exception as ex:
             print(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Talkback")
             dlg.setText("Error: " + str(ex))
             dlg.exec()
-
+    
+    def processSubscription(self, mixerName, message, arg):
+        if self.lock.acquire(mixerName + " " + message):
+            self.setChecked(arg == 1)
 
 class TalkbackAllButton(QPushButton):
     def __init__(self, osc, boxes):

@@ -158,10 +158,11 @@ class SubscriptionServer(ThreadingOSCUDPServer):
 
     def initIpAddress(self, ipAddress):
         self.ipAddress = ipAddress
-        client = SimpleUDPClient(self.ipAddress, 10023)
-        client._sock = self.socket
-        for address in self.subscriptions:
-            client.send_message("/subscribe", address)
+        if self.ipAddress is not None:
+            client = SimpleUDPClient(self.ipAddress, 10023)
+            client._sock = self.socket
+            for address in self.subscriptions:
+                client.send_message("/subscribe", address)
     
     def shutdown(self):
         self.subscriptions = {}
