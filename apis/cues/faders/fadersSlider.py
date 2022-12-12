@@ -2,9 +2,8 @@ import mido
 from PyQt6.QtWidgets import (
     QSlider,
 )
-from time import time
-import threading
 import traceback
+from util.lock import OwnerLock
 
 # Command should be in following format:
 # [foh|iem] [osc command] [min float] [max float]
@@ -20,9 +19,7 @@ class FadersSlider(QSlider):
         self.index = index
         self.oscFeedback = oscFeedback # MIDI knob on X32 is controlled through OSC, not MIDI
 
-        self.lock = threading.Lock()
-        self.lockOwner = ""
-        self.lockTimer = None
+        self.lock = OwnerLock()
 
         self.setRange(0, 127)
         self.setValue(0)
@@ -30,8 +27,8 @@ class FadersSlider(QSlider):
         self.setTickInterval(21)
         self.setTickPosition(QSlider.TickPosition.TicksRight)
         self.valueChanged.connect(self.onValueChange)
-        self.sliderPressed.connect(self.acquireFaderLock)
-        self.sliderReleased.connect(self.releaseLock)
+        self.sliderPressed.connect(self.lock.acquireMaster)
+        self.sliderReleased.connect(self.lock.release)
 
         self.refreshSubscription([], self.fader["commands"])
 
@@ -40,13 +37,10 @@ class FadersSlider(QSlider):
             self.setValue(defaultValue)
 
         self.osc["serverMidi"].callback(self.midiInput)
-    
-    def acquireFaderLock(self):
-        self.acquireLock("slider")
 
     def midiInput(self, message):
         if message.channel == 4 and message.control == 13 + self.index:
-            if self.acquireLock("midi"):
+            if self.lock.acquire("midi"):
                 self.setValue(message.value)
     
     # TODO: What happens if a command is in multiple? Right now will just override
@@ -72,7 +66,7 @@ class FadersSlider(QSlider):
         if midiVal == self.value():
             return
         
-        if self.acquireLock(mixerName + " " + message):
+        if self.lock.acquire(mixerName + " " + message):
             self.setValue(midiVal)
     
     def getLineComponents(self, mixerName, message):
@@ -112,46 +106,13 @@ class FadersSlider(QSlider):
                     self.osc["fohServer"].subscription.add(newComponents[1], self.processSubscription)
                 elif newComponents[0] == "iem":
                     self.osc["iemServer"].subscription.add(newComponents[1], self.processSubscription)
-    
-    # Returns True if lock acquired
-    def acquireLock(self, newOwner):
-        with self.lock:
-            if newOwner == "slider":
-                # Always override current lock for slider
-                self.lockOwner = "slider"
-                self.lockTimer = None
-                return True
-            elif self.lockOwner == "":
-                # No Current Owner
-                self.lockOwner = newOwner
-                self.lockTimer = time()
-                return True
-            elif newOwner == self.lockOwner:
-                # Same Owner
-                self.lockTimer = time()
-                return True
-            elif self.lockOwner == "slider":
-                # Unable to override slider lock
-                return False
-            elif time() - self.lockTimer < 0.5:
-                # Lock hasn't expired
-                return False
-            else:
-                self.lockOwner = newOwner
-                self.lockTimer = time()
-                return True
-
-    def releaseLock(self):
-        with self.lock:
-            self.lockOwner = ""
-            self.lockTimer = None
 
     def onValueChange(self, value):
         try:
             # Change X32 Value
             for command in self.fader["commands"]:
                 components = command.split()
-                if self.lockOwner != components[0] + " " + components[1]: # Don't loopback if command is source of input
+                if self.lock.owner != components[0] + " " + components[1]: # Don't loopback if command is source of input
                     if components[0] == "midi":
                         self.osc[components[1] + "Midi"].send(mido.Message("control_change", channel = int(components[2]) - 1, control = int(components[3]), value = value))
                     else:
@@ -166,31 +127,9 @@ class FadersSlider(QSlider):
                             self.osc["iemClient"].send_message(components[1], arg)
             
             # Change X32 User Encoder MIDI Knob
-            if self.lockOwner != "midi": # Don't loopback if MIDI is source of input
+            if self.lock.owner != "midi": # Don't loopback if MIDI is source of input
                 if self.osc["serverMidi"].input is not None and self.oscFeedback is not None: # Is source of midi input and has OSC feedback command
                     self.osc["fohClient"].send_message(self.oscFeedback, value)
         except Exception:
             # Fail Quietly
             print(traceback.format_exc())
-
-def main(osc, commands, value, skipFirstLine):
-    # Command should be in following format:
-    # [foh|iem] [osc command] [min float] [max float]
-    # OR
-    # midi audio [channel] [control]
-    #   (Fader only makes sense for control change commands)
-    for idx, command in enumerate(commands):
-        if idx != 0 or not skipFirstLine:
-            components = command.split()
-            if components[0] == "midi":
-                osc[components[1] + "Midi"].send(mido.Message("control_change", channel = int(components[2]) - 1, control = int(components[3]), value = value))
-            else:
-                faderPosition = float(value) / 127.0
-                min = float(components[2])
-                max = float(components[3])
-                arg = (faderPosition * (max - min)) + min
-                
-                if components[0] == "foh":
-                    osc["fohClient"].send_message(components[1], arg)
-                elif components[0] == "iem":
-                    osc["iemClient"].send_message(components[1], arg)
