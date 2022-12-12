@@ -15,7 +15,7 @@ class ConnectOscButton(QPushButton):
         self.index = index
         self.widgets = widgets
 
-        self.osc[self.mixerName + "Server"] = RetryingServer(10000 + NUM_THREADS + (self.index * 2), True)
+        self.osc[self.mixerName + "Server"] = RetryingServer(10000 + NUM_THREADS + (self.index * 2), mixerName)
 
         self.init()
         self.pressed.connect(self.connect)

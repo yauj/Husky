@@ -92,7 +92,7 @@ class SimpleClient(SimpleUDPClient):
 
 # Server which retries attempting to get if /xinfo message passed back 
 class RetryingServer(BlockingOSCUDPServer):
-    def __init__(self, port, subscribe = False):
+    def __init__(self, port, mixerName = None):
         self.port = port
         self.retry = True
         self.lastVal = None
@@ -106,7 +106,7 @@ class RetryingServer(BlockingOSCUDPServer):
         
         self.timeout = 1 # Timeout calls after 1 second
 
-        self.subscription = SubscriptionServer(self.port + 1) if subscribe else None
+        self.subscription = SubscriptionServer(mixerName, self.port + 1) if mixerName is not None else None
 
     def printHandler(self, address, *args):
         print(f"{address}: {args}")
@@ -144,17 +144,17 @@ class RetryingServer(BlockingOSCUDPServer):
 
 # OSC Subscription
 class SubscriptionServer(ThreadingOSCUDPServer):
-    def __init__(self, port):
+    def __init__(self, mixerName, port):
         dispatcher = Dispatcher()
         dispatcher.set_default_handler(self.functionHandler)
 
         super().__init__(("0.0.0.0", port), dispatcher)
 
+        self.mixerName = mixerName
         self.ipAddress = None
         self.subscriptions = {}
         self.mainThread = threading.Thread(target = self.serve_forever)
         self.mainThread.start()
-        self.subscriptionThread = threading.Thread(target = self.renewThread)
 
     def initIpAddress(self, ipAddress):
         self.ipAddress = ipAddress
@@ -169,7 +169,7 @@ class SubscriptionServer(ThreadingOSCUDPServer):
 
     def functionHandler(self, address, *args):
         if address in self.subscriptions:
-            self.subscriptions[address](args[0])
+            self.subscriptions[address](self.mixerName, address, args[0])
 
     def add(self, address, command):
         self.subscriptions[address] = command

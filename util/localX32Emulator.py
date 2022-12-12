@@ -19,6 +19,9 @@ class X32Emulator():
         client = SimpleUDPClient(clientIP[0], clientIP[1])
         if address == "/info":
             client.send_message("/info", ('V0.00', 'osc-server', 'LOCAL', '0.00-0'))
+        elif address == "/subscribe" or address == "/renew":
+            client.send_message("/xinfo", None) # Simulate metadata calls
+            client.send_message(args[0], 0.0)
         elif args:
             print(f"{address}: {args}")
         else:

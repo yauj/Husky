@@ -11,12 +11,12 @@ class FadersResetButton(QPushButton):
         self.setFixedWidth(100)
     
     def clicked(self):
-        prevFaderFirstCommands = []
+        prevCommands = []
         for fader in self.widgets["faders"]:
-            if len(fader["commands"]) > 0:
-                prevFaderFirstCommands.append(fader["commands"][0])
-            else:
-                prevFaderFirstCommands.append(None)
+            lst = []
+            for command in fader["commands"]:
+                lst.append(command)
+            prevCommands.append(lst)
 
         itr = enumerate(self.config["faders"])
         for fader in self.widgets["faders"]:
@@ -33,7 +33,6 @@ class FadersResetButton(QPushButton):
                 fader["name"].setText("")
         
         for idx, fader in enumerate(self.widgets["faders"]):
-            if prevFaderFirstCommands[idx] is not None and len(fader["commands"]) > 0:
-                fader["slider"].refreshSubscription(prevFaderFirstCommands[idx], fader["commands"][0])
+            fader["slider"].refreshSubscription(prevCommands[idx], fader["commands"])
 
         self.setDown(False)

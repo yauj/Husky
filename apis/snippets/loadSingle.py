@@ -86,8 +86,11 @@ def fireLines(osc, lines, iemCopy, dlg = None):
             elif (components[0] == "iem"):
                 iemSettings[components[1]] = arg
 
-    osc["fohClient"].bulk_send_messages(fohSettings, dlg)
-    osc["iemClient"].bulk_send_messages(iemSettings, dlg)
+    if len(fohSettings) > 0:
+        osc["fohClient"].bulk_send_messages(fohSettings, dlg)
+
+    if len(iemSettings) > 0:
+        osc["iemClient"].bulk_send_messages(iemSettings, dlg)
 
 def loadSingleNumSettings(filename, iemCopy):
     num = 0

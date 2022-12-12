@@ -54,8 +54,7 @@ class EditButton(QPushButton):
             if line.strip() != "":
                 commands.append(line.strip())
         
-        if len(self.fader["commands"]) > 0 and len(commands) > 0:
-            self.fader["slider"].refreshSubscription(self.fader["commands"][0], commands[0])
+        self.fader["slider"].refreshSubscription(self.fader["commands"], commands)
 
         self.fader["commands"] = commands
 
