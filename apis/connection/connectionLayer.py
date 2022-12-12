@@ -11,18 +11,17 @@ from PyQt6.QtWidgets import (
 from util.defaultOSC import AvailableIPs
 
 class ConnectionLayer(QWidget):
-    def __init__(self, config, widgets, osc, server):
+    def __init__(self, config, widgets, osc):
         super().__init__()
         self.config = config
         self.widgets = widgets
         self.osc = osc
-        self.server = server
 
         vlayout = QVBoxLayout()
 
         validIPs = AvailableIPs().get()
 
-        for mixerName in self.config["osc"]:
+        for idx, mixerName in enumerate(self.config["osc"]):
             hlayout = QHBoxLayout()
 
             label = QLabel(mixerName.upper() + " Mixer IP Address:")
@@ -41,7 +40,7 @@ class ConnectionLayer(QWidget):
             status.setFixedWidth(80)
             hlayout.addWidget(status)
             
-            hlayout.addWidget(ConnectOscButton(self.osc, address, status, mixerName, self.server, self.widgets))
+            hlayout.addWidget(ConnectOscButton(self.osc, address, status, mixerName, idx, self.widgets))
 
             vlayout.addLayout(hlayout)
 

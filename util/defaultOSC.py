@@ -1,9 +1,10 @@
 from itertools import islice
 from math import ceil
 import mido
+import multiprocessing
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
-from pythonosc.osc_server import BlockingOSCUDPServer
+from pythonosc.osc_server import BlockingOSCUDPServer, ThreadingOSCUDPServer
 import socket
 import threading
 from time import time, sleep
@@ -36,6 +37,12 @@ class SimpleClient(SimpleUDPClient):
                 print("Connected to " + self.name.upper() + " at " + self.ipAddress)
             else:
                 print("Failed to connect to " + self.name.upper() + " at " + self.ipAddress)
+        
+        if server.subscription is not None:
+            if self.connected:
+                server.subscription.initIpAddress(self.ipAddress)
+            else:
+                server.subscription.initIpAddress(None)
 
         return self.connected
 
@@ -85,7 +92,7 @@ class SimpleClient(SimpleUDPClient):
 
 # Server which retries attempting to get if /xinfo message passed back 
 class RetryingServer(BlockingOSCUDPServer):
-    def __init__(self, port = 10000 + NUM_THREADS):
+    def __init__(self, port, subscribe = False):
         self.port = port
         self.retry = True
         self.lastVal = None
@@ -98,7 +105,9 @@ class RetryingServer(BlockingOSCUDPServer):
         super().__init__(("0.0.0.0", port), dispatcher)
         
         self.timeout = 1 # Timeout calls after 1 second
-    
+
+        self.subscription = SubscriptionServer(self.port + 1) if subscribe else None
+
     def printHandler(self, address, *args):
         print(f"{address}: {args}")
         self.retry = False
@@ -120,6 +129,10 @@ class RetryingServer(BlockingOSCUDPServer):
         if self.retry:
             raise TimeoutError("Timed out waiting for response. Please check if command is valid.")
     
+    def shutdown(self):
+        if self.subscription is not None:
+            self.subscription.shutdown()
+    
     # Returns whether or not command was successful
     def handle_request_with_timeout(self):
         startTime = time()
@@ -128,6 +141,59 @@ class RetryingServer(BlockingOSCUDPServer):
             super().handle_request()
 
         return not self.retry
+
+# OSC Subscription
+class SubscriptionServer(ThreadingOSCUDPServer):
+    def __init__(self, port):
+        dispatcher = Dispatcher()
+        dispatcher.set_default_handler(self.functionHandler)
+
+        super().__init__(("0.0.0.0", port), dispatcher)
+
+        self.ipAddress = None
+        self.subscriptions = {}
+        self.mainThread = threading.Thread(target = self.serve_forever)
+        self.mainThread.start()
+        self.subscriptionThread = threading.Thread(target = self.renewThread)
+
+    def initIpAddress(self, ipAddress):
+        self.ipAddress = ipAddress
+        client = SimpleUDPClient(self.ipAddress, 10023)
+        client._sock = self.socket
+        for address in self.subscriptions:
+            client.send_message("/subscribe", (address, 2)) # 100 Commands in 10 seconds
+    
+    def shutdown(self):
+        self.subscriptions = {}
+        super().shutdown()
+
+    def functionHandler(self, address, *args):
+        if address in self.subscriptions:
+            self.subscriptions[address](args[0])
+
+    def add(self, address, command):
+        self.subscriptions[address] = command
+        threading.Thread(target = self.renewThread, args = (address,)).start()
+    
+    def remove(self, address):
+        return self.subscriptions.pop(address, None)
+        # self.client.send_message("/unsubscribe", address) Just allow subscription to expire
+
+    def renewThread(self, address):
+        if self.ipAddress is not None:
+            client = SimpleUDPClient(self.ipAddress, 10023)
+            client._sock = self.socket
+            client.send_message("/subscribe", (address, 2)) # 100 Commands in 10 seconds
+        while True:
+            for _ in range(0, 15):
+                sleep(0.5)
+                if address not in self.subscriptions:
+                    print("done with " + address)
+                    return
+            if self.ipAddress is not None:
+                client = SimpleUDPClient(self.ipAddress, 10023)
+                client._sock = self.socket
+                client.send_message("/renew", address)
 
 class AvailableIPs:
     def get(self):

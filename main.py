@@ -13,18 +13,17 @@ from PyQt6.QtWidgets import (
     QTabWidget,
 )
 import sys
-from util.defaultOSC import MIDIVirtualPort, RetryingServer
+from util.defaultOSC import MIDIVirtualPort
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.config = config
-        self.widgets = {"connection": {}, "personal": {}, "cues": [], "cueSnippet": {}, "faders": [], "routing": {}, "routingSwap": {}}
+        self.widgets = {"connection": {}, "servers": {}, "personal": {}, "cues": [], "cueSnippet": {}, "faders": [], "routing": {}, "routingSwap": {}}
         for mixerName in self.config["osc"]:
             self.widgets["routing"][mixerName] = {}
         self.osc = {}
-        self.server = RetryingServer() # Server used for generic calls
         self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
 
         self.setWindowTitle("X32 Helper")
@@ -33,7 +32,7 @@ class MainWindow(QMainWindow):
 
         tabs = QTabWidget()
 
-        tabs.addTab(ConnectionLayer(self.config, self.widgets, self.osc, self.server), "X32 Connection")
+        tabs.addTab(ConnectionLayer(self.config, self.widgets, self.osc), "X32 Connection")
         tabs.addTab(SnippetsLayer(self.config, self.widgets, self.osc), "Snippets")
         tabs.addTab(CueLayer(self.config, self.widgets, self.osc), "Cues")
         tabs.addTab(MiscLayer(self.config, self.widgets, self.osc), "Misc")
@@ -74,6 +73,9 @@ class MainWindow(QMainWindow):
 
     # Save Cache
     def closeEvent(self, a0):
+        for mixerName in self.config["osc"]:
+            self.osc[mixerName + "Server"].shutdown()
+
         with open("connection.cache", "w") as file:
             for param in self.widgets["connection"]:
                 file.write("\n" + param + " " + self.widgets["connection"][param].currentText())

@@ -22,6 +22,13 @@ class CueLoadButton(QPushButton):
         self.setDown(False)
 
 def loadCue(file, widgets):
+    prevFaderFirstCommands = []
+    for fader in widgets["faders"]:
+        if len(fader["commands"]) > 0:
+            prevFaderFirstCommands.append(fader["commands"][0])
+        else:
+            prevFaderFirstCommands.append(None)
+
     file.readline() # Skip Header Line
     cueIdx = 0
     faderIdx = -1
@@ -55,3 +62,7 @@ def loadCue(file, widgets):
                 lastFaderName = name
             widgets["faders"][faderIdx]["name"].setText(name)
             widgets["faders"][faderIdx]["commands"].append(command)
+    
+    for idx, fader in enumerate(widgets["faders"]):
+        if prevFaderFirstCommands[idx] is not None and len(fader["commands"]) > 0:
+            fader["slider"].refreshSubscription(prevFaderFirstCommands[idx], fader["commands"][0])

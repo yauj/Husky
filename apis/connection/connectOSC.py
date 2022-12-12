@@ -3,17 +3,20 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
-from util.defaultOSC import SimpleClient
+from util.defaultOSC import NUM_THREADS, RetryingServer, SimpleClient
 
 class ConnectOscButton(QPushButton):
-    def __init__(self, osc, address, status, mixerName, server, widgets):
+    def __init__(self, osc, address, status, mixerName, index, widgets):
         super().__init__("Connect")
         self.osc = osc
         self.address = address
         self.status = status
         self.mixerName = mixerName
-        self.server = server
+        self.index = index
         self.widgets = widgets
+
+        self.osc[self.mixerName + "Server"] = RetryingServer(10000 + NUM_THREADS + (self.index * 2), True)
+
         self.init()
         self.pressed.connect(self.connect)
         self.setFixedWidth(80)
@@ -36,7 +39,7 @@ class ConnectOscButton(QPushButton):
 
     def init(self):
         self.osc[self.mixerName + "Client"] = SimpleClient(self.mixerName, self.address.currentText())
-        if (self.osc[self.mixerName + "Client"].connect(self.server)):
+        if (self.osc[self.mixerName + "Client"].connect(self.osc[self.mixerName + "Server"])):
             self.status.setText("Connected!")
             self.status.setStyleSheet("color: green")
             return True
