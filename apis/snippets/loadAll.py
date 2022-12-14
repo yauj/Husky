@@ -7,8 +7,9 @@ import traceback
 from util.customWidgets import ProgressDialog
 
 class LoadAllButton(QPushButton):
-    def __init__(self, osc, filenames, personal):
+    def __init__(self, config, osc, filenames, personal):
         super().__init__("Load All")
+        self.config = config
         self.osc = osc
         self.filenames = filenames
         self.personal = personal
@@ -26,7 +27,7 @@ class LoadAllButton(QPushButton):
             for chName in self.filenames:
                 if (self.filenames[chName].currentText() != ""):
                     if (os.path.exists("data/" + self.filenames[chName].currentText())):
-                        runSingle(self.osc, "data/" + self.filenames[chName].currentText(), True, dlg)
+                        runSingle(self.config, self.osc, "data/" + self.filenames[chName].currentText(), True, dlg)
                         self.personal[chName].setCurrentText(self.filenames[chName].currentText().split(".")[0].split("_")[2])
                     else:
                         print("Invalid filename for " + chName)

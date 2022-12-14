@@ -9,13 +9,14 @@ import traceback
 from util.constants import KEYS
 
 class CueFireButton(QPushButton):
-    def __init__(self, osc, prevIndex, index, printIndex, cues):
+    def __init__(self, config, osc, prevIndex, index, printIndex, cues):
         super().__init__("Fire")
         if (len(printIndex) == 1):
             super().setShortcut("ctrl+" + printIndex)
         elif (printIndex == "10"):
             super().setShortcut("ctrl+0")
 
+        self.config = config
         self.osc = osc
         self.prevIndex = prevIndex
         self.index = index
@@ -27,6 +28,7 @@ class CueFireButton(QPushButton):
     def clicked(self):
         try:
             main(
+                self.config,
                 self.osc,
                 self.prevIndex,
                 self.index,
@@ -41,7 +43,7 @@ class CueFireButton(QPushButton):
 
         self.setDown(False)
 
-def main(osc, prevIndex, index, cues):
+def main(config, osc, prevIndex, index, cues):
     if prevIndex[0] is not None:
         cues[prevIndex[0]]["label"].setStyleSheet("")
     prevIndex[0] = index
@@ -81,7 +83,7 @@ def main(osc, prevIndex, index, cues):
         
         if cues[index]["snippet"].filename != "":
             if os.path.exists(cues[index]["snippet"].filename):
-                runSingle(osc, cues[index]["snippet"].filename, False)
+                runSingle(config, osc, cues[index]["snippet"].filename, False)
 
         cues[index]["label"].setStyleSheet("color:green")
     except Exception as ex:

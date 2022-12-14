@@ -63,7 +63,7 @@ class CueTab(QTabWidget):
             hlayout.addWidget(snippet)
             options["snippet"] = snippet
 
-            hlayout.addWidget(CueFireButton(self.osc, self.prevIndex, index, printIndex, self.widgets["cues"]))
+            hlayout.addWidget(CueFireButton(self.config, self.osc, self.prevIndex, index, printIndex, self.widgets["cues"]))
 
             vlayout.addLayout(hlayout)
             self.widgets["cues"].append(options)

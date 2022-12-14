@@ -59,11 +59,11 @@ class SnippetsLayer(QTabWidget):
             filenames[chName].setCurrentIndex(-1)
             hlayout.addWidget(filenames[chName])
 
-            hlayout.addWidget(LoadButton(self.osc, chName, filenames[chName], self.widgets["personal"][chName]))
+            hlayout.addWidget(LoadButton(self.config, self.osc, chName, filenames[chName], self.widgets["personal"][chName]))
 
             vlayout.addLayout(hlayout)
         
-        vlayout.addWidget(LoadAllButton(self.osc, filenames, self.widgets["personal"]))
+        vlayout.addWidget(LoadAllButton(self.config, self.osc, filenames, self.widgets["personal"]))
 
         widget = QWidget()
         widget.setLayout(vlayout)

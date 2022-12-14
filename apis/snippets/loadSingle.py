@@ -8,8 +8,9 @@ import traceback
 from util.customWidgets import ProgressDialog
 
 class LoadButton(QPushButton):
-    def __init__(self, osc, chName, filename, person):
+    def __init__(self, config, osc, chName, filename, person):
         super().__init__("Load")
+        self.config = config
         self.osc = osc
         self.chName = chName
         self.filename = filename
@@ -32,25 +33,25 @@ class LoadButton(QPushButton):
     def main(self, dlg):
         try:
             dlg.initBar.emit(loadSingleNumSettings(self.filename.currentText(), True))
-            runSingle(self.osc, "data/" + self.filename.currentText(), True, dlg)
+            runSingle(self.config, self.osc, "data/" + self.filename.currentText(), True, dlg)
             self.person.setCurrentText(self.filename.currentText().split(".")[0].split("_")[2])
             dlg.complete.emit()
         except Exception as ex:
             print(traceback.format_exc())
             dlg.raiseException.emit(ex)
 
-def runSingle(osc, filename, iemCopy, dlg = None):
+def runSingle(config, osc, filename, iemCopy, dlg = None):
     lines = []
     with open(filename) as scnFile:
         scnFile.readline() # Skip Header Line
         while (line := scnFile.readline().strip()):
             lines.append(line)
         
-    fireLines(osc, lines, iemCopy, dlg)
+    fireLines(config, osc, lines, iemCopy, dlg)
 
     print("Loaded " + filename)
 
-def fireLines(osc, lines, iemCopy, dlg = None):
+def fireLines(config, osc, lines, iemCopy, dlg = None):
     fohSettings = {}
     iemSettings = {}
     for line in lines:
@@ -60,18 +61,14 @@ def fireLines(osc, lines, iemCopy, dlg = None):
             channel = int(components[2]) - 1
             control = int(components[3])
             value = int(components[4])
-            if (components[1] == "audio"):
-                osc["audioMidi"].send(mido.Message("control_change", channel = channel, control = control, value = value))
-            elif (components[1] == "video"):
-                if value == 0:
-                    osc["videoMidi"].send(mido.Message("note_off", channel = channel, note = control))
-                else:
-                    osc["videoMidi"].send(mido.Message("note_on", channel = channel, note = control))
-            elif (components[1] == "light"):
-                if value == 0:
-                    osc["lightMidi"].send(mido.Message("note_off", channel = channel, note = control))
-                else:
-                    osc["lightMidi"].send(mido.Message("note_on", channel = channel, note = control))
+            if components[1] in config["midi"]:
+                if config["midi"][components[1]]["type"] == "control_change":
+                    osc[components[1] + "Midi"].send(mido.Message("control_change", channel = channel, control = control, value = value))
+                elif config["midi"][components[1]]["type"] == "note":
+                    if value == 0:
+                        osc[components[1] + "Midi"].send(mido.Message("note_off", channel = channel, note = control))
+                    else:
+                        osc[components[1] + "Midi"].send(mido.Message("note_on", channel = channel, note = control))
         else:
             arg = " ".join(components[3:])
             if (components[2] == "int"):

@@ -6,8 +6,9 @@ from PyQt6.QtWidgets import (
 import traceback
 
 class SnippetFireButton(QPushButton):
-    def __init__(self, osc, textbox):
+    def __init__(self, config, osc, textbox):
         super().__init__("Fire Commands")
+        self.config = config
         self.osc = osc
         self.textbox = textbox
         self.pressed.connect(self.clicked)
@@ -15,6 +16,7 @@ class SnippetFireButton(QPushButton):
     def clicked(self):
         try:
             main(
+                self.config,
                 self.osc,
                 self.textbox
             )
@@ -32,10 +34,10 @@ class SnippetFireButton(QPushButton):
 
         self.setDown(False)
 
-def main(osc, textbox):
+def main(config, osc, textbox):
     lines = []
     for line in textbox.toPlainText().splitlines():
         if line.strip() != "":
             lines.append(line)
 
-    fireLines(osc, lines, False)
+    fireLines(config, osc, lines, False)
