@@ -31,7 +31,7 @@ This is the name of the default port to connect to.
 
 #### type
 
-This is the type of midi call to make. Valid options currently are: `control_change` and `note`.
+This is the type of midi call to make. Valid options currently are: `cc` and `note`.
 
 #### defaultChannel
 

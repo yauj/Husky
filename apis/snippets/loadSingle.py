@@ -62,7 +62,7 @@ def fireLines(config, osc, lines, iemCopy, dlg = None):
             control = int(components[3])
             value = int(components[4])
             if components[1] in config["midi"]:
-                if config["midi"][components[1]]["type"] == "control_change":
+                if config["midi"][components[1]]["type"] == "cc":
                     osc[components[1] + "Midi"].send(mido.Message("control_change", channel = channel, control = control, value = value))
                 elif config["midi"][components[1]]["type"] == "note":
                     if value == 0:

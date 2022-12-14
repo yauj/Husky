@@ -110,7 +110,7 @@ class FadersSlider(QSlider):
                 components = command.split()
                 if self.lock.owner != components[0] + " " + components[1]: # Don't loopback if command is source of input
                     if components[0] == "midi" and components[1] in self.config["midi"]:
-                        if self.config["midi"][components[1]]["type"] == "control_change":
+                        if self.config["midi"][components[1]]["type"] == "cc":
                             self.osc[components[1] + "Midi"].send(mido.Message("control_change", channel = int(components[2]) - 1, control = int(components[3]), value = value))
                     else:
                         faderPosition = float(value) / 127.0

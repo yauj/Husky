@@ -8,7 +8,7 @@ config = {
     "midi": {
         "audio": {
             "default": "X32Helper",
-            "type": "control_change",
+            "type": "cc",
             "defaultChannel": 2
         },
         "video": {
