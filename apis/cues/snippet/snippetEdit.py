@@ -1,3 +1,7 @@
+from apis.cues.snippet.snippetAdd import SnippetAddButton
+from apis.cues.snippet.snippetFire import SnippetFireButton
+from apis.cues.snippet.snippetSave import SnippetSaveButton
+from apis.cues.snippet.snippetUpdate import SnippetUpdateButton
 import os
 from PyQt6.QtWidgets import (
     QDialog,
@@ -7,28 +11,25 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-from apis.cues.snippet.snippetAdd import SnippetAddButton
-from apis.cues.snippet.snippetFire import SnippetFireButton
-from apis.cues.snippet.snippetSave import SnippetSaveButton
-from apis.cues.snippet.snippetUpdate import SnippetUpdateButton
-
 class SnippetEditButton(QPushButton):
-    def __init__(self, osc, filename):
+    def __init__(self, config, osc, filename):
         super().__init__("Edit Current Snippet")
+        self.config = config
         self.osc = osc
         self.filename = filename
         self.setEnabled(self.filename.text() != "")
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        dlg = SnippetEditDialog(self.osc, self.filename)
+        dlg = SnippetEditDialog(self.config, self.osc, self.filename)
         dlg.exec()
 
         self.setDown(False)
 
 class SnippetEditDialog(QDialog):
-    def __init__(self, osc, filename):
+    def __init__(self, config, osc, filename):
         super().__init__()
+        self.config = config
         self.osc = osc
         self.filename = filename
 
@@ -39,7 +40,7 @@ class SnippetEditDialog(QDialog):
         vlayout.addWidget(textbox)
 
         hlayout = QHBoxLayout()
-        hlayout.addWidget(SnippetAddButton(self.osc, textbox))
+        hlayout.addWidget(SnippetAddButton(self.config, self.osc, textbox))
         hlayout.addWidget(SnippetUpdateButton(self.osc, textbox))
         hlayout.addWidget(SnippetFireButton(self.osc, textbox))
         vlayout.addLayout(hlayout)

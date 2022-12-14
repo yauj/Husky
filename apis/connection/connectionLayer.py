@@ -76,7 +76,7 @@ class ConnectionLayer(QWidget):
             port = QComboBox()
             port.setEditable(True)
             port.setMinimumWidth(300)
-            port.setCurrentText(self.config["midi"][name])
+            port.setCurrentText(self.config["midi"][name]["default"])
             self.widgets["connection"][name + "Midi"] = port
             hlayout.addWidget(port)
 
@@ -87,7 +87,7 @@ class ConnectionLayer(QWidget):
             hlayout.addWidget(ConnectMidiButton(self.osc, name, status, port))
 
             port.addItems(self.osc[name + "Midi"].get_output_names())
-            port.setCurrentText(self.config["midi"][name])
+            port.setCurrentText(self.config["midi"][name]["default"])
 
             vlayout.addLayout(hlayout)
 

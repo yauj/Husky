@@ -64,7 +64,7 @@ class MainWindow(QMainWindow):
 
             for name in self.config["midi"]:
                 if name + "Midi" in connections:
-                    self.config["midi"][name] = connections[name + "Midi"]
+                    self.config["midi"][name]["default"] = connections[name + "Midi"]
 
     # Load Cue Cache
     def loadCueCache(self):

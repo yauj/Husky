@@ -19,8 +19,9 @@ from util.constants import KEYS
 TAB_LAYER_NAMES = ["a", "b", "c", "d", "e"]
 
 class CueTab(QTabWidget):
-    def __init__(self, osc, widgets):
+    def __init__(self, config, osc, widgets):
         super().__init__()
+        self.config = config
         self.osc = osc
         self.widgets = widgets
         self.prevIndex = [None]
@@ -58,7 +59,7 @@ class CueTab(QTabWidget):
             options["lead"].addItems(["", "1", "2", "3", "4"])
             hlayout.addWidget(options["lead"])
 
-            snippet = CueSnippetButton(self.osc)
+            snippet = CueSnippetButton(self.config, self.osc)
             hlayout.addWidget(snippet)
             options["snippet"] = snippet
 

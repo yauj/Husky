@@ -6,9 +6,21 @@ config = {
     },
     "serverMidi": "X-USB",
     "midi": {
-        "audio": "X32Helper",
-        "video": "Network Session 1",
-        "light": "USB MIDI Interface"
+        "audio": {
+            "default": "X32Helper",
+            "type": "control_change",
+            "defaultChannel": 2
+        },
+        "video": {
+            "default": "Network Session 1",
+            "type": "note",
+            "defaultChannel": 6
+        },
+        "light": {
+            "default": "USB MIDI Interface",
+            "type": "note",
+            "defaultChannel": 15
+        },
     },
     "personal": {
         "DPA": {

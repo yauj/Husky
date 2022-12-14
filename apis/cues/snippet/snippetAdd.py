@@ -16,19 +16,21 @@ import traceback
 from util.constants import ALL_BUSES, ALL_CHANNELS, AUX_CHANNELS, ODD_BUSES, SETTINGS
 
 class SnippetAddButton(QPushButton):
-    def __init__(self, osc, textbox):
+    def __init__(self, config, osc, textbox):
         super().__init__("Add Commands")
+        self.config = config
         self.osc = osc
         self.textbox = textbox
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        SnippetAddDialog(self.osc, self.textbox).exec()
+        SnippetAddDialog(self.config, self.osc, self.textbox).exec()
         self.setDown(False)
 
 class SnippetAddDialog(QDialog):
-    def __init__(self, osc, textbox):
+    def __init__(self, config, osc, textbox):
         super().__init__()
+        self.config = config
         self.osc = osc
         self.textbox = textbox
 
@@ -36,8 +38,8 @@ class SnippetAddDialog(QDialog):
         tabs = QTabWidget()
         tabs.addTab(self.fohLayer(), "FOH Mixer")
         tabs.addTab(self.iemLayer(), "IEM Mixer")
-        tabs.addTab(self.audioLayer(), "Audio MIDI")
-        tabs.addTab(self.lightLayer(), "Light MIDI")
+        for name in config["midi"]:
+            tabs.addTab(self.midiLayer(name, config["midi"][name]), name.capitalize() + " MIDI")
         layout.addWidget(tabs)
 
         self.setLayout(layout)
@@ -89,7 +91,7 @@ class SnippetAddDialog(QDialog):
         widget.setLayout(vlayout)
         return widget
 
-    def audioLayer(self):
+    def midiLayer(self, name, config):
         vlayout = QVBoxLayout()
 
         hlayout = QHBoxLayout()
@@ -97,7 +99,8 @@ class SnippetAddDialog(QDialog):
         channel = QSpinBox()
         channel.setMinimum(1)
         channel.setMaximum(16)
-        channel.setValue(2)
+        if "defaultChannel" in config:
+            channel.setValue(config["defaultChannel"])
         hlayout.addWidget(channel)
         vlayout.addLayout(hlayout)
 
@@ -114,45 +117,12 @@ class SnippetAddDialog(QDialog):
         value = QSpinBox()
         value.setMinimum(0)
         value.setMaximum(127)
+        if config["type"] == "note":
+            value.setSingleStep(127)
         hlayout.addWidget(value)
         vlayout.addLayout(hlayout)
 
-        vlayout.addWidget(AddMIDIButton(self.textbox, "audio", channel, control, value))
-
-        widget = QWidget()
-        widget.setLayout(vlayout)
-        return widget
-
-    def lightLayer(self):
-        vlayout = QVBoxLayout()
-
-        hlayout = QHBoxLayout()
-        hlayout.addWidget(QLabel("Channel: "))
-        channel = QSpinBox()
-        channel.setMinimum(1)
-        channel.setMaximum(16)
-        channel.setValue(15)
-        hlayout.addWidget(channel)
-        vlayout.addLayout(hlayout)
-
-        hlayout = QHBoxLayout()
-        hlayout.addWidget(QLabel("Control: "))
-        control = QSpinBox()
-        control.setMinimum(0)
-        control.setMaximum(127)
-        hlayout.addWidget(control)
-        vlayout.addLayout(hlayout)
-
-        hlayout = QHBoxLayout()
-        hlayout.addWidget(QLabel("Value: "))
-        value = QSpinBox()
-        value.setMinimum(0)
-        value.setMaximum(127)
-        value.setSingleStep(127)
-        hlayout.addWidget(value)
-        vlayout.addLayout(hlayout)
-
-        vlayout.addWidget(AddMIDIButton(self.textbox, "light", channel, control, value))
+        vlayout.addWidget(AddMIDIButton(self.textbox, name, channel, control, value))
 
         widget = QWidget()
         widget.setLayout(vlayout)

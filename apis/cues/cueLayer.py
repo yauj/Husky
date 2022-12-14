@@ -45,7 +45,7 @@ class CueLayer(QTabWidget):
         hlayout.addWidget(CueClearButton(self.widgets))
         vlayout.addLayout(hlayout)
 
-        vlayout.addWidget(CueTab(self.osc, self.widgets))
+        vlayout.addWidget(CueTab(self.config, self.osc, self.widgets))
 
         widget = QWidget()
         widget.setLayout(vlayout)
