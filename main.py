@@ -6,6 +6,7 @@ from apis.menu.Update import UpdateApp
 from apis.misc.miscLayer import MiscLayer
 from apis.snippets.snippetsLayer import SnippetsLayer
 from config import config
+import faulthandler
 import os
 from PyQt6.QtWidgets import (
     QApplication,
@@ -85,6 +86,7 @@ class MainWindow(QMainWindow):
 
         return super().closeEvent(a0)
 
+faulthandler.enable()
 app = QApplication(sys.argv)
 window = MainWindow()
 window.resize(1, 1) # Open in smallest size

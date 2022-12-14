@@ -1,10 +1,52 @@
 from PyQt6.QtWidgets import (
     QCheckBox,
+    QDialog,
+    QHBoxLayout,
+    QLabel,
     QMessageBox,
     QPushButton,
+    QVBoxLayout,
+    QWidget,
 )
 import traceback
 from util.lock import OwnerLock
+
+class TalkbackButton(QPushButton):
+    def __init__(self, config, osc):
+        super().__init__("Modify Talkback")
+        self.config = config
+        self.osc = osc
+        self.pressed.connect(self.clicked)
+    
+    def clicked(self):
+        TalkbackDialog(self.config, self.osc).exec()
+        self.setDown(False)
+
+class TalkbackDialog(QDialog):
+    def __init__(self, config, osc):
+        super().__init__()
+        vlayout = QVBoxLayout()
+
+        label = QLabel("Specify who to talkback to. A checked box indicates that talkback is active for channel.")
+        label.setMaximumHeight(20)
+        vlayout.addWidget(label)
+   
+        self.talkbacks = {}
+
+        vlayout.addWidget(TalkbackAllButton(osc, self.talkbacks))
+        for chName in config["personal"]:
+            if "iem_bus" in config["personal"][chName]:
+                hlayout = QHBoxLayout()
+                hlayout.addWidget(QLabel(chName + ":"))
+                hlayout.addWidget(TalkbackMeButton(osc, self.talkbacks, chName))
+                self.talkbacks[chName] = TalkbackBox(config, osc, chName)
+                spacer = QWidget()
+                spacer.setFixedWidth(30)
+                hlayout.addWidget(spacer)
+                hlayout.addWidget(self.talkbacks[chName])
+                vlayout.addLayout(hlayout)
+
+        self.setLayout(vlayout)
 
 class TalkbackBox(QCheckBox):
     def __init__(self, config, osc, chName):
