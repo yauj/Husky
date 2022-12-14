@@ -24,39 +24,43 @@ class TalkbackButton(QPushButton):
 class TalkbackDialog(QDialog):
     def __init__(self, config, osc):
         super().__init__()
-        vlayout = QVBoxLayout()
-
-        label = QLabel("Specify who to talkback to. A checked box indicates that talkback is active for channel.")
-        label.setMaximumHeight(20)
-        vlayout.addWidget(label)
-
-        initSettings = {}
-        for chName in config["personal"]:
-            if "iem_bus" in config["personal"][chName]:
-                initSettings[config["talkbackChannel"] + "/mix/" + config["personal"][chName]["iem_bus"] + "/on"] = None
-        
         try:
-            initValues = osc["iemClient"].bulk_send_messages(initSettings)
-        except SystemError as ex:
-            print(ex) # OK if not connected
-            initValues = initSettings
+            vlayout = QVBoxLayout()
 
-        self.talkbacks = {}
+            label = QLabel("Specify who to talkback to. A checked box indicates that talkback is active for channel.")
+            label.setMaximumHeight(20)
+            vlayout.addWidget(label)
 
-        vlayout.addWidget(TalkbackAllButton(osc, self.talkbacks))
-        for chName in config["personal"]:
-            if "iem_bus" in config["personal"][chName]:
-                hlayout = QHBoxLayout()
-                hlayout.addWidget(QLabel(chName + ":"))
-                hlayout.addWidget(TalkbackMeButton(osc, self.talkbacks, chName))
-                self.talkbacks[chName] = TalkbackBox(config, osc, initValues, chName)
-                spacer = QWidget()
-                spacer.setFixedWidth(30)
-                hlayout.addWidget(spacer)
-                hlayout.addWidget(self.talkbacks[chName])
-                vlayout.addLayout(hlayout)
+            initSettings = {}
+            for chName in config["personal"]:
+                if "iem_bus" in config["personal"][chName]:
+                    initSettings[config["talkbackChannel"] + "/mix/" + config["personal"][chName]["iem_bus"] + "/on"] = None
+            
+                initValues = osc["iemClient"].bulk_send_messages(initSettings)
 
-        self.setLayout(vlayout)
+            self.talkbacks = {}
+
+            vlayout.addWidget(TalkbackAllButton(osc, self.talkbacks))
+            for chName in config["personal"]:
+                if "iem_bus" in config["personal"][chName]:
+                    hlayout = QHBoxLayout()
+                    hlayout.addWidget(QLabel(chName + ":"))
+                    hlayout.addWidget(TalkbackMeButton(osc, self.talkbacks, chName))
+                    self.talkbacks[chName] = TalkbackBox(config, osc, initValues, chName)
+                    spacer = QWidget()
+                    spacer.setFixedWidth(30)
+                    hlayout.addWidget(spacer)
+                    hlayout.addWidget(self.talkbacks[chName])
+                    vlayout.addLayout(hlayout)
+
+            self.setLayout(vlayout)
+        except Exception as ex:
+            print(traceback.format_exc())
+            vlayout = QVBoxLayout()
+            label = QLabel("Error: " + str(ex))
+            label.setStyleSheet("color:red")
+            vlayout.addWidget(label)
+            self.setLayout(vlayout)
 
 class TalkbackBox(QCheckBox):
     def __init__(self, config, osc, initValues, chName):

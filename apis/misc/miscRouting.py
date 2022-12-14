@@ -47,14 +47,25 @@ class RoutingDialog(QDialog):
         self.setLayout(vlayout)
 
     def routingTabLayer(self, mixerName):
-        initValues = getCurrentRouting(self.osc, mixerName)
+        try:
+            initValues = getCurrentRouting(self.osc, mixerName)
 
-        tabs = QTabWidget()
-        tabs.addTab(self.routingInLayer(mixerName, initValues), "Inputs")
-        tabs.addTab(self.routingPatchLayer(mixerName, initValues), "Patches")
-        tabs.addTab(self.routingOutputLayer(mixerName, initValues), "Ouputs")
+            tabs = QTabWidget()
+            tabs.addTab(self.routingInLayer(mixerName, initValues), "Inputs")
+            tabs.addTab(self.routingPatchLayer(mixerName, initValues), "Patches")
+            tabs.addTab(self.routingOutputLayer(mixerName, initValues), "Ouputs")
 
-        return tabs
+            return tabs
+        except Exception as ex:
+            print(traceback.format_exc())
+            vlayout = QVBoxLayout()
+            label = QLabel("Error: " + str(ex))
+            label.setStyleSheet("color:red")
+            vlayout.addWidget(label)
+            
+            widget = QWidget()
+            widget.setLayout(vlayout)
+            return widget
 
     def routingInLayer(self, mixerName, initValues):
         vlayout = QVBoxLayout()
@@ -418,10 +429,4 @@ def getCurrentRouting(osc, mixerName, dlg = None):
     if dlg:
         dlg.initBar.emit(len(settings))
 
-    try:
-        return osc[mixerName + "Client"].bulk_send_messages(settings, dlg)
-    except Exception as ex:
-        if dlg:
-            raise ex
-        else:
-            return settings # Return empty values on error
+    return osc[mixerName + "Client"].bulk_send_messages(settings, dlg)
