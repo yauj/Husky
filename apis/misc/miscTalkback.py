@@ -9,11 +9,10 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 import traceback
-from util.lock import OwnerLock
 
 class TalkbackButton(QPushButton):
     def __init__(self, config, osc):
-        super().__init__("Modify Talkback")
+        super().__init__("Talkback Settings")
         self.config = config
         self.osc = osc
         self.pressed.connect(self.clicked)
@@ -30,7 +29,18 @@ class TalkbackDialog(QDialog):
         label = QLabel("Specify who to talkback to. A checked box indicates that talkback is active for channel.")
         label.setMaximumHeight(20)
         vlayout.addWidget(label)
-   
+
+        initSettings = {}
+        for chName in config["personal"]:
+            if "iem_bus" in config["personal"][chName]:
+                initSettings[config["talkbackChannel"] + "/mix/" + config["personal"][chName]["iem_bus"] + "/on"] = None
+        
+        try:
+            initValues = osc["iemClient"].bulk_send_messages(initSettings)
+        except SystemError as ex:
+            print(ex) # OK if not connected
+            initValues = initSettings
+
         self.talkbacks = {}
 
         vlayout.addWidget(TalkbackAllButton(osc, self.talkbacks))
@@ -39,7 +49,7 @@ class TalkbackDialog(QDialog):
                 hlayout = QHBoxLayout()
                 hlayout.addWidget(QLabel(chName + ":"))
                 hlayout.addWidget(TalkbackMeButton(osc, self.talkbacks, chName))
-                self.talkbacks[chName] = TalkbackBox(config, osc, chName)
+                self.talkbacks[chName] = TalkbackBox(config, osc, initValues, chName)
                 spacer = QWidget()
                 spacer.setFixedWidth(30)
                 hlayout.addWidget(spacer)
@@ -49,30 +59,24 @@ class TalkbackDialog(QDialog):
         self.setLayout(vlayout)
 
 class TalkbackBox(QCheckBox):
-    def __init__(self, config, osc, chName):
+    def __init__(self, config, osc, initValues, chName):
         super().__init__()
         self.osc = osc
         self.command = config["talkbackChannel"] + "/mix/" + config["personal"][chName]["iem_bus"] + "/on"
-        self.lock = OwnerLock()
         self.setFixedWidth(20)
+        self.setChecked(initValues[self.command] == 1 if initValues[self.command] is not None else 1)
         self.stateChanged.connect(self.clicked)
-        osc["iemServer"].subscription.add(self.command, self.processSubscription)
     
     def clicked(self, value):
         try:
-            if self.lock.acquire("button"):
-                arg = 1 if value == 2 else 0
-                self.osc["iemClient"].send_message(self.command, arg)
+            arg = 1 if value == 2 else 0
+            self.osc["iemClient"].send_message(self.command, arg)
         except Exception as ex:
             print(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Talkback")
             dlg.setText("Error: " + str(ex))
             dlg.exec()
-    
-    def processSubscription(self, mixerName, message, arg):
-        if self.lock.acquire(mixerName + " " + message):
-            self.setChecked(arg == 1)
 
 class TalkbackAllButton(QPushButton):
     def __init__(self, osc, boxes):

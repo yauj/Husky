@@ -17,11 +17,10 @@ from util.constants import (
     ROUTING_IN, ROUTING_IN_AUX, ROUTING_IN_USER,
     ROUTING_OUT, ROUTING_OUT_DIGITAL, ROUTING_OUT_LOCAL_A, ROUTING_OUT_LOCAL_B, ROUTING_OUT_USER
 )
-from util.customWidgets import ProgressDialog
 
 class RoutingButton(QPushButton):
     def __init__(self, config, widgets, osc):
-        super().__init__("Modify Routing Settings")
+        super().__init__("Routing Settings")
         self.config = config
         self.widgets = widgets
         self.osc = osc
@@ -48,27 +47,23 @@ class RoutingDialog(QDialog):
         self.setLayout(vlayout)
 
     def routingTabLayer(self, mixerName):
-        vlayout = QVBoxLayout()
-        vlayout.addWidget(RoutingSyncButton(self.osc, mixerName, self.widgets))
+        initValues = getCurrentRouting(self.osc, mixerName)
 
         tabs = QTabWidget()
-        tabs.addTab(self.routingInLayer(mixerName), "Inputs")
-        tabs.addTab(self.routingPatchLayer(mixerName), "Patches")
-        tabs.addTab(self.routingOutputLayer(mixerName), "Ouputs")
-        vlayout.addWidget(tabs)
+        tabs.addTab(self.routingInLayer(mixerName, initValues), "Inputs")
+        tabs.addTab(self.routingPatchLayer(mixerName, initValues), "Patches")
+        tabs.addTab(self.routingOutputLayer(mixerName, initValues), "Ouputs")
 
-        widget = QWidget()
-        widget.setLayout(vlayout)
-        return widget
+        return tabs
 
-    def routingInLayer(self, mixerName):
+    def routingInLayer(self, mixerName, initValues):
         vlayout = QVBoxLayout()
 
         tabs = QTabWidget()
-        tabs.addTab(self.routingInTabLayer(mixerName, "IN"), "Record")
-        tabs.addTab(self.routingInTabLayer(mixerName, "PLAY"), "Play")
+        tabs.addTab(self.routingInTabLayer(mixerName, initValues, "IN"), "Record")
+        tabs.addTab(self.routingInTabLayer(mixerName, initValues, "PLAY"), "Play")
 
-        self.widgets["routingSwap"][mixerName] = RoutingSwitchButton(self.osc, mixerName, tabs)
+        self.widgets["routingSwap"][mixerName] = RoutingSwitchButton(self.osc, mixerName, tabs, initValues)
 
         vlayout.addWidget(self.widgets["routingSwap"][mixerName])
         vlayout.addWidget(tabs)
@@ -77,27 +72,27 @@ class RoutingDialog(QDialog):
         widget.setLayout(vlayout)
         return widget
 
-    def routingInTabLayer(self, mixerName, mapping):
+    def routingInTabLayer(self, mixerName, initValues, mapping):
         vlayout = QVBoxLayout()
 
         hlayout = QHBoxLayout()
-        hlayout.addWidget(RoutingPresetButton("AES-A", mixerName, self.widgets, range(4, 8)))
-        hlayout.addWidget(RoutingPresetButton("AES-B", mixerName, self.widgets, range(10, 14)))
-        hlayout.addWidget(RoutingPresetButton("Card", mixerName, self.widgets, range(16, 20)))
-        hlayout.addWidget(RoutingPresetButton("User In", mixerName, self.widgets, range(20, 24)))
+        hlayout.addWidget(RoutingPresetButton("AES-A", mixerName, mapping, self.widgets, range(4, 8)))
+        hlayout.addWidget(RoutingPresetButton("AES-B", mixerName, mapping, self.widgets, range(10, 14)))
+        hlayout.addWidget(RoutingPresetButton("Card", mixerName, mapping, self.widgets, range(16, 20)))
+        hlayout.addWidget(RoutingPresetButton("User In", mixerName, mapping, self.widgets, range(20, 24)))
         vlayout.addLayout(hlayout)
         
         for bank in BANKS_32:
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("Channels " + bank + ":"))
-            option = RoutingBox(self.osc, mixerName, "/config/routing/" + mapping + "/" + bank, ROUTING_IN)
+            option = RoutingBox(self.osc, mixerName, "/config/routing/" + mapping + "/" + bank, ROUTING_IN, initValues)
             self.widgets["routing"][mixerName]["/config/routing/" + mapping + "/" + bank] = option
             hlayout.addWidget(option)
             vlayout.addLayout(hlayout)
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(QLabel("AUX Channels:"))
-        option = RoutingBox(self.osc, mixerName, "/config/routing/" + mapping + "/AUX", ROUTING_IN_AUX)
+        option = RoutingBox(self.osc, mixerName, "/config/routing/" + mapping + "/AUX", ROUTING_IN_AUX, initValues)
         self.widgets["routing"][mixerName]["/config/routing/" + mapping + "/AUX"] = option
         hlayout.addWidget(option)
         vlayout.addLayout(hlayout)
@@ -110,22 +105,22 @@ class RoutingDialog(QDialog):
         scroll.setWidgetResizable(True)
         return scroll
     
-    def routingPatchLayer(self, mixerName):
+    def routingPatchLayer(self, mixerName, initValues):
         tabs = QTabWidget()
 
-        tabs.addTab(self.routingPatchOutLayer(mixerName), "Out Patch")
-        tabs.addTab(self.routingPatchUserInLayer(mixerName), "User In")
-        tabs.addTab(self.routingPatchUserOutLayer(mixerName), "User Out")
+        tabs.addTab(self.routingPatchOutLayer(mixerName, initValues), "Out Patch")
+        tabs.addTab(self.routingPatchUserInLayer(mixerName, initValues), "User In")
+        tabs.addTab(self.routingPatchUserOutLayer(mixerName, initValues), "User Out")
 
         return tabs
 
-    def routingPatchOutLayer(self, mixerName):
+    def routingPatchOutLayer(self, mixerName, initValues):
         vlayout = QVBoxLayout()
         
         for idx in range(1, 17):
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("Out Patch " + str(idx) + ":"))
-            option = RoutingBox(self.osc, mixerName, "/outputs/main/" + "{:02d}".format(idx) + "/src", ROUTING_OUT_DIGITAL)
+            option = RoutingBox(self.osc, mixerName, "/outputs/main/" + "{:02d}".format(idx) + "/src", ROUTING_OUT_DIGITAL, initValues)
             self.widgets["routing"][mixerName]["/outputs/main/" + "{:02d}".format(idx) + "/src"] = option
             hlayout.addWidget(option)
             vlayout.addLayout(hlayout)
@@ -138,13 +133,13 @@ class RoutingDialog(QDialog):
         scroll.setWidgetResizable(True)
         return scroll
     
-    def routingPatchUserInLayer(self, mixerName):
+    def routingPatchUserInLayer(self, mixerName, initValues):
         vlayout = QVBoxLayout()
         
         for idx in range(1, 33):
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("User In " + str(idx) + ":"))
-            option = RoutingBox(self.osc, mixerName, "/config/userrout/in/" + "{:02d}".format(idx), ROUTING_IN_USER)
+            option = RoutingBox(self.osc, mixerName, "/config/userrout/in/" + "{:02d}".format(idx), ROUTING_IN_USER, initValues)
             self.widgets["routing"][mixerName]["/config/userrout/in/" + "{:02d}".format(idx)] = option
             hlayout.addWidget(option)
             vlayout.addLayout(hlayout)
@@ -157,13 +152,13 @@ class RoutingDialog(QDialog):
         scroll.setWidgetResizable(True)
         return scroll
     
-    def routingPatchUserOutLayer(self, mixerName):
+    def routingPatchUserOutLayer(self, mixerName, initValues):
         vlayout = QVBoxLayout()
         
         for idx in range(1, 49):
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("User Out " + str(idx) + ":"))
-            option = RoutingBox(self.osc, mixerName, "/config/userrout/out/" + "{:02d}".format(idx), ROUTING_OUT_USER)
+            option = RoutingBox(self.osc, mixerName, "/config/userrout/out/" + "{:02d}".format(idx), ROUTING_OUT_USER, initValues)
             self.widgets["routing"][mixerName]["/config/userrout/out/" + "{:02d}".format(idx)] = option
             hlayout.addWidget(option)
             vlayout.addLayout(hlayout)
@@ -176,25 +171,25 @@ class RoutingDialog(QDialog):
         scroll.setWidgetResizable(True)
         return scroll
 
-    def routingOutputLayer(self, mixerName):
+    def routingOutputLayer(self, mixerName, initValues):
         tabs = QTabWidget()
 
-        tabs.addTab(self.routingOutputAESLayer(mixerName, "A"), "AES-A")
-        tabs.addTab(self.routingOutputAESLayer(mixerName, "B"), "AES-B")
-        tabs.addTab(self.routingOutputCardLayer(mixerName), "Card")
-        tabs.addTab(self.routingOutputLocalLayer(mixerName), "Local")
-        tabs.addTab(self.routingOutputP16Layer(mixerName), "P16")
-        tabs.addTab(self.routingOutputOtherLayer(mixerName), "Other")
+        tabs.addTab(self.routingOutputAESLayer(mixerName, initValues, "A"), "AES-A")
+        tabs.addTab(self.routingOutputAESLayer(mixerName, initValues, "B"), "AES-B")
+        tabs.addTab(self.routingOutputCardLayer(mixerName, initValues), "Card")
+        tabs.addTab(self.routingOutputLocalLayer(mixerName, initValues), "Local")
+        tabs.addTab(self.routingOutputP16Layer(mixerName, initValues), "P16")
+        tabs.addTab(self.routingOutputOtherLayer(mixerName, initValues), "Other")
 
         return tabs
 
-    def routingOutputAESLayer(self, mixerName, portName):
+    def routingOutputAESLayer(self, mixerName, initValues, portName):
         vlayout = QVBoxLayout()
         
         for bank in BANKS_48:
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("AES-" + portName + " Output " + bank + ":"))
-            option = RoutingBox(self.osc, mixerName, "/config/routing/AES50" + portName + "/" + bank, ROUTING_OUT)
+            option = RoutingBox(self.osc, mixerName, "/config/routing/AES50" + portName + "/" + bank, ROUTING_OUT, initValues)
             self.widgets["routing"][mixerName]["/config/routing/AES50" + portName + "/" + bank] = option
             hlayout.addWidget(option)
             vlayout.addLayout(hlayout)
@@ -207,13 +202,13 @@ class RoutingDialog(QDialog):
         scroll.setWidgetResizable(True)
         return scroll
     
-    def routingOutputCardLayer(self, mixerName):
+    def routingOutputCardLayer(self, mixerName, initValues):
         vlayout = QVBoxLayout()
         
         for bank in BANKS_32:
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("Card Output " + bank + ":"))
-            option = RoutingBox(self.osc, mixerName, "/config/routing/CARD/" + bank, ROUTING_OUT)
+            option = RoutingBox(self.osc, mixerName, "/config/routing/CARD/" + bank, ROUTING_OUT, initValues)
             self.widgets["routing"][mixerName]["/config/routing/CARD/" + bank] = option
             hlayout.addWidget(option)
             vlayout.addLayout(hlayout)
@@ -226,14 +221,14 @@ class RoutingDialog(QDialog):
         scroll.setWidgetResizable(True)
         return scroll
     
-    def routingOutputLocalLayer(self, mixerName):
+    def routingOutputLocalLayer(self, mixerName, initValues):
         vlayout = QVBoxLayout()
         
         for idx, bank in enumerate(BANKS_16):
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("Local XLR Output " + bank + ":"))
             lst = ROUTING_OUT_LOCAL_A if idx % 2 == 0 else ROUTING_OUT_LOCAL_B
-            option = RoutingBox(self.osc, mixerName, "/config/routing/OUT/" + bank, lst)
+            option = RoutingBox(self.osc, mixerName, "/config/routing/OUT/" + bank, lst, initValues)
             self.widgets["routing"][mixerName]["/config/routing/OUT/" + bank] = option
             hlayout.addWidget(option)
             vlayout.addLayout(hlayout)
@@ -241,7 +236,7 @@ class RoutingDialog(QDialog):
         for idx in range(1, 7):
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("Local AUX Output " + str(idx) + ":"))
-            option = RoutingBox(self.osc, mixerName, "/outputs/aux/" + "{:02d}".format(idx) + "/src", ROUTING_OUT_DIGITAL)
+            option = RoutingBox(self.osc, mixerName, "/outputs/aux/" + "{:02d}".format(idx) + "/src", ROUTING_OUT_DIGITAL, initValues)
             self.widgets["routing"][mixerName]["/outputs/aux/" + "{:02d}".format(idx) + "/src"] = option
             hlayout.addWidget(option)
             vlayout.addLayout(hlayout)
@@ -254,13 +249,13 @@ class RoutingDialog(QDialog):
         scroll.setWidgetResizable(True)
         return scroll
 
-    def routingOutputP16Layer(self, mixerName):
+    def routingOutputP16Layer(self, mixerName, initValues):
         vlayout = QVBoxLayout()
         
         for idx in range(1, 17):
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("P16 " + str(idx) + ":"))
-            option = RoutingBox(self.osc, mixerName, "/outputs/p16/" + "{:02d}".format(idx) + "/src", ROUTING_OUT_DIGITAL)
+            option = RoutingBox(self.osc, mixerName, "/outputs/p16/" + "{:02d}".format(idx) + "/src", ROUTING_OUT_DIGITAL, initValues)
             self.widgets["routing"][mixerName]["/outputs/p16/" + "{:02d}".format(idx) + "/src"] = option
             hlayout.addWidget(option)
             vlayout.addLayout(hlayout)
@@ -273,13 +268,13 @@ class RoutingDialog(QDialog):
         scroll.setWidgetResizable(True)
         return scroll
 
-    def routingOutputOtherLayer(self, mixerName):
+    def routingOutputOtherLayer(self, mixerName, initValues):
         vlayout = QVBoxLayout()
         
         for idx, label in enumerate(["L", "R"]):
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("AES " + label + ":"))
-            option = RoutingBox(self.osc, mixerName, "/outputs/aes/" + "{:02d}".format(idx + 1) + "/src", ROUTING_OUT_DIGITAL)
+            option = RoutingBox(self.osc, mixerName, "/outputs/aes/" + "{:02d}".format(idx + 1) + "/src", ROUTING_OUT_DIGITAL, initValues)
             self.widgets["routing"][mixerName]["/outputs/aes/" + "{:02d}".format(idx + 1) + "/src"] = option
             hlayout.addWidget(option)
             vlayout.addLayout(hlayout)
@@ -287,7 +282,7 @@ class RoutingDialog(QDialog):
         for idx, label in enumerate(["L", "R"]):
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("USB Recording " + label + ":"))
-            option = RoutingBox(self.osc, mixerName, "/outputs/rec/" + "{:02d}".format(idx + 1) + "/src", ROUTING_OUT_DIGITAL)
+            option = RoutingBox(self.osc, mixerName, "/outputs/rec/" + "{:02d}".format(idx + 1) + "/src", ROUTING_OUT_DIGITAL, initValues)
             self.widgets["routing"][mixerName]["/outputs/rec/" + "{:02d}".format(idx + 1) + "/src"] = option
             hlayout.addWidget(option)
             vlayout.addLayout(hlayout)
@@ -300,18 +295,16 @@ class RoutingDialog(QDialog):
         scroll.setWidgetResizable(True)
         return scroll
 
-
 class RoutingBox(QComboBox):
-    def __init__(self, osc, mixerName, command, options):
+    def __init__(self, osc, mixerName, command, options, initValues):
         super().__init__()
         self.osc = osc
         self.mixerName = mixerName
         self.command = command
         self.setFixedWidth(300)
         self.addItems(options)
-        self.setCurrentIndex(-1)
-        self.activated.connect(self.changed)
-        osc[mixerName + "Server"].subscription.add(command, self.processSubscription)
+        self.setCurrentIndex(initValues[command] if initValues[command] is not None else -1)
+        self.currentIndexChanged.connect(self.changed)
     
     def changed(self, index):
         try:
@@ -324,19 +317,15 @@ class RoutingBox(QComboBox):
             dlg.setText("Error: " + str(ex))
             dlg.exec()
 
-    def processSubscription(self, mixerName, message, arg):
-        if mixerName == self.mixerName and message == self.command and arg != self.currentIndex():
-            self.setCurrentIndex(arg)
-
 class RoutingSwitchButton(QPushButton):
-    def __init__(self, osc, mixerName, tabs):
+    def __init__(self, osc, mixerName, tabs, initValues):
         super().__init__("Switch Between Record/Play")
         self.osc = osc
         self.mixerName = mixerName
         self.tabs = tabs
-        self.isRecord = True
+        self.isRecord = False if initValues["/config/routing/routswitch"] is not None and initValues["/config/routing/routswitch"] == 1 else True
+        self.updateState()
         self.pressed.connect(self.onPressed)
-        osc[mixerName + "Server"].subscription.add("/config/routing/routswitch", self.processSubscription)
 
     def onPressed(self):
         try:
@@ -357,10 +346,6 @@ class RoutingSwitchButton(QPushButton):
         
         self.updateState()
         self.setDown(False)
-    
-    def processSubscription(self, mixerName, message, arg):
-        self.isRecord = arg == 0
-        self.updateState()
 
     def updateState(self):
         try:
@@ -375,10 +360,11 @@ class RoutingSwitchButton(QPushButton):
             self.tabs.tabBar().setTabTextColor(1, QColor())
 
 class RoutingPresetButton(QPushButton):
-    def __init__(self, name, mixerName, widgets, indexes):
+    def __init__(self, name, mixerName, mapping, widgets, indexes):
         super().__init__(name + " Routing")
         self.name = name
         self.mixerName = mixerName
+        self.mapping = mapping
         self.widgets = widgets
         self.indexes = indexes
         self.pressed.connect(self.clicked)
@@ -386,7 +372,7 @@ class RoutingPresetButton(QPushButton):
     def clicked(self):
         try:
             for idx, bank in enumerate(BANKS_32):
-                self.widgets["routing"][self.mixerName]["/config/routing/IN/" + bank].setCurrentIndex(self.indexes[idx])
+                self.widgets["routing"][self.mixerName]["/config/routing/" + self.mapping + "/" + bank].setCurrentIndex(self.indexes[idx])
             
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Routing")
@@ -400,36 +386,6 @@ class RoutingPresetButton(QPushButton):
             dlg.exec()
         
         self.setDown(False)
-
-class RoutingSyncButton(QPushButton):
-    def __init__(self, osc, mixerName, widgets):
-        super().__init__("Sync")
-        self.osc = osc
-        self.mixerName = mixerName
-        self.widgets = widgets
-        self.pressed.connect(self.clicked)
-    
-    def clicked(self):
-        dlg = ProgressDialog(self.mixerName.upper() + " Routing Sync", self.main)
-        dlg.exec()
-
-        self.setDown(False)
-
-    def main(self, dlg):
-        try:
-            syncRouting(self.osc, self.mixerName, self.widgets)
-            dlg.complete.emit()
-        except Exception as ex:
-            print(traceback.format_exc())
-            dlg.raiseException.emit(ex)
-
-def syncRouting(osc, mixerName, widgets, dlg = None):
-    values = getCurrentRouting(osc, mixerName, dlg)
-    for command in widgets["routing"][mixerName]:
-        if values[command] is not None:
-            widgets["routing"][mixerName][command].setCurrentIndex(values[command])
-        else:
-            widgets["routing"][mixerName][command].setCurrentIndex(-1)
 
 def getCurrentRouting(osc, mixerName, dlg = None):
     settings = {}
@@ -457,6 +413,7 @@ def getCurrentRouting(osc, mixerName, dlg = None):
         settings["/config/userrout/in/" + "{:02d}".format(idx)] = None
     for idx in range(1, 49):
         settings["/config/userrout/out/" + "{:02d}".format(idx)] = None
+    settings["/config/routing/routswitch"] = None
 
     if dlg:
         dlg.initBar.emit(len(settings))

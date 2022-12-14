@@ -1,4 +1,3 @@
-from apis.misc.miscRouting import syncRouting
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
@@ -32,9 +31,7 @@ class ConnectOscButton(QPushButton):
             dlg.setWindowTitle("X32 Connection")
             dlg.setText("Invalid IP Address for " + self.mixerName.upper() + " mixer")
             dlg.exec()
-        
-        syncRouting(self.osc, self.mixerName, self.widgets)
-        self.widgets["routingSwap"][self.mixerName].updateState()
+
         self.setDown(False)
 
     def init(self):
