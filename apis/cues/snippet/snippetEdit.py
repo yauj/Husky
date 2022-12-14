@@ -1,3 +1,4 @@
+import os
 from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -47,8 +48,9 @@ class SnippetEditDialog(QDialog):
 
         self.setLayout(vlayout)
 
-        # Initialize Textbox
-        with open(filename.text()) as file:
-            file.readline() # Skip Header Line
-            while (line := file.readline().strip()):
-                textbox.append(line)
+        # Initialize Textbox if Filename is valid
+        if (os.path.exists(filename.text())):
+            with open(filename.text()) as file:
+                file.readline() # Skip Header Line
+                while (line := file.readline().strip()):
+                    textbox.append(line)
