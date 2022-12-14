@@ -20,11 +20,8 @@ class SnippetsLayer(QTabWidget):
         self.osc = osc
 
         # Need to compile saveLayer first, since loadLayer is dependent on saveLayer
-        saveLayer = self.saveLayer()
-        loadLayer = self.loadLayer()
-
-        self.addTab(loadLayer, "Load")
-        self.addTab(saveLayer, "Save")
+        self.addTab(self.saveLayer(), "Save")
+        self.addTab(self.loadLayer(), "Load")
 
     def loadLayer(self):
         vlayout = QVBoxLayout()

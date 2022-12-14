@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
 
         tabs = QTabWidget()
 
-        tabs.addTab(ConnectionLayer(self.config, self.widgets, self.osc), "X32 Connection")
+        tabs.addTab(ConnectionLayer(self.config, self.widgets, self.osc), "Connections")
         tabs.addTab(SnippetsLayer(self.config, self.widgets, self.osc), "Snippets")
         tabs.addTab(CueLayer(self.config, self.widgets, self.osc), "Cues")
         tabs.addTab(MiscLayer(self.config, self.widgets, self.osc), "Misc")

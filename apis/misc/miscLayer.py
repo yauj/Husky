@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-# TODO: Also remove the subscriptions here, to reduce system load
+
 class MiscLayer(QWidget):
     def __init__(self, config, widgets, osc):
         super().__init__()

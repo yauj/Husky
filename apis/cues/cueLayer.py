@@ -30,7 +30,7 @@ class CueLayer(QTabWidget):
         self.osc = osc
 
         self.addTab(self.mainLayer(), "Main")
-        self.addTab(self.snippetLayer(), "Snippet")
+        self.addTab(self.snippetLayer(), "Snippet") # TODO: Deprecate this tab, in favor of a button for snippet filename, edit, and add
 
     def mainLayer(self):
         vlayout = QVBoxLayout()

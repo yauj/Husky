@@ -1,3 +1,4 @@
+# TODO: Add "interchangableWith" field to personal, where if specified, will be able to load another personal's file to that particular field
 config = {
     "osc": {
         "foh": "10.246.1.10",
