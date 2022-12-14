@@ -35,7 +35,7 @@ def saveCue(file, widgets):
         if lead == "":
             lead = "N"
 
-        snippet = cue["snippet"].text()
+        snippet = cue["snippet"].filename
         if snippet == "":
             snippet = "N"
 

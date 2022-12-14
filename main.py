@@ -21,7 +21,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.config = config
-        self.widgets = {"connection": {}, "servers": {}, "personal": {}, "cues": [], "cueSnippet": {}, "faders": [], "routing": {}, "routingSwap": {}}
+        self.widgets = {"connection": {}, "servers": {}, "personal": {}, "cues": [], "faders": [], "routing": {}}
         for mixerName in self.config["osc"]:
             self.widgets["routing"][mixerName] = {}
         self.osc = {}

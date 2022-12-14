@@ -1,3 +1,4 @@
+import os
 from PyQt6.QtWidgets import (
     QFileDialog,
     QPushButton,
@@ -48,9 +49,14 @@ def loadCue(file, widgets):
                 widgets["cues"][cueIdx]["lead"].setCurrentText(components[2])
 
             if components[3] == "N":
-                widgets["cues"][cueIdx]["snippet"].setText("")
+                widgets["cues"][cueIdx]["snippet"].setFilename("")
             else:
-                widgets["cues"][cueIdx]["snippet"].setText(components[3])
+                filename = " ".join(components[3:])
+                if os.path.exists(filename):
+                    widgets["cues"][cueIdx]["snippet"].setFilename(filename)
+                else:
+                    print("Cue Snippet File not found: " + filename)
+                    widgets["cues"][cueIdx]["snippet"].setFilename("")
 
             cueIdx = cueIdx + 1
         elif components[0] == "fader":

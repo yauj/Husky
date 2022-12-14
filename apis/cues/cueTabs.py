@@ -34,7 +34,6 @@ class CueTab(QTabWidget):
     def cuesTriggerLayer(self, pageName, pageIndex):
         vlayout = QVBoxLayout()
 
-        self.widgets["cueSnippet"][pageName] = {}
         for cue in range(0, 10):
             index = (pageIndex * 10) + cue
             printIndex = str(cue + 1)
@@ -43,26 +42,25 @@ class CueTab(QTabWidget):
             hlayout = QHBoxLayout()
 
             options["label"] = QLabel(printIndex + ":")
+            options["label"].setFixedWidth(20)
             hlayout.addWidget(options["label"])
         
             options["key"] = QComboBox()
+            options["key"].setFixedWidth(120)
             options["key"].setPlaceholderText("Key of Song")
             options["key"].addItem("")
             options["key"].addItems(KEYS)
             hlayout.addWidget(options["key"])
 
             options["lead"] = QComboBox()
+            options["lead"].setFixedWidth(120)
             options["lead"].setPlaceholderText("Vocal Lead")
             options["lead"].addItems(["", "1", "2", "3", "4"])
             hlayout.addWidget(options["lead"])
 
-            hlayout.addWidget(CueSnippetButton(self.osc))
-
-            snippet = QLineEdit()
-            snippet.setPlaceholderText("Snippet Filename")
+            snippet = CueSnippetButton(self.osc)
             hlayout.addWidget(snippet)
             options["snippet"] = snippet
-            self.widgets["cueSnippet"][pageName][printIndex] = snippet
 
             hlayout.addWidget(CueFireButton(self.osc, self.prevIndex, index, printIndex, self.widgets["cues"]))
 

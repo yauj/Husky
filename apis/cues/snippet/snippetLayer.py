@@ -39,16 +39,10 @@ class SnippetDialog(QDialog):
         self.setLayout(vlayout)
     
     def mapFilename(self, text):
-        self.parent.filename = text
+        self.parent.setFilename(text)
         if text == "":
-            self.parent.setStyleSheet("color: grey")
-            self.parent.setText("Attach Snippet")
-
             self.createButton.setText("Create New Blank Snippet")
             self.editButton.setEnabled(False)
         else:
-            self.parent.setStyleSheet("")
-            self.parent.setText(text.split("/")[-1])
-
             self.createButton.setText("Clear")
             self.editButton.setEnabled(True)

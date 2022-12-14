@@ -32,7 +32,7 @@ class LoadButton(QPushButton):
     def main(self, dlg):
         try:
             dlg.initBar.emit(loadSingleNumSettings(self.filename.currentText(), True))
-            runSingle(self.osc, self.filename.currentText(), True, dlg)
+            runSingle(self.osc, "data/" + self.filename.currentText(), True, dlg)
             self.person.setCurrentText(self.filename.currentText().split(".")[0].split("_")[2])
             dlg.complete.emit()
         except Exception as ex:
@@ -41,7 +41,7 @@ class LoadButton(QPushButton):
 
 def runSingle(osc, filename, iemCopy, dlg = None):
     lines = []
-    with open("data/" + filename) as scnFile:
+    with open(filename) as scnFile:
         scnFile.readline() # Skip Header Line
         while (line := scnFile.readline().strip()):
             lines.append(line)

@@ -5,10 +5,9 @@ from PyQt6.QtWidgets import (
 
 class CueSnippetButton(QPushButton):
     def __init__(self, osc):
-        super().__init__("Attach Snippet")
-        self.setStyleSheet("color: grey")
-        self.filename = ""
+        super().__init__()
         self.osc = osc
+        self.setFilename("")
 
         self.pressed.connect(self.clicked)
     
@@ -17,3 +16,12 @@ class CueSnippetButton(QPushButton):
         dlg.exec()
 
         self.setDown(False)
+    
+    def setFilename(self, filename):
+        self.filename = filename
+        if filename == "":
+            self.setText("Attach Snippet")
+            self.setStyleSheet("color: grey")
+        else:
+            self.setText(filename.split("/")[-1])
+            self.setStyleSheet("")

@@ -15,7 +15,7 @@ class SnippetLoadButton(QPushButton):
         dlg.setWindowTitle("Load Existing Snippet")
         dlg.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
         dlg.setDirectory("data")
-        dlg.setDefaultSuffix(".osc")
+        dlg.setNameFilter("*.osc")
         if dlg.exec():
             self.filename.setText(dlg.selectedFiles()[0])
         

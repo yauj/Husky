@@ -22,7 +22,7 @@ class CueFireButton(QPushButton):
         self.printIndex = printIndex
         self.cues = cues
         self.pressed.connect(self.clicked)
-        self.setFixedWidth(80)
+        self.setFixedWidth(50)
     
     def clicked(self):
         try:
@@ -79,9 +79,9 @@ def main(osc, prevIndex, index, cues):
                 settings["/ch/" + ch + "/mix/03/on"] = 1
             osc["fohClient"].bulk_send_messages(settings)
         
-        if cues[index]["snippet"].text() != "":
-            if os.path.exists("data/" + cues[index]["snippet"].text()):
-                runSingle(osc, cues[index]["snippet"].text(), False)
+        if cues[index]["snippet"].filename != "":
+            if os.path.exists(cues[index]["snippet"].filename):
+                runSingle(osc, cues[index]["snippet"].filename, False)
 
         cues[index]["label"].setStyleSheet("color:green")
     except Exception as ex:

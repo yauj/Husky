@@ -74,9 +74,7 @@ class RoutingDialog(QDialog):
         tabs.addTab(self.routingInTabLayer(mixerName, initValues, "IN"), "Record")
         tabs.addTab(self.routingInTabLayer(mixerName, initValues, "PLAY"), "Play")
 
-        self.widgets["routingSwap"][mixerName] = RoutingSwitchButton(self.osc, mixerName, tabs, initValues)
-
-        vlayout.addWidget(self.widgets["routingSwap"][mixerName])
+        vlayout.addWidget(RoutingSwitchButton(self.osc, mixerName, tabs, initValues))
         vlayout.addWidget(tabs)
         
         widget = QWidget()
