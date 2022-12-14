@@ -13,17 +13,53 @@ This is the file that contains the config for your particular setup. These are t
 
 This is a list of the typical personal that you want to save settings for. For each personal, you can specify `channels` and `iem_bus`. These are the target channel and in ear bus for the particular person. If you leave one blank, then it will not save down the particular settings for that person.
 
-### settings
-
-This is a list of additional settings that you might want to save for cue snippets. For each category of settings, give a list of OSC commands you want to save down.
-
 ### osc
 
 These are the default IP Addresses for `foh` and `iem` mixers. Note that the port is fixed to connect to 10023, which is the X32 default OSC port.
 
+### serverMidi
+
+This contains the name of the name of the default port to listen to, for incoming MIDI commands to this program.
+
 ### midi
 
-These are the default MIDI ports to connect to for each particular category of midi commands. Note that `X32Helper` is a virtual MIDI port that is opened by this application that can be used by all programs on the computer running this app. 
+These are the default MIDI ports to connect to for each particular category of midi commands. Note that `X32Helper` is a virtual MIDI port that is opened by this application that can be used by all programs on the computer running this app.
+
+#### default
+
+This is the name of the default port to connect to.
+
+#### type
+
+This is the type of midi call to make. Valid options currently are: `control_change` and `note`.
+
+#### defaultChannel
+
+This is the default channel to send midi commands on. Should be a number between 1-16.
+
+### faders
+
+This is a list of default settings to load into the faders. The commands are in the following format:
+
+```
+[foh|iem] [command] [min float argument] [max float argument]
+```
+
+or for MIDI cues (note that fader only makes sense for control change commands)
+
+```
+midi [audio] [channel] [control]
+```
+
+On fader change, a corrosponding command will be fired. For OSC commands, this would send a float value between min and max arguement. For MIDI commands, this would send MIDI value equal to the slider position.
+
+### talkbackChannel
+
+This is the channel that FOH talkback is being sent through. Applicable because FOH Talkback Channel is sent to IEM Mixer.
+
+## resetCommands
+
+Commands to be fired on reset call.
 
 ## Data Directory
 

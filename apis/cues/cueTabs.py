@@ -7,7 +7,6 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
     QScrollArea,
     QTabWidget,
     QVBoxLayout,
@@ -27,12 +26,12 @@ class CueTab(QTabWidget):
         self.prevIndex = [None]
         
         for i in range(0, len(TAB_LAYER_NAMES)):
-            self.addTab(self.cuesTriggerLayer(TAB_LAYER_NAMES[i], i), TAB_LAYER_NAMES[i])
+            self.addTab(self.cuesTriggerLayer(i), TAB_LAYER_NAMES[i])
             self.addAction(TabShortcut(self, TAB_LAYER_NAMES[i], i))
 
         self.osc["serverMidi"].callback(self.callbackFunction)
 
-    def cuesTriggerLayer(self, pageName, pageIndex):
+    def cuesTriggerLayer(self, pageIndex):
         vlayout = QVBoxLayout()
 
         for cue in range(0, 10):

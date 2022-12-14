@@ -5,15 +5,11 @@ from PyQt6.QtWidgets import (
 import traceback
 from util.lock import OwnerLock
 
-# Command should be in following format:
-# [foh|iem] [osc command] [min float] [max float]
-# OR
-# midi audio [channel] [control]
-#   (Fader only makes sense for control change commands)
 class FadersSlider(QSlider):
-    def __init__(self, osc, fader, index, defaultValue, oscFeedback):
+    def __init__(self, config, osc, fader, index, defaultValue, oscFeedback):
         super().__init__()
 
+        self.config = config
         self.osc = osc
         self.fader = fader
         self.index = index
@@ -113,8 +109,9 @@ class FadersSlider(QSlider):
             for command in self.fader["commands"]:
                 components = command.split()
                 if self.lock.owner != components[0] + " " + components[1]: # Don't loopback if command is source of input
-                    if components[0] == "midi":
-                        self.osc[components[1] + "Midi"].send(mido.Message("control_change", channel = int(components[2]) - 1, control = int(components[3]), value = value))
+                    if components[0] == "midi" and components[1] in self.config["midi"]:
+                        if self.config["midi"][components[1]]["type"] == "control_change":
+                            self.osc[components[1] + "Midi"].send(mido.Message("control_change", channel = int(components[2]) - 1, control = int(components[3]), value = value))
                     else:
                         faderPosition = float(value) / 127.0
                         min = float(components[2])

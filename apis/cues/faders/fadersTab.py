@@ -48,7 +48,7 @@ class FaderTab(QTabWidget):
                 fader["commands"] = []
                 fader["name"] = QLineEdit()
 
-            fader["slider"] = FadersSlider(self.osc, fader, self.index, defaultValue, oscFeedback)
+            fader["slider"] = FadersSlider(self.config, self.osc, fader, self.index, defaultValue, oscFeedback)
 
             sliderLayout = QVBoxLayout()
             sliderLayout.addWidget(fader["slider"])
