@@ -4,26 +4,19 @@ from PyQt6.QtWidgets import (
 )
 
 class SnippetLoadButton(QPushButton):
-    def __init__(self, filename, textbox):
-        super().__init__("Load Snippet")
+    def __init__(self, filename):
+        super().__init__("Load Existing Snippet")
         self.filename = filename
-        self.textbox = textbox
         self.pressed.connect(self.clicked)
-    
+        self.setFixedWidth(300)
+
     def clicked(self):
         dlg = QFileDialog()
-        dlg.setWindowTitle("Load Set")
+        dlg.setWindowTitle("Load Existing Snippet")
         dlg.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
         dlg.setDirectory("data")
-        dlg.setNameFilter("*.osc")
+        dlg.setDefaultSuffix(".osc")
         if dlg.exec():
-            with open(dlg.selectedFiles()[0]) as file:
-                file.readline() # Skip Header Line
-                self.textbox.clear() # Clear Textbox
-
-                while (line := file.readline().strip()):
-                    self.textbox.append(line)
-            
-            self.filename.setText(dlg.selectedFiles()[0].split("/")[-1])
+            self.filename.setText(dlg.selectedFiles()[0])
         
         self.setDown(False)

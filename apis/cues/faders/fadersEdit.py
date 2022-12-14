@@ -58,7 +58,7 @@ class EditButton(QPushButton):
 
         self.fader["commands"] = commands
 
-        self.parent.close()
+        self.parent.accept()
         dlg = QMessageBox(self)
         dlg.setWindowTitle("Edit")
         dlg.setText("Fader Settings Updated")

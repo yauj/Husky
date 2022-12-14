@@ -1,29 +1,54 @@
 from PyQt6.QtWidgets import (
-    QFileDialog,
+    QDialog,
+    QHBoxLayout,
     QPushButton,
+    QTextEdit,
+    QVBoxLayout,
 )
 
+from apis.cues.snippet.snippetAdd import SnippetAddButton
+from apis.cues.snippet.snippetFire import SnippetFireButton
+from apis.cues.snippet.snippetSave import SnippetSaveButton
+from apis.cues.snippet.snippetUpdate import SnippetUpdateButton
+
 class SnippetEditButton(QPushButton):
-    def __init__(self, filename, textbox):
-        super().__init__("Save Snippet")
+    def __init__(self, osc, filename):
+        super().__init__("Edit Current Snippet")
+        self.osc = osc
         self.filename = filename
-        self.textbox = textbox
+        self.setEnabled(self.filename.text() != "")
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        dlg = QFileDialog()
-        dlg.setWindowTitle("Save Snippet")
-        dlg.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        dlg.setDirectory("data")
-        dlg.selectFile(self.filename.text())
-        dlg.setDefaultSuffix(".osc") 
-        if dlg.exec():
-            with open(dlg.selectedFiles()[0], "w") as file:
-                for line in self.textbox.toPlainText().splitlines():
-                    if line.strip() != "":
-                        file.write("\n" + line.strip())
-
-            self.filename.setText("")
-            self.textbox.clear()
+        dlg = SnippetEditDialog(self.osc, self.filename)
+        dlg.exec()
 
         self.setDown(False)
+
+class SnippetEditDialog(QDialog):
+    def __init__(self, osc, filename):
+        super().__init__()
+        self.osc = osc
+        self.filename = filename
+
+        vlayout = QVBoxLayout()
+
+        textbox = QTextEdit()
+        textbox.setMinimumHeight(360)
+        vlayout.addWidget(textbox)
+
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(SnippetAddButton(self.osc, textbox))
+        hlayout.addWidget(SnippetUpdateButton(self.osc, textbox))
+        hlayout.addWidget(SnippetFireButton(self.osc, textbox))
+        vlayout.addLayout(hlayout)
+
+        vlayout.addWidget(SnippetSaveButton(self, self.filename, textbox))
+
+        self.setLayout(vlayout)
+
+        # Initialize Textbox
+        with open(filename.text()) as file:
+            file.readline() # Skip Header Line
+            while (line := file.readline().strip()):
+                textbox.append(line)

@@ -1,4 +1,5 @@
 from apis.cues.cueFire import CueFireButton, main
+from apis.cues.cueSnippet import CueSnippetButton
 from PyQt6.QtGui import (
     QAction,
 )
@@ -54,6 +55,8 @@ class CueTab(QTabWidget):
             options["lead"].setPlaceholderText("Vocal Lead")
             options["lead"].addItems(["", "1", "2", "3", "4"])
             hlayout.addWidget(options["lead"])
+
+            hlayout.addWidget(CueSnippetButton(self.osc))
 
             snippet = QLineEdit()
             snippet.setPlaceholderText("Snippet Filename")
