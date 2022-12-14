@@ -83,7 +83,7 @@ def main(config, osc, prevIndex, index, cues):
         
         if cues[index]["snippet"].filename != "":
             if os.path.exists(cues[index]["snippet"].filename):
-                runSingle(config, osc, cues[index]["snippet"].filename, False)
+                runSingle(config, osc, cues[index]["snippet"].filename)
 
         cues[index]["label"].setStyleSheet("color:green")
     except Exception as ex:

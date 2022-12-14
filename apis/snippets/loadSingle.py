@@ -33,20 +33,58 @@ class LoadButton(QPushButton):
     def main(self, dlg):
         try:
             dlg.initBar.emit(loadSingleNumSettings(self.filename.currentText(), True))
-            runSingle(self.config, self.osc, "data/" + self.filename.currentText(), True, dlg)
+            runSingle(self.config, self.osc, "data/" + self.filename.currentText(), True, self.chName, dlg)
             self.person.setCurrentText(self.filename.currentText().split(".")[0].split("_")[2])
             dlg.complete.emit()
         except Exception as ex:
             print(traceback.format_exc())
             dlg.raiseException.emit(ex)
 
-def runSingle(config, osc, filename, iemCopy, dlg = None):
+def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None):
     lines = []
     with open(filename) as scnFile:
-        scnFile.readline() # Skip Header Line
+        # Process Headers
+        tags = {}
+        replaceTags = {} # Extra tags to replace
+        removeTags = {} # Commands that are to be removed
+        headerLine = scnFile.readline()
+        if chName == None and headerLine != "":
+            raise AssertionError("Unable to load snippet with headers")
+
+        if "channels" in config["personal"][chName]:
+            for idx, channel in enumerate(config["personal"][chName]["channels"]):
+                key = "<ch" + str(idx) + ">"
+                value = "/ch/" + channel
+                tags[key] = value
+        if "iem_bus" in config["personal"][chName]:
+            key = "<iem_bus>"
+            value = "mix/" + config["personal"][chName]["iem_bus"]
+            tags[key] = value
+
+        for pair in headerLine.split():
+            keyVal = pair.split("=")
+            if (keyVal[0] not in tags):
+                removeTags[keyVal[0]] = keyVal[1]
+            elif (keyVal[1] != tags[keyVal[0]]):
+                replaceTags[tags[keyVal[0]]] = keyVal[1]
+
+        # Process remaining lines
         while (line := scnFile.readline().strip()):
-            lines.append(line)
-        
+            keepLine = True
+            for key in removeTags:
+                if key in line:
+                    line = line.replace(key, removeTags[key])
+                    keepLine = False
+            for key in replaceTags:
+                line = line.replace(key, replaceTags[key])
+            for key in tags:
+                if key in line:
+                    line = line.replace(key, tags[key])
+                    keepLine = True
+
+            if keepLine:
+                lines.append(line)
+
     fireLines(config, osc, lines, iemCopy, dlg)
 
     print("Loaded " + filename)

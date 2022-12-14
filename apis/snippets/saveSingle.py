@@ -46,27 +46,43 @@ def runSingle(osc, label, config, dlg = None):
     filename = today + "_" + label + ".osc"
     try:
         with open("data/" + filename, "w") as file:
+            # Produce Header Line
+            tags = {}
+            headersLine = []
             if "channels" in config:
-                saveChannels(osc, file, config["channels"], dlg)
+                for idx, channel in enumerate(config["channels"]):
+                    key = "<ch" + str(idx) + ">"
+                    value = "/ch/" + channel
+                    tags[value] = key
+                    headersLine.append(key + "=" + value)
+            if "iem_bus" in config:
+                key = "<iem_bus>"
+                value = "mix/" + config["iem_bus"]
+                tags[value] = key
+                headersLine.append(key + "=" + value)
+            file.write(" ".join(headersLine))
+
+            if "channels" in config:
+                saveChannels(osc, file, tags, config["channels"], dlg)
 
             if "iem_bus" in config:
-                saveIEMBus(osc, file, config["iem_bus"], dlg)
+                saveIEMBus(osc, file, tags, config["iem_bus"], dlg)
         
         print("Created " + filename)
     except Exception as ex:
         os.remove("data/" + filename)
         raise ex
 
-def saveChannels(osc, file, channels, dlg = None):
+def saveChannels(osc, file, tags, channels, dlg = None):
     settings = {}
     for channel in channels:
         for category in SETTINGS:
             for param in SETTINGS[category]:
                 settings["/ch/" + channel + param] = None
 
-    saveSettingsToFile(osc, file, "foh", settings, dlg)    
+    saveSettingsToFile(osc, file, tags, "foh", settings, dlg)    
 
-def saveIEMBus(osc, file, bus, dlg = None):
+def saveIEMBus(osc, file, tags, bus, dlg = None):
     settings = {}
     for channel in ALL_CHANNELS:
         prefix = channel + "/mix/" + bus
@@ -77,12 +93,15 @@ def saveIEMBus(osc, file, bus, dlg = None):
         if bus in ODD_BUSES:
             settings[prefix + "/pan"] = None
     
-    saveSettingsToFile(osc, file, "iem", settings, dlg)
+    saveSettingsToFile(osc, file, tags, "iem", settings, dlg)
 
-def saveSettingsToFile(osc, file, prefix, settings, dlg = None):
+def saveSettingsToFile(osc, file, tags, prefix, settings, dlg = None):
     lines = getSettings(osc, prefix, settings, dlg)
 
     for line in lines:
+        for value in tags:
+            line = line.replace(value, tags[value])
+
         file.write("\n" + line)
 
 def appendSettingsToTextbox(osc, textbox, prefix, settings):

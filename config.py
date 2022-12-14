@@ -52,8 +52,12 @@ config = {
             "channels": ["13"],
             "iem_bus": "11"
         },
+        "EG2": {
+            "channels": ["14"],
+            "iem_bus": "07"
+        },
         "Bass": {
-            "channels": ["15", "16"],
+            "channels": ["15"],
             "iem_bus": "13"
         },
         "Drums": {
