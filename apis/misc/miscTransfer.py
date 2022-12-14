@@ -26,12 +26,14 @@ class TransferButton(QPushButton):
             for chlink in LINK_CHANNELS:
                 settings["/config/chlink/" + chlink] = None
 
-            # COPY_CHANNELS excludes FOH talkback channel
+            # Exclude AUX and talkback channels
             channels = set(ALL_CHANNELS) - set(AUX_CHANNELS) - set([self.config["talkbackChannel"]])
             for channel in channels:
                 for category in SETTINGS:
                     for param in SETTINGS[category]:
                         settings[channel + param] = None
+
+            settings[channel + "/config/name"] = None
 
             dlg.initBar.emit(len(settings) * 2)
             

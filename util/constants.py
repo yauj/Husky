@@ -137,7 +137,7 @@ ROUTING_OUT_USER = [
 ]
 
 SETTINGS = {
-    "Label": ["/config/name", "/config/icon", "/config/color"],
+    "Label": ["/config/icon", "/config/color"],
     "HPF": ["/preamp/hpon", "/preamp/hpf"],
     "EQ": [
         "/eq/1/type", "/eq/1/f", "/eq/1/g", "/eq/1/q",
