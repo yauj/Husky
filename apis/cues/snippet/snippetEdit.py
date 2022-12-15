@@ -35,10 +35,26 @@ class SnippetEditDialog(QDialog):
 
         vlayout = QVBoxLayout()
 
-        # TODO: Add Header QLineEdit
         textbox = QTextEdit()
         textbox.setMinimumHeight(360)
         vlayout.addWidget(textbox)
+
+        # Initialize Textbox if Filename is valid
+        self.headerLine = ""
+        if (os.path.exists(filename.text())):
+            with open(filename.text()) as file:
+                # Process Tags
+                tags = {}
+                self.headerLine = file.readline()
+                for pair in self.headerLine.split():
+                    keyVal = pair.split("=")
+                    tags[keyVal[0]] = keyVal[1]
+
+                while (line := file.readline().strip()):
+                    for key in tags:
+                        line = line.replace(key, tags[key])
+
+                    textbox.append(line)
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(SnippetAddButton(self.config, self.osc, textbox))
@@ -46,13 +62,6 @@ class SnippetEditDialog(QDialog):
         hlayout.addWidget(SnippetFireButton(self.config, self.osc, textbox))
         vlayout.addLayout(hlayout)
 
-        vlayout.addWidget(SnippetSaveButton(self, self.filename, textbox))
+        vlayout.addWidget(SnippetSaveButton(self, self.filename, self.headerLine, textbox))
 
         self.setLayout(vlayout)
-
-        # Initialize Textbox if Filename is valid
-        if (os.path.exists(filename.text())):
-            with open(filename.text()) as file:
-                file.readline() # Skip Header Line
-                while (line := file.readline().strip()):
-                    textbox.append(line)

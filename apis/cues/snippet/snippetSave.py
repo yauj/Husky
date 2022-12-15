@@ -1,24 +1,40 @@
 from PyQt6.QtWidgets import (
-    QMessageBox,
+    QFileDialog,
     QPushButton,
 )
 
 class SnippetSaveButton(QPushButton):
-    def __init__(self, parent, filename, textbox):
+    def __init__(self, parent, filename, headerLine, textbox):
         super().__init__("Save Snippet")
         self.parent = parent
         self.filename = filename
+        self.headerLine = headerLine
         self.textbox = textbox
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        with open(self.filename.text(), "w") as file:
-            for line in self.textbox.toPlainText().splitlines():
-                if line.strip() != "":
-                    file.write("\n" + line.strip())
-
-        self.parent.accept()
-        dlg = QMessageBox(self)
+        dlg = QFileDialog()
         dlg.setWindowTitle("Save Snippet")
-        dlg.setText("Snippet Settings Saved")
-        dlg.exec()
+        dlg.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        dlg.setDirectory("data")
+        dlg.selectFile(self.filename.text())
+        dlg.setDefaultSuffix(".osc") 
+        if dlg.exec():
+            with open(dlg.selectedFiles()[0], "w") as file:
+                # Write Header
+                tags = {}
+                for pair in self.headerLine.split():
+                    keyVal = pair.split("=")
+                    tags[keyVal[1]] = keyVal[0]
+
+                for line in self.textbox.toPlainText().splitlines():
+                    if line.strip() != "":
+                        line = line.strip()
+                        for key in tags:
+                            line = line.replace(key, tags[key])
+
+                        file.write("\n" + line)
+
+            self.filename.setText(dlg.selectedFiles()[0])
+
+            self.parent.accept()
