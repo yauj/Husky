@@ -35,6 +35,7 @@ class SnippetEditDialog(QDialog):
 
         vlayout = QVBoxLayout()
 
+        # TODO: Add Header QLineEdit
         textbox = QTextEdit()
         textbox.setMinimumHeight(360)
         vlayout.addWidget(textbox)

@@ -48,25 +48,30 @@ def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None)
         replaceTags = {} # Extra tags to replace
         removeTags = {} # Commands that are to be removed
         headerLine = scnFile.readline()
-        if chName == None and headerLine != "":
-            raise AssertionError("Unable to load snippet with headers")
+        if headerLine != "":
+            if chName != None:
+                # Loading to chName
+                if "channels" in config["personal"][chName]:
+                    for idx, channel in enumerate(config["personal"][chName]["channels"]):
+                        key = "<ch" + str(idx) + ">"
+                        value = "/ch/" + channel
+                        tags[key] = value
+                if "iem_bus" in config["personal"][chName]:
+                    key = "<iem_bus>"
+                    value = "mix/" + config["personal"][chName]["iem_bus"]
+                    tags[key] = value
 
-        if "channels" in config["personal"][chName]:
-            for idx, channel in enumerate(config["personal"][chName]["channels"]):
-                key = "<ch" + str(idx) + ">"
-                value = "/ch/" + channel
-                tags[key] = value
-        if "iem_bus" in config["personal"][chName]:
-            key = "<iem_bus>"
-            value = "mix/" + config["personal"][chName]["iem_bus"]
-            tags[key] = value
-
-        for pair in headerLine.split():
-            keyVal = pair.split("=")
-            if (keyVal[0] not in tags):
-                removeTags[keyVal[0]] = keyVal[1]
-            elif (keyVal[1] != tags[keyVal[0]]):
-                replaceTags[tags[keyVal[0]]] = keyVal[1]
+                for pair in headerLine.split():
+                    keyVal = pair.split("=")
+                    if (keyVal[0] not in tags):
+                        removeTags[keyVal[0]] = keyVal[1]
+                    elif (keyVal[1] != tags[keyVal[0]]):
+                        replaceTags[tags[keyVal[0]]] = keyVal[1]
+            else:
+                # Default to what is given in the header tags
+                for pair in headerLine.split():
+                    keyVal = pair.split("=")
+                    tags[keyVal[0]] = keyVal[1]
 
         # Process remaining lines
         while (line := scnFile.readline().strip()):
