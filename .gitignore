@@ -10,6 +10,5 @@ __pycache__/
 # Custom File Suffixes
 *.osc
 *.cue
-
-# Cache File
+*.config
 *.cache
