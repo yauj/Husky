@@ -3,35 +3,68 @@ from PyQt6.QtGui import (
     QAction,
 )
 from PyQt6.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QHBoxLayout,
+    QLabel,
     QMessageBox,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
 )
 
 class UpdateApp(QAction):
-    def __init__(self, s):
-        super().__init__("Update App", s)
-        self.s = s
-        self.triggered.connect(self.main)
+    def __init__(self, parent):
+        super().__init__("Update App", parent)
+        self.parent = parent
+        self.triggered.connect(UpdateDialog(parent).exec)
 
-    def main(self):
-        statusCode = os.system("git pull origin $(git rev-parse --abbrev-ref HEAD) > update.log")
-        statusMsg = ""
+class UpdateDialog(QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        vlayout = QVBoxLayout()
+
+        vlayout.addWidget(QLabel("Update App to Latest Version"))
+
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(QLabel("Version:"))
+        branchName = QComboBox()
+        os.system("git fetch; git branch -r > update.log")
         with open("update.log") as file:
-            statusMsg = file.readline().strip()
+            while (line := file.readline().strip()):
+                if " -> " not in line:
+                    branchName.addItem(line.replace("origin/", ""))
+        os.system("git rev-parse --abbrev-ref HEAD > update.log")
+        with open("update.log") as file:
+            branchName.setCurrentText(file.readline().strip())
         os.system("rm update.log")
+        hlayout.addWidget(branchName)
+        vlayout.addLayout(hlayout)
+
+        vlayout.addWidget(UpdateButton(parent, branchName))
+
+        self.setLayout(vlayout)
+
+class UpdateButton(QPushButton):
+    def __init__(self, parent, branchName):
+        super().__init__("Update", parent)
+        self.parent = parent
+        self.branchName = branchName
+
+        self.pressed.connect(self.onPressed)
+    
+    def onPressed(self):
+        statusCode = os.system("git switch " + self.branchName.currentText())
         
-        if statusMsg == "Already up to date.":
-            dlg = QMessageBox(self.s)
-            dlg.setWindowTitle("Update App")
-            dlg.setText(statusMsg)
-            dlg.exec()
-        elif statusCode == 0:
-            dlg = QMessageBox(self.s)
+        if statusCode == 0:
+            dlg = QMessageBox(self.parent)
             dlg.setWindowTitle("Update App")
             dlg.setText("App Updated. Quitting App now. Please open again.")
             if dlg.exec():
                 os._exit(os.EX_OK)
         else:
-            dlg = QMessageBox(self.s)
+            dlg = QMessageBox(self.parent)
             dlg.setWindowTitle("Update App")
             dlg.setText("Error Updating. Please check logs for details: \nscreen -r X32Helper")
             dlg.exec()
