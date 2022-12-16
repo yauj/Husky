@@ -13,7 +13,7 @@ class UpdateApp(QAction):
         self.triggered.connect(self.main)
 
     def main(self):
-        statusCode = os.system("git pull origin master > update.log")
+        statusCode = os.system("git pull origin $(git rev-parse --abbrev-ref HEAD) > update.log")
         statusMsg = ""
         with open("update.log") as file:
             statusMsg = file.readline().strip()
