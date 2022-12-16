@@ -43,6 +43,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(tabs)
         
         menu = self.menuBar().addMenu("&X32 Helper")
+        # TODO: Add action to undo last batch send commands (This should be after change to be able to fade things in)
         menu.addAction(ClearCache(self))
         menu.addAction(UpdateApp(self))
     

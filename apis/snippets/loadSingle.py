@@ -96,7 +96,9 @@ def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None)
 
 def fireLines(config, osc, lines, iemCopy, dlg = None):
     fohSettings = {}
+    fohFadeSettings = {}
     iemSettings = {}
+    iemFadeSettings = {}
     for line in lines:
         components = line.split()
 
@@ -114,23 +116,31 @@ def fireLines(config, osc, lines, iemCopy, dlg = None):
                         osc[components[1] + "Midi"].send(mido.Message("note_on", channel = channel, note = control))
         else:
             arg = " ".join(components[3:])
+            fadeTime = None
             if (components[2] == "int"):
-                arg = int(arg)
+                arg = int(components[3])
             elif (components[2] == "float"):
-                arg = float(arg)
+                arg = float(components[3])
+                if len(components) >= 5:
+                    fadeTime = float(components[4])
 
             if (components[0] == "foh"):
-                fohSettings[components[1]] = arg
-                if iemCopy: # Whether not to send setting to IEM mixer as well
+                if fadeTime is not None:
+                    fohFadeSettings[components[1]] = {"endVal": arg, "fadeTime": fadeTime}
+                else:
+                    fohSettings[components[1]] = arg
+
+            if (components[0] == "iem" or (components[0] == "foh" and iemCopy)):
+                if fadeTime is not None:
+                    iemFadeSettings[components[1]] = {"endVal": arg, "fadeTime": fadeTime}
+                else:
                     iemSettings[components[1]] = arg
-            elif (components[0] == "iem"):
-                iemSettings[components[1]] = arg
 
-    if len(fohSettings) > 0:
-        osc["fohClient"].bulk_send_messages(fohSettings, dlg)
+    if len(fohSettings) > 0 or len(fohFadeSettings) > 0:
+        osc["fohClient"].bulk_send_messages(fohSettings, dlg, fohFadeSettings)
 
-    if len(iemSettings) > 0:
-        osc["iemClient"].bulk_send_messages(iemSettings, dlg)
+    if len(iemSettings) > 0 or len(iemFadeSettings) > 0:
+        osc["iemClient"].bulk_send_messages(iemSettings, dlg, iemFadeSettings)
 
 def loadSingleNumSettings(filename, iemCopy):
     num = 0

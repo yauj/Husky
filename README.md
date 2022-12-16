@@ -42,7 +42,7 @@ This is the default channel to send midi commands on. Should be a number between
 This is a list of default settings to load into the faders. The commands are in the following format:
 
 ```
-[foh|iem] [command] [min float argument] [max float argument]
+[foh|iem] [command] [min float value] [max float value]
 ```
 
 or for MIDI cues (note that fader only makes sense for control change commands)
@@ -72,8 +72,10 @@ Data directory contains files that are created and used by this program. The dir
 These contain osc commands in the following format:
 
 ```
-[foh|iem] [command] [str|int|float] [argument]
+[foh|iem] [command] [str|int|float] [value] [(optional, for floats only) fade time]
 ```
+
+For float values only, you are also able to optionally provide a 5th arguement to specify how long you want to take to fade in the new value.
 
 You are also able to fire MIDI cues, by putting commands in the following format:
 

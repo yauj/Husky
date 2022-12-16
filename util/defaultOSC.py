@@ -19,6 +19,7 @@ class SimpleClient(SimpleUDPClient):
         self.ipAddress = ipAddress
         self.parent = parent
         self.connected = False
+        self.prevSettings = None # Previous settings before last bulk send command was fired.
 
     # Only parent needs to connect
     def connect(self, server):
@@ -52,10 +53,35 @@ class SimpleClient(SimpleUDPClient):
             raise SystemError("Not Connected to " + self.name.upper() + " Client")
     
     # Send a bunch of messages. Return results if arg is None.
-    def bulk_send_messages(self, addresses, progressDialog = None):
+    def bulk_send_messages(self, addresses, progressDialog = None, fadeAddresses = {}):
         if self.connected:
-            results = {}
+            # Get Current Commands
+            curSettings = {}
+            for address in addresses:
+                if addresses[address] is not None:
+                    curSettings[address] = None
+            for address in fadeAddresses:
+                curSettings[address] = None
+            if (len(curSettings) == 0):
+                self.prevSettings = None
+            else:
+                self.prevSettings = {}
+                itr = iter(curSettings)
+                size = ceil(len(curSettings) / NUM_THREADS)
+                threads = []
+                for index in range(0, NUM_THREADS):
+                    slice = {}
+                    for address in islice(itr, size):
+                        slice[address] = curSettings[address]
 
+                    th = threading.Thread(target = self.child, args = (index, slice, self.prevSettings))
+                    th.start()
+                    threads.append(th)
+                for th in threads:
+                    th.join()
+
+            # Fire Commands
+            results = {}
             itr = iter(addresses)
             size = ceil(len(addresses) / NUM_THREADS)
             threads = []
@@ -67,15 +93,18 @@ class SimpleClient(SimpleUDPClient):
                 th = threading.Thread(target = self.child, args = (index, slice, results, progressDialog))
                 th.start()
                 threads.append(th)
-
+            if len(fadeAddresses) > 0:
+                th = threading.Thread(target = self.fadeChild, args = (fadeAddresses, progressDialog))
+                th.start()
+                threads.append(th)
             for th in threads:
                 th.join()
-            
+
             return results
         else:
             raise SystemError("Not Connected to " + self.name.upper() + " Client")
     
-    def child(self, index, addresses, results, progressDialog):
+    def child(self, index, addresses, results, progressDialog = None):
         with RetryingServer(10000 + index) as server:
             client = SimpleClient(self.name, self.ipAddress, False)
             client._sock = server.socket
@@ -85,9 +114,33 @@ class SimpleClient(SimpleUDPClient):
                     server.handle_request()
                     results[address] = server.lastVal
                 else:
-                    sleep(0.1) # Need to sleep to ensure that no requests are dropped
+                    sleep(0.1) # Max 100 commands per second to ensure that no requests are dropped
                 if progressDialog:
                     progressDialog.progressOne.emit()
+    
+    def fadeChild(self, fadeAddresses, progressDialog = None):
+        fadeAddresses = fadeAddresses.copy()
+        for address in fadeAddresses:
+            fadeAddresses[address]["endFired"] = 0 # Number of times end command was fired
+
+        client = SimpleClient(self.name, self.ipAddress, False)
+        startTime = time()
+        while len(fadeAddresses) > 0:
+            for address in fadeAddresses.copy():
+                ratio = (time() - startTime) / fadeAddresses[address]["fadeTime"]
+                if ratio >= 1:
+                    client.send_message(address, fadeAddresses[address]["endVal"])
+                    fadeAddresses[address]["endFired"] = fadeAddresses[address]["endFired"] + 1
+                    if fadeAddresses[address]["endFired"] == 5: # Send End Command 5 times, to ensure that end state is reached
+                        del fadeAddresses[address]
+                        if progressDialog:
+                            progressDialog.progressOne.emit()
+                else:
+                    client.send_message(
+                        address,
+                        round(self.prevSettings[address] + (ratio * (fadeAddresses[address]["endVal"] - self.prevSettings[address])), 5)
+                    )
+            sleep(0.01 * len(fadeAddresses)) # Max 100 commands per second to ensure that no requests are dropped
 
 # Server which retries attempting to get if /xinfo message passed back 
 class RetryingServer(BlockingOSCUDPServer):
