@@ -2,6 +2,7 @@ from apis.connection.connectionLayer import ConnectionLayer
 from apis.cues.cueLayer import CueLayer
 from apis.cues.cueLoad import loadCue
 from apis.cues.cueSave import saveCue
+from apis.menu.ClearCache import ClearCache
 from apis.menu.Update import UpdateApp
 from apis.misc.miscLayer import MiscLayer
 from apis.snippets.snippetsLayer import SnippetsLayer
@@ -22,9 +23,8 @@ class MainWindow(QMainWindow):
 
         self.config = config
         self.widgets = {"connection": {}, "servers": {}, "personal": {}, "cues": [], "faders": [], "routing": {}}
-        for mixerName in self.config["osc"]:
-            self.widgets["routing"][mixerName] = {}
         self.osc = {}
+        self.saveCache = True
         self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
 
         self.setWindowTitle("X32 Helper")
@@ -43,6 +43,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(tabs)
         
         menu = self.menuBar().addMenu("&X32 Helper")
+        menu.addAction(ClearCache(self))
         menu.addAction(UpdateApp(self))
     
     # Load Connection Cache
@@ -77,12 +78,13 @@ class MainWindow(QMainWindow):
         for mixerName in self.config["osc"]:
             self.osc[mixerName + "Server"].shutdown()
 
-        with open("connection.cache", "w") as file:
-            for param in self.widgets["connection"]:
-                file.write("\n" + param + " " + self.widgets["connection"][param].currentText())
+        if self.saveCache:
+            with open("connection.cache", "w") as file:
+                for param in self.widgets["connection"]:
+                    file.write("\n" + param + " " + self.widgets["connection"][param].currentText())
 
-        with open("cue.cache", "w") as file:
-            saveCue(file, self.widgets)
+            with open("cue.cache", "w") as file:
+                saveCue(file, self.widgets)
 
         return super().closeEvent(a0)
 

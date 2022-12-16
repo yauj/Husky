@@ -49,6 +49,7 @@ class RoutingDialog(QDialog):
     def routingTabLayer(self, mixerName):
         try:
             initValues = getCurrentRouting(self.osc, mixerName)
+            self.widgets["routing"][mixerName] = {}
 
             tabs = QTabWidget()
             tabs.addTab(self.routingInLayer(mixerName, initValues), "Inputs")
