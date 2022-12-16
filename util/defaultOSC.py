@@ -52,6 +52,16 @@ class SimpleClient(SimpleUDPClient):
         else:
             raise SystemError("Not Connected to " + self.name.upper() + " Client")
     
+    # Undo previously applied settings
+    # Returns whether or not settings were succesfully undone.
+    def undo(self, dlg = None):
+        if self.prevSettings is None:
+            return False
+        else:
+            self.bulk_send_messages(self.prevSettings, dlg)
+            self.prevSettings = None
+            return True
+    
     # Send a bunch of messages. Return results if arg is None.
     def bulk_send_messages(self, addresses, progressDialog = None, fadeAddresses = {}):
         if self.connected:

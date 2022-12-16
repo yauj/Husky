@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
 
 class ClearCache(QAction):
     def __init__(self, s):
-        super().__init__("&Clear Cache", s)
+        super().__init__("Clear Cache", s)
         self.s = s
         self.triggered.connect(self.main)
 

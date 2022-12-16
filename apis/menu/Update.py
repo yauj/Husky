@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
 
 class UpdateApp(QAction):
     def __init__(self, s):
-        super().__init__("&Update App", s)
+        super().__init__("Update App", s)
         self.s = s
         self.triggered.connect(self.main)
 

@@ -14,8 +14,9 @@ from PyQt6.QtWidgets import (
 class ProgressDialog(QDialog):
     initBar = pyqtSignal(int)
     progressOne = pyqtSignal()
-    raiseException = pyqtSignal(Exception)
     complete = pyqtSignal()
+    completeWithMessage = pyqtSignal(str)
+    raiseException = pyqtSignal(Exception)
 
     def __init__(self, message, function):
         super().__init__()
@@ -41,6 +42,7 @@ class ProgressDialog(QDialog):
         self.initBar.connect(self.onInitBar)
         self.progressOne.connect(self.onProgressOne)
         self.complete.connect(self.onComplete)
+        self.completeWithMessage.connect(self.onCompleteWithMessage)
         self.raiseException.connect(self.onRaiseException)
     
     def exec(self):
@@ -60,6 +62,14 @@ class ProgressDialog(QDialog):
     @pyqtSlot()
     def onComplete(self):
         self.label.setText(self.message + "ed")
+        self.label.setStyleSheet("color: green")
+        self.okButton.setEnabled(True)
+        self.progressBar.setRange(0, 1)
+        self.progressBar.setValue(1)
+    
+    @pyqtSlot(str)
+    def onCompleteWithMessage(self, message):
+        self.label.setText(message)
         self.label.setStyleSheet("color: green")
         self.okButton.setEnabled(True)
         self.progressBar.setRange(0, 1)

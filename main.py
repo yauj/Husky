@@ -3,6 +3,7 @@ from apis.cues.cueLayer import CueLayer
 from apis.cues.cueLoad import loadCue
 from apis.cues.cueSave import saveCue
 from apis.menu.ClearCache import ClearCache
+from apis.menu.UndoCommands import UndoCommands
 from apis.menu.Update import UpdateApp
 from apis.misc.miscLayer import MiscLayer
 from apis.snippets.snippetsLayer import SnippetsLayer
@@ -43,7 +44,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(tabs)
         
         menu = self.menuBar().addMenu("&X32 Helper")
-        # TODO: Add action to undo last batch send commands (This should be after change to be able to fade things in)
+        prevCmdMenu = menu.addMenu("Undo Previous Commands")
+        for mixerName in self.config["osc"]:
+            prevCmdMenu.addAction(UndoCommands(self, self.osc, mixerName))
         menu.addAction(ClearCache(self))
         menu.addAction(UpdateApp(self))
     
