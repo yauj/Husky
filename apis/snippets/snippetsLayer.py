@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
     QLabel,
+    QScrollArea,
     QTabWidget,
     QVBoxLayout,
     QWidget,
@@ -24,17 +25,17 @@ class SnippetsLayer(QTabWidget):
         self.addTab(self.loadLayer(), "Load")
 
     def loadLayer(self):
-        vlayout = QVBoxLayout()
+        layout = QVBoxLayout()
 
         label = QLabel(
             "Enter filename in textbox.\n"
             + "Leave textbox blank if you don't want to load."
         )
         label.setFixedHeight(30)
-        vlayout.addWidget(label)
+        layout.addWidget(label)
 
+        vlayout = QVBoxLayout()
         filenames = {}
-
         for chName in self.config["personal"]:
             hlayout = QHBoxLayout()
 
@@ -55,30 +56,37 @@ class SnippetsLayer(QTabWidget):
             filenames[chName].addItems(files)
             filenames[chName].setEditable(True)
             filenames[chName].setMaxCount(10)
-            filenames[chName].setMinimumWidth(300)
             filenames[chName].setCurrentIndex(-1)
             hlayout.addWidget(filenames[chName])
 
             hlayout.addWidget(LoadButton(self.config, self.osc, chName, filenames[chName], self.widgets["personal"][chName]))
 
             vlayout.addLayout(hlayout)
-        
-        vlayout.addWidget(LoadAllButton(self.config, self.osc, filenames, self.widgets["personal"]))
 
+        scrollWidget = QWidget()
+        scrollWidget.setLayout(vlayout)
+
+        scroll = QScrollArea()
+        scroll.setWidget(scrollWidget)
+        scroll.setWidgetResizable(True)
+        
+        layout.addWidget(scroll)
+        layout.addWidget(LoadAllButton(self.config, self.osc, filenames, self.widgets["personal"]))
         widget = QWidget()
-        widget.setLayout(vlayout)
+        widget.setLayout(layout)
         return widget
 
     def saveLayer(self):
-        vlayout = QVBoxLayout()
+        layout = QVBoxLayout()
 
         label = QLabel(
             "Enter name of person in textbox in the following format: 'FirstnameLastname'.\n"
             + "Leave textbox blank if you don't want to save."
         )
         label.setFixedHeight(30)
-        vlayout.addWidget(label)
+        layout.addWidget(label)
 
+        vlayout = QVBoxLayout()
         for chName in self.config["personal"]:
             hlayout = QHBoxLayout()
 
@@ -101,7 +109,6 @@ class SnippetsLayer(QTabWidget):
             self.widgets["personal"][chName].addItems(names)
             self.widgets["personal"][chName].setEditable(True)
             self.widgets["personal"][chName].setMaxCount(10)
-            self.widgets["personal"][chName].setMinimumWidth(300)
             self.widgets["personal"][chName].setCurrentIndex(-1)
             hlayout.addWidget(self.widgets["personal"][chName])
 
@@ -109,8 +116,15 @@ class SnippetsLayer(QTabWidget):
 
             vlayout.addLayout(hlayout)
 
-        vlayout.addWidget(SaveAllButton(self.osc, self.widgets["personal"], self.config["personal"]))
+        scrollWidget = QWidget()
+        scrollWidget.setLayout(vlayout)
 
+        scroll = QScrollArea()
+        scroll.setWidget(scrollWidget)
+        scroll.setWidgetResizable(True)
+        
+        layout.addWidget(scroll)
+        layout.addWidget(SaveAllButton(self.osc, self.widgets["personal"], self.config["personal"]))
         widget = QWidget()
-        widget.setLayout(vlayout)
+        widget.setLayout(layout)
         return widget

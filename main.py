@@ -95,6 +95,6 @@ class MainWindow(QMainWindow):
 faulthandler.enable()
 app = QApplication(sys.argv)
 window = MainWindow()
-window.resize(1, 1) # Open in smallest size
+window.resize(599, 599)
 window.show()
 app.exec()

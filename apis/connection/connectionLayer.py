@@ -32,7 +32,6 @@ class ConnectionLayer(QWidget):
             address.setEditable(True)
             address.addItems(validIPs)
             address.setCurrentText(self.config["osc"][mixerName])
-            address.setMinimumWidth(300)
             self.widgets["connection"][mixerName + "Client"] = address
             hlayout.addWidget(address)
 
@@ -51,7 +50,6 @@ class ConnectionLayer(QWidget):
 
         port = QComboBox()
         port.setEditable(True)
-        port.setMinimumWidth(300)
         port.setCurrentText(self.config["serverMidi"])
         self.widgets["connection"]["serverMidi"] = port
         hlayout.addWidget(port)
@@ -75,7 +73,6 @@ class ConnectionLayer(QWidget):
 
             port = QComboBox()
             port.setEditable(True)
-            port.setMinimumWidth(300)
             port.setCurrentText(self.config["midi"][name]["default"])
             self.widgets["connection"][name + "Midi"] = port
             hlayout.addWidget(port)
