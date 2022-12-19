@@ -18,16 +18,16 @@ class FadersResetButton(QPushButton):
                 lst.append(command)
             prevCommands.append(lst)
 
-        itr = enumerate(self.config["faders"])
+        itr = enumerate(self.config["cues"]["faders"])
         for fader in self.widgets["faders"]:
             fader["commands"] = []
             fader["slider"].setValue(0)
             try:
                 _, name = itr.__next__()
-                fader["commands"] = self.config["faders"][name]["commands"]
+                fader["commands"] = self.config["cues"]["faders"][name]["commands"]
                 fader["name"].setText(name)
-                if ("defaultValue" in self.config["faders"][name]):
-                    fader["slider"].setValue(self.config["faders"][name]["defaultValue"])
+                if ("defaultValue" in self.config["cues"]["faders"][name]):
+                    fader["slider"].setValue(self.config["cues"]["faders"][name]["defaultValue"])
             except StopIteration:
                 fader["commands"] = []
                 fader["name"].setText("")

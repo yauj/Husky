@@ -21,6 +21,8 @@ class TalkbackButton(QPushButton):
         TalkbackDialog(self.config, self.osc).exec()
         self.setDown(False)
 
+# TODO: Support single mixer. So if "iem" not in config["osc"], then sending to /config/talk/B/destmap. Also add IEMTalkbackDestination (either A or B)
+# TODO: Figure out how to not have button picked by default
 class TalkbackDialog(QDialog):
     def __init__(self, config, osc):
         super().__init__()

@@ -7,14 +7,12 @@ from pythonosc.osc_server import BlockingOSCUDPServer, ThreadingOSCUDPServer
 import socket
 import threading
 from time import time, sleep
-
-MIDI_SERVER_NAME = "X32Helper"
-NUM_THREADS = 10
+from util.constants import MIDI_SERVER_NAME, NUM_THREADS, PORT, START_PORT
 
 # Simple Client that has logic, since testing client has logic
 class SimpleClient(SimpleUDPClient):
     def __init__(self, name, ipAddress, parent = True):
-        super().__init__(ipAddress, 10023)
+        super().__init__(ipAddress, PORT)
         self.name = name
         self.ipAddress = ipAddress
         self.parent = parent
@@ -115,7 +113,7 @@ class SimpleClient(SimpleUDPClient):
             raise SystemError("Not Connected to " + self.name.upper() + " Client")
     
     def child(self, index, addresses, results, progressDialog = None):
-        with RetryingServer(10000 + index) as server:
+        with RetryingServer(START_PORT + index) as server:
             client = SimpleClient(self.name, self.ipAddress, False)
             client._sock = server.socket
             for address in addresses:
@@ -237,7 +235,7 @@ class SubscriptionServer(ThreadingOSCUDPServer):
     def add(self, address, command):
         self.subscriptions[address] = command
         if self.ipAddress is not None:
-            client = SimpleUDPClient(self.ipAddress, 10023)
+            client = SimpleUDPClient(self.ipAddress, PORT)
             client._sock = self.socket
             client.send_message("/subscribe", address)
             self.activeSubscriptions[address] = command
@@ -259,7 +257,7 @@ class SubscriptionServer(ThreadingOSCUDPServer):
         args = args.copy()
         startTime = time()
         if self.ipAddress is not None and len(args) > 0:
-            client = SimpleUDPClient(self.ipAddress, 10023)
+            client = SimpleUDPClient(self.ipAddress, PORT)
             client._sock = self.socket
             sleepTime = 4.0 / len(args) # Spread out commands across approx 4.0 seconds
             for arg in args:

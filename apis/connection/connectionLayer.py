@@ -21,6 +21,7 @@ class ConnectionLayer(QWidget):
 
         validIPs = AvailableIPs().get()
 
+        # TODO: Add conditional logic, where if only "iem" not in self.config["osc"], then self.osc["iemMixer"] = self.osc["fohMixer"]
         for idx, mixerName in enumerate(self.config["osc"]):
             hlayout = QHBoxLayout()
 

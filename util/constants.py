@@ -1,3 +1,8 @@
+PORT = 10023
+START_PORT = 10000
+NUM_THREADS = 10
+MIDI_SERVER_NAME = "X32Helper"
+
 ALL_CHANNELS = [
     "/ch/01", "/ch/02", "/ch/03", "/ch/04", "/ch/05", "/ch/06", "/ch/07", "/ch/08",
     "/ch/09", "/ch/10", "/ch/11", "/ch/12", "/ch/13", "/ch/14", "/ch/15", "/ch/16",

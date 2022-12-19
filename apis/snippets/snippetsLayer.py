@@ -86,6 +86,7 @@ class SnippetsLayer(QTabWidget):
         label.setFixedHeight(30)
         layout.addWidget(label)
 
+        # TODO: Add a 'Main L/R' to snippet save layer
         vlayout = QVBoxLayout()
         for chName in self.config["personal"]:
             hlayout = QHBoxLayout()

@@ -15,8 +15,6 @@ from PyQt6.QtWidgets import (
 import traceback
 from util.constants import KEYS
 
-TAB_LAYER_NAMES = ["a", "b", "c", "d", "e"]
-
 class CueTab(QTabWidget):
     def __init__(self, config, osc, widgets):
         super().__init__()
@@ -25,9 +23,10 @@ class CueTab(QTabWidget):
         self.widgets = widgets
         self.prevIndex = [None]
         
-        for i in range(0, len(TAB_LAYER_NAMES)):
-            self.addTab(self.cuesTriggerLayer(i), TAB_LAYER_NAMES[i])
-            self.addAction(TabShortcut(self, TAB_LAYER_NAMES[i], i))
+        # TODO: if len() == 1, then no tab
+        for i in range(0, self.config["cues"]["cuePages"]):
+            self.addTab(self.cuesTriggerLayer(i), chr(97 + i))
+            self.addAction(TabShortcut(self, chr(97 + i), i))
 
         self.osc["serverMidi"].callback(self.callbackFunction)
 
@@ -87,14 +86,14 @@ class CueTab(QTabWidget):
                         self.widgets["cues"]
                     )
                     
-                    print("Cue " + TAB_LAYER_NAMES[self.currentIndex()] + str(message.control + 1) + " Fired")
+                    print("Cue " + chr(97 + self.currentIndex()) + str(message.control + 1) + " Fired")
                 except Exception:
                     print(traceback.format_exc())
             elif message.control == 10:
                 self.setCurrentIndex(self.currentIndex() - 1)
             elif message.control == 11:
                 self.setCurrentIndex(self.currentIndex() + 1)
-            elif message.control == 12 and message.value <= len(TAB_LAYER_NAMES):
+            elif message.control == 12 and message.value <= self.config["cues"]["cuePages"]:
                 self.setCurrentIndex(message.value - 1)
 
 class TabShortcut(QAction):
