@@ -32,8 +32,8 @@ class LoadButton(QPushButton):
         
     def main(self, dlg):
         try:
-            dlg.initBar.emit(loadSingleNumSettings(self.filename.currentText(), True))
-            runSingle(self.config, self.osc, "data/" + self.filename.currentText(), True, self.chName, dlg)
+            dlg.initBar.emit(loadSingleNumSettings(self.filename.currentText(), self.chName != "Mains"))
+            runSingle(self.config, self.osc, "data/" + self.filename.currentText(), self.chName != "Mains", self.chName, dlg)
             self.person.setCurrentText(self.filename.currentText().split(".")[0].split("_")[2])
             dlg.complete.emit()
         except Exception as ex:
@@ -48,7 +48,7 @@ def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None)
         replaceTags = {} # Extra tags to replace
         removeTags = {} # Commands that are to be removed
         headerLine = scnFile.readline()
-        if headerLine != "":
+        if headerLine.strip() != "":
             if chName != None:
                 # Loading to chName
                 if "channels" in config["personal"][chName]:

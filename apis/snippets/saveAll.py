@@ -24,7 +24,7 @@ class SaveAllButton(QPushButton):
             dlg.initBar.emit(saveAllNumSettings(self.personNames, self.config))
             for chName in self.personNames:
                 if (self.personNames[chName].currentText() != ""):
-                    runSingle(self.osc, chName + "_" + self.personNames[chName].currentText(), self.config[chName], dlg)
+                    runSingle(self.osc, chName, self.personNames[chName].currentText(), self.config, dlg)
             dlg.complete.emit()
         except Exception as ex:
             print(traceback.format_exc())
@@ -34,5 +34,5 @@ def saveAllNumSettings(personNames, config):
     num = 0
     for chName in personNames:
         if (personNames[chName].currentText() != ""):
-            num = num + saveSingleNumSettings(config[chName])
+            num = num + saveSingleNumSettings(config, chName)
     return num

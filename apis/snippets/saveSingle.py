@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
-from util.constants import ODD_BUSES, ALL_CHANNELS, SETTINGS
+from util.constants import ODD_BUSES, ALL_CHANNELS, SETTINGS, SETTINGS_MAIN
 from util.customWidgets import ProgressDialog
 
 
@@ -26,52 +26,65 @@ class SaveButton(QPushButton):
         else:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Save")
-            dlg.setText("No person name specified for " + self.chName)
+            if self.chName == "Mains":
+                dlg.setText("No Venue specified.")
+            else: 
+                dlg.setText("No person name specified for " + self.chName)
             dlg.exec()
         
         self.setDown(False)
         
     def main(self, dlg):
         try:
-            dlg.initBar.emit(saveSingleNumSettings(self.config))
-            label = self.chName + "_" + self.personName.currentText()
-            runSingle(self.osc, label, self.config, dlg)
+            dlg.initBar.emit(saveSingleNumSettings(self.config, self.chName))
+            runSingle(self.osc, self.chName, self.personName.currentText(), self.config, dlg)
             dlg.complete.emit()
         except Exception as ex:
             print(traceback.format_exc())
             dlg.raiseException.emit(ex)
 
-def runSingle(osc, label, config, dlg = None):
+def runSingle(osc, chName, personName, config, dlg = None):
     today = date.today().strftime("%Y%m%d")
-    filename = today + "_" + label + ".osc"
+    filename = today + "_" + chName + "_" + personName + ".osc"
     try:
         with open("data/" + filename, "w") as file:
-            # Produce Header Line
-            tags = {}
-            headersLine = []
-            if "channels" in config:
-                for idx, channel in enumerate(config["channels"]):
-                    key = "<ch" + str(idx) + ">"
-                    value = "/ch/" + channel
+            if chName == "Mains":
+                saveMains(osc, file, dlg)
+            else:
+                # Produce Header Line
+                tags = {}
+                headersLine = []
+                if "channels" in config["personal"][chName]:
+                    for idx, channel in enumerate(config["personal"][chName]["channels"]):
+                        key = "<ch" + str(idx) + ">"
+                        value = "/ch/" + channel
+                        tags[value] = key
+                        headersLine.append(key + "=" + value)
+                if "iem_bus" in config["personal"][chName]:
+                    key = "<iem_bus>"
+                    value = "mix/" + config["personal"][chName]["iem_bus"]
                     tags[value] = key
                     headersLine.append(key + "=" + value)
-            if "iem_bus" in config:
-                key = "<iem_bus>"
-                value = "mix/" + config["iem_bus"]
-                tags[value] = key
-                headersLine.append(key + "=" + value)
-            file.write(" ".join(headersLine))
+                file.write(" ".join(headersLine))       
 
-            if "channels" in config:
-                saveChannels(osc, file, tags, config["channels"], dlg)
+                if "channels" in config["personal"][chName]:
+                    saveChannels(osc, file, tags, config["personal"][chName]["channels"], dlg)
 
-            if "iem_bus" in config:
-                saveIEMBus(osc, file, tags, config["iem_bus"], dlg)
+                if "iem_bus" in config["personal"][chName]:
+                    saveIEMBus(osc, file, tags, config["personal"][chName]["iem_bus"], dlg)
         
         print("Created " + filename)
     except Exception as ex:
         os.remove("data/" + filename)
         raise ex
+
+def saveMains(osc, file, dlg = None):
+    settings = {}
+    for category in SETTINGS_MAIN:
+        for param in SETTINGS_MAIN[category]:
+            settings["/main/st" + param] = None
+    
+    saveSettingsToFile(osc, file, {}, "foh", settings, dlg)    
 
 def saveChannels(osc, file, tags, channels, dlg = None):
     settings = {}
@@ -80,7 +93,7 @@ def saveChannels(osc, file, tags, channels, dlg = None):
             for param in SETTINGS[category]:
                 settings["/ch/" + channel + param] = None
 
-    saveSettingsToFile(osc, file, tags, "foh", settings, dlg)    
+    saveSettingsToFile(osc, file, tags, "foh", settings, dlg)
 
 def saveIEMBus(osc, file, tags, bus, dlg = None):
     settings = {}
@@ -127,23 +140,27 @@ def getSettings(osc, prefix, settings, dlg = None):
     lines.sort()
     return lines
 
-def saveSingleNumSettings(config):
+def saveSingleNumSettings(config, chName):
     num = 0
-    if "channels" in config:
-        channelNum = 0
-        for category in SETTINGS:
-            channelNum = channelNum + len(SETTINGS[category])
-        
-        channelNum = channelNum * len(config["channels"])
-        num = num + channelNum
+    if chName == "Mains":
+        for category in SETTINGS_MAIN:
+            num = num + len(SETTINGS_MAIN[category])
+    else:
+        if "channels" in config["personal"][chName]:
+            channelNum = 0
+            for category in SETTINGS:
+                channelNum = channelNum + len(SETTINGS[category])
+            
+            channelNum = channelNum * len(config["personal"][chName]["channels"])
+            num = num + channelNum
 
-    if "iem_bus" in config:
-        iemNum = len(ALL_CHANNELS)
-        if config["iem_bus"] in ODD_BUSES:
-            iemNum = iemNum * 3
-        else:
-            iemNum = iemNum * 2
-        
-        num = num + iemNum
+        if "iem_bus" in config["personal"][chName]:
+            iemNum = len(ALL_CHANNELS)
+            if config["personal"][chName]["iem_bus"] in ODD_BUSES:
+                iemNum = iemNum * 3
+            else:
+                iemNum = iemNum * 2
+            
+            num = num + iemNum
 
     return num

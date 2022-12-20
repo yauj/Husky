@@ -63,6 +63,28 @@ class SnippetsLayer(QTabWidget):
 
             vlayout.addLayout(hlayout)
 
+        # Mains
+        hlayout = QHBoxLayout()
+        label = QLabel("Mains L/R:")
+        label.setFixedWidth(100)
+        hlayout.addWidget(label)
+        files = []
+        for filename in os.listdir("data"):
+            try:
+                if filename.split(".")[0].split("_")[1] == "Mains":
+                    files.append(filename)
+            except IndexError:
+                pass
+        files.sort(reverse=True)
+        filenames["Mains"] = QComboBox()
+        filenames["Mains"].addItems(files)
+        filenames["Mains"].setEditable(True)
+        filenames["Mains"].setMaxCount(10)
+        filenames["Mains"].setCurrentIndex(-1)
+        hlayout.addWidget(filenames["Mains"])
+        hlayout.addWidget(LoadButton(self.config, self.osc, "Mains", filenames["Mains"], self.widgets["personal"]["Mains"]))
+        vlayout.addLayout(hlayout)
+
         scrollWidget = QWidget()
         scrollWidget.setLayout(vlayout)
 
@@ -86,7 +108,6 @@ class SnippetsLayer(QTabWidget):
         label.setFixedHeight(30)
         layout.addWidget(label)
 
-        # TODO: Add a 'Main L/R' to snippet save layer
         vlayout = QVBoxLayout()
         for chName in self.config["personal"]:
             hlayout = QHBoxLayout()
@@ -113,9 +134,34 @@ class SnippetsLayer(QTabWidget):
             self.widgets["personal"][chName].setCurrentIndex(-1)
             hlayout.addWidget(self.widgets["personal"][chName])
 
-            hlayout.addWidget(SaveButton(self.osc, chName, self.widgets["personal"][chName], self.config["personal"][chName]))
+            hlayout.addWidget(SaveButton(self.osc, chName, self.widgets["personal"][chName], self.config))
 
             vlayout.addLayout(hlayout)
+
+        # Main L/R
+        hlayout = QHBoxLayout()
+        label = QLabel("Mains L/R:")
+        label.setFixedWidth(100)
+        hlayout.addWidget(label)
+        names = []
+        for filename in os.listdir("data"):
+            try:
+                components = filename.split(".")[0].split("_")
+                if components[1] == "Mains":
+                    names.append(components[2])
+            except IndexError:
+                pass
+        names = list(set(names))
+        names.sort()
+        self.widgets["personal"]["Mains"] = QComboBox()
+        self.widgets["personal"]["Mains"].addItems(names)
+        self.widgets["personal"]["Mains"].setEditable(True)
+        self.widgets["personal"]["Mains"].setMaxCount(10)
+        self.widgets["personal"]["Mains"].setCurrentIndex(-1)
+        hlayout.addWidget(self.widgets["personal"]["Mains"])
+        hlayout.addWidget(SaveButton(self.osc, "Mains", self.widgets["personal"]["Mains"], True))
+        vlayout.addLayout(hlayout)
+
 
         scrollWidget = QWidget()
         scrollWidget.setLayout(vlayout)
@@ -125,7 +171,7 @@ class SnippetsLayer(QTabWidget):
         scroll.setWidgetResizable(True)
         
         layout.addWidget(scroll)
-        layout.addWidget(SaveAllButton(self.osc, self.widgets["personal"], self.config["personal"]))
+        layout.addWidget(SaveAllButton(self.osc, self.widgets["personal"], self.config))
         widget = QWidget()
         widget.setLayout(layout)
         return widget

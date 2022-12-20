@@ -154,4 +154,16 @@ SETTINGS = {
     "Pan and Mute": ["/mix/pan", "/mix/on"]
 }
 
+SETTINGS_MAIN = {
+    "EQ": [
+        "/eq/1/type", "/eq/1/f", "/eq/1/g", "/eq/1/q",
+        "/eq/2/type", "/eq/2/f", "/eq/2/g", "/eq/2/q",
+        "/eq/3/type", "/eq/3/f", "/eq/3/g", "/eq/3/q",
+        "/eq/4/type", "/eq/4/f", "/eq/4/g", "/eq/4/q",
+        "/eq/5/type", "/eq/5/f", "/eq/5/g", "/eq/5/q",
+        "/eq/6/type", "/eq/6/f", "/eq/6/g", "/eq/6/q"
+    ],
+    "Dynamics": ["/dyn/thr", "/dyn/ratio", "/dyn/knee", "/dyn/mgain", "/dyn/attack", "/dyn/hold", "/dyn/release", "/dyn/mix"]
+}
+
 KEYS = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
