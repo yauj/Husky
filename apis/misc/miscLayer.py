@@ -17,7 +17,8 @@ class MiscLayer(QWidget):
         vlayout = QVBoxLayout()
         vlayout.addWidget(TalkbackButton(self.config, self.osc)) # TODO: Make this disappear if xr18 mixer
         vlayout.addWidget(RoutingButton(self.config, self.widgets, self.osc))
-        vlayout.addWidget(TransferButton(self.config, self.osc)) # TODO: Make this disappear if only single mixer
+        if "iem" in config["osc"]:
+            vlayout.addWidget(TransferButton(self.config, self.osc))
         vlayout.addWidget(ResetButton(self.config, self.osc))
 
         self.setLayout(vlayout)

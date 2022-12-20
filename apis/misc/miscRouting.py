@@ -39,11 +39,15 @@ class RoutingDialog(QDialog):
 
         vlayout = QVBoxLayout()
 
-        tabs = QTabWidget()
-        for mixerName in self.config["osc"]:
-            tabs.addTab(self.routingTabLayer(mixerName), mixerName.upper())
-        
-        vlayout.addWidget(tabs)
+        if len(self.config["osc"]) == 1:
+            for mixerName in self.config["osc"]:
+                vlayout.addWidget(self.routingTabLayer(mixerName)) 
+        else:
+            tabs = QTabWidget()
+            for mixerName in self.config["osc"]:
+                tabs.addTab(self.routingTabLayer(mixerName), mixerName.upper())
+            vlayout.addWidget(tabs)
+
         self.setLayout(vlayout)
 
     def routingTabLayer(self, mixerName):

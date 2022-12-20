@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
 from util.defaultOSC import NUM_THREADS, RetryingServer, SimpleClient
 
 class ConnectOscButton(QPushButton):
-    def __init__(self, osc, address, status, mixerName, index, widgets):
+    def __init__(self, osc, address, status, mixerName, index, widgets, pointIEM):
         super().__init__("Connect")
         self.osc = osc
         self.address = address
@@ -13,8 +13,11 @@ class ConnectOscButton(QPushButton):
         self.mixerName = mixerName
         self.index = index
         self.widgets = widgets
+        self.pointIEM = pointIEM # Whether or not to point IEM client and server to here.
 
         self.osc[self.mixerName + "Server"] = RetryingServer(10000 + NUM_THREADS + (self.index * 2), mixerName)
+        if self.mixerName == "foh" and self.pointIEM:
+            self.osc["iemServer"] = self.osc[self.mixerName + "Server"]
 
         self.init()
         self.pressed.connect(self.connect)
@@ -36,6 +39,9 @@ class ConnectOscButton(QPushButton):
 
     def init(self):
         self.osc[self.mixerName + "Client"] = SimpleClient(self.mixerName, self.address.currentText())
+        if self.mixerName == "foh" and self.pointIEM:
+            self.osc["iemClient"] = self.osc[self.mixerName + "Client"]
+
         if (self.osc[self.mixerName + "Client"].connect(self.osc[self.mixerName + "Server"])):
             self.status.setText("Connected!")
             self.status.setStyleSheet("color: green")
@@ -43,5 +49,4 @@ class ConnectOscButton(QPushButton):
         else:
             self.status.setText("INVALID")
             self.status.setStyleSheet("color: red")
-
             return False

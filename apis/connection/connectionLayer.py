@@ -21,11 +21,10 @@ class ConnectionLayer(QWidget):
 
         validIPs = AvailableIPs().get()
 
-        # TODO: Add conditional logic, where if only "iem" not in self.config["osc"], then self.osc["iemMixer"] = self.osc["fohMixer"]
         for idx, mixerName in enumerate(self.config["osc"]):
             hlayout = QHBoxLayout()
 
-            label = QLabel(mixerName.upper() + " Mixer IP Address:")
+            label = QLabel(mixerName.upper() + " Mixer IP Address:" if "iem" in self.config["osc"] else "Mixer IP Address:")
             label.setFixedWidth(150)
             hlayout.addWidget(label)
 
@@ -40,7 +39,7 @@ class ConnectionLayer(QWidget):
             status.setFixedWidth(80)
             hlayout.addWidget(status)
             
-            hlayout.addWidget(ConnectOscButton(self.osc, address, status, mixerName, idx, self.widgets))
+            hlayout.addWidget(ConnectOscButton(self.osc, address, status, mixerName, idx, self.widgets, "iem" not in self.config["osc"]))
 
             vlayout.addLayout(hlayout)
 
