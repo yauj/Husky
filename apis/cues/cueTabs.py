@@ -23,56 +23,11 @@ class CueTab(QTabWidget):
         self.widgets = widgets
         self.prevIndex = [None]
         
-        # TODO: if len() == 1, then no tab
         for i in range(0, self.config["cues"]["cuePages"]):
-            self.addTab(self.cuesTriggerLayer(i), chr(97 + i))
+            self.addTab(cuesTriggerLayer(config, osc, widgets, self.prevIndex, i), chr(97 + i))
             self.addAction(TabShortcut(self, chr(97 + i), i))
 
         self.osc["serverMidi"].callback(self.callbackFunction)
-
-    def cuesTriggerLayer(self, pageIndex):
-        vlayout = QVBoxLayout()
-
-        for cue in range(0, 10):
-            index = (pageIndex * 10) + cue
-            printIndex = str(cue + 1)
-            options = {}
-
-            hlayout = QHBoxLayout()
-
-            options["label"] = QLabel(printIndex + ":")
-            options["label"].setFixedWidth(20)
-            hlayout.addWidget(options["label"])
-        
-            options["key"] = QComboBox()
-            options["key"].setFixedWidth(120)
-            options["key"].setPlaceholderText("Key of Song")
-            options["key"].addItem("")
-            options["key"].addItems(KEYS)
-            hlayout.addWidget(options["key"])
-
-            options["lead"] = QComboBox()
-            options["lead"].setFixedWidth(120)
-            options["lead"].setPlaceholderText("Vocal Lead")
-            options["lead"].addItems(["", "1", "2", "3", "4"])
-            hlayout.addWidget(options["lead"])
-
-            snippet = CueSnippetButton(self.config, self.osc)
-            hlayout.addWidget(snippet)
-            options["snippet"] = snippet
-
-            hlayout.addWidget(CueFireButton(self.config, self.osc, self.prevIndex, index, printIndex, self.widgets["cues"]))
-
-            vlayout.addLayout(hlayout)
-            self.widgets["cues"].append(options)
-
-        widget = QWidget()
-        widget.setLayout(vlayout)
-
-        scroll = QScrollArea()
-        scroll.setWidget(widget)
-        scroll.setWidgetResizable(True)
-        return scroll
 
     def callbackFunction(self, message):
         if message.channel == 4 and message.value > 0:
@@ -107,3 +62,47 @@ class TabShortcut(QAction):
 
     def tabChange(self):
         self.cueTab.setCurrentIndex(self.index)
+
+def cuesTriggerLayer(config, osc, widgets, prevIndex, pageIndex):
+    vlayout = QVBoxLayout()
+
+    for cue in range(0, 10):
+        index = (pageIndex * 10) + cue
+        printIndex = str(cue + 1)
+        options = {}
+
+        hlayout = QHBoxLayout()
+
+        options["label"] = QLabel(printIndex + ":")
+        options["label"].setFixedWidth(20)
+        hlayout.addWidget(options["label"])
+    
+        options["key"] = QComboBox()
+        options["key"].setFixedWidth(120)
+        options["key"].setPlaceholderText("Key of Song")
+        options["key"].addItem("")
+        options["key"].addItems(KEYS)
+        hlayout.addWidget(options["key"])
+
+        options["lead"] = QComboBox()
+        options["lead"].setFixedWidth(120)
+        options["lead"].setPlaceholderText("Vocal Lead")
+        options["lead"].addItems(["", "1", "2", "3", "4"])
+        hlayout.addWidget(options["lead"])
+
+        snippet = CueSnippetButton(config, osc)
+        hlayout.addWidget(snippet)
+        options["snippet"] = snippet
+
+        hlayout.addWidget(CueFireButton(config, osc, prevIndex, index, printIndex, widgets["cues"]))
+
+        vlayout.addLayout(hlayout)
+        widgets["cues"].append(options)
+
+    widget = QWidget()
+    widget.setLayout(vlayout)
+
+    scroll = QScrollArea()
+    scroll.setWidget(widget)
+    scroll.setWidgetResizable(True)
+    return scroll

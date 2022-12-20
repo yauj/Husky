@@ -38,36 +38,38 @@ def loadCue(file, widgets):
         components = line.split()
 
         if components[0] == "cue":
-            if components[1] == "N":
-                widgets["cues"][cueIdx]["key"].setCurrentIndex(-1)
-            else:
-                widgets["cues"][cueIdx]["key"].setCurrentText(components[1])
-
-            if components[2] == "N":
-                widgets["cues"][cueIdx]["lead"].setCurrentIndex(-1)
-            else:
-                widgets["cues"][cueIdx]["lead"].setCurrentText(components[2])
-
-            if components[3] == "N":
-                widgets["cues"][cueIdx]["snippet"].setFilename("")
-            else:
-                filename = " ".join(components[3:])
-                if os.path.exists(filename):
-                    widgets["cues"][cueIdx]["snippet"].setFilename(filename)
+            if cueIdx < len(widgets["cues"]):
+                if components[1] == "N":
+                    widgets["cues"][cueIdx]["key"].setCurrentIndex(-1)
                 else:
-                    print("Cue Snippet File not found: " + filename)
-                    widgets["cues"][cueIdx]["snippet"].setFilename("")
+                    widgets["cues"][cueIdx]["key"].setCurrentText(components[1])
 
-            cueIdx = cueIdx + 1
+                if components[2] == "N":
+                    widgets["cues"][cueIdx]["lead"].setCurrentIndex(-1)
+                else:
+                    widgets["cues"][cueIdx]["lead"].setCurrentText(components[2])
+
+                if components[3] == "N":
+                    widgets["cues"][cueIdx]["snippet"].setFilename("")
+                else:
+                    filename = " ".join(components[3:])
+                    if os.path.exists(filename):
+                        widgets["cues"][cueIdx]["snippet"].setFilename(filename)
+                    else:
+                        print("Cue Snippet File not found: " + filename)
+                        widgets["cues"][cueIdx]["snippet"].setFilename("")
+                cueIdx = cueIdx + 1
         elif components[0] == "fader":
             command = " ".join(components[1:5])
             name = " ".join(components[5:])
             if lastFaderName != name:
                 faderIdx = faderIdx + 1
-                widgets["faders"][faderIdx]["commands"] = []
-                lastFaderName = name
-            widgets["faders"][faderIdx]["name"].setText(name)
-            widgets["faders"][faderIdx]["commands"].append(command)
+                if faderIdx < len(widgets["faders"]):
+                    widgets["faders"][faderIdx]["commands"] = []
+                    lastFaderName = name
+            if faderIdx < len(widgets["faders"]):
+                widgets["faders"][faderIdx]["name"].setText(name)
+                widgets["faders"][faderIdx]["commands"].append(command)
     
     for idx, fader in enumerate(widgets["faders"]):
         fader["slider"].refreshSubscription(prevCommands[idx], fader["commands"])

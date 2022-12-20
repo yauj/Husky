@@ -1,9 +1,9 @@
 from apis.cues.cueClear import CueClearButton
 from apis.cues.cueLoad import CueLoadButton
 from apis.cues.cueSave import CueSaveButton
-from apis.cues.cueTabs import CueTab
+from apis.cues.cueTabs import CueTab, cuesTriggerLayer
 from apis.cues.faders.fadersReset import FadersResetButton
-from apis.cues.faders.fadersTab import FaderTab
+from apis.cues.faders.fadersTab import FaderTab, fadersLayer
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -45,7 +45,11 @@ class CueLayer(QTabWidget):
         hlayout.addWidget(CueClearButton(self.widgets))
         vlayout.addLayout(hlayout)
 
-        vlayout.addWidget(CueTab(self.config, self.osc, self.widgets))
+        if "cuePages" not in self.config["cues"] or self.config["cues"]["cuePages"] < 2:
+            self.prevIndex = [None]
+            vlayout.addWidget(cuesTriggerLayer(self.config, self.osc, self.widgets, self.prevIndex, 0))
+        else:
+            vlayout.addWidget(CueTab(self.config, self.osc, self.widgets))
 
         widget = QWidget()
         widget.setLayout(vlayout)
@@ -59,7 +63,10 @@ class CueLayer(QTabWidget):
         hlayout.addWidget(FadersResetButton(self.config, self.widgets))
         vlayout.addLayout(hlayout)
 
-        vlayout.addWidget(FaderTab(self.config, self.widgets, self.osc))
+        if "faderPages" not in self.config["cues"] or self.config["cues"]["faderPages"] < 2:
+            vlayout.addWidget(fadersLayer(self.config, self.osc, self.widgets, [0], enumerate(self.config["cues"]["faders"])))
+        else:
+            vlayout.addWidget(FaderTab(self.config, self.widgets, self.osc))
 
         widget = QWidget()
         widget.setLayout(vlayout)
