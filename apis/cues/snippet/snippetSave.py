@@ -26,6 +26,7 @@ class SnippetSaveButton(QPushButton):
                 for pair in self.headerLine.split():
                     keyVal = pair.split("=")
                     tags[keyVal[1]] = keyVal[0]
+                file.write(self.headerLine)
 
                 for line in self.textbox.toPlainText().splitlines():
                     if line.strip() != "":
