@@ -21,7 +21,6 @@ class TalkbackButton(QPushButton):
         TalkbackDialog(self.config, self.osc).exec()
         self.setDown(False)
 
-# TODO: Support single mixer. So if "iem" not in config["osc"], then sending to /config/talk/B/destmap. Also add IEMTalkbackDestination (either A or B)
 # TODO: Figure out how to not have button picked by default
 class TalkbackDialog(QDialog):
     def __init__(self, config, osc):
@@ -33,27 +32,50 @@ class TalkbackDialog(QDialog):
             label.setMaximumHeight(20)
             vlayout.addWidget(label)
 
-            initSettings = {}
-            for chName in config["personal"]:
-                if "iem_bus" in config["personal"][chName]:
-                    initSettings[config["talkbackChannel"] + "/mix/" + config["personal"][chName]["iem_bus"] + "/on"] = None
-            
-                initValues = osc["iemClient"].bulk_send_messages(initSettings)
-
             self.talkbacks = {}
-
             vlayout.addWidget(TalkbackAllButton(osc, self.talkbacks))
-            for chName in config["personal"]:
-                if "iem_bus" in config["personal"][chName]:
-                    hlayout = QHBoxLayout()
-                    hlayout.addWidget(QLabel(chName + ":"))
-                    hlayout.addWidget(TalkbackMeButton(osc, self.talkbacks, chName))
-                    self.talkbacks[chName] = TalkbackBox(config, osc, initValues, chName)
-                    spacer = QWidget()
-                    spacer.setFixedWidth(30)
-                    hlayout.addWidget(spacer)
-                    hlayout.addWidget(self.talkbacks[chName])
-                    vlayout.addLayout(hlayout)
+
+            if "iem" not in config["osc"]:
+                if "talkbackDestination" not in config:
+                    raise KeyError("talkbackDestination is not specified in config.py")
+
+                command = "/config/talk/" + config["talkbackDestination"] + "/destmap"
+                self.bitmap = ["0"] * 18
+                val = osc["fohClient"].bulk_send_messages({command: None})
+                binVal = bin(val[command])[2:]
+                for idx, x in enumerate(binVal):
+                    self.bitmap[idx + (18 - len(binVal))] = x
+
+                for chName in config["personal"]:
+                    if "iem_bus" in config["personal"][chName]:
+                        hlayout = QHBoxLayout()
+                        hlayout.addWidget(QLabel(chName + ":"))
+                        hlayout.addWidget(TalkbackMeButton(osc, self.talkbacks, chName))
+                        self.talkbacks[chName] = TalkbackOneBox(config, osc, self.bitmap, chName, command)
+                        spacer = QWidget()
+                        spacer.setFixedWidth(30)
+                        hlayout.addWidget(spacer)
+                        hlayout.addWidget(self.talkbacks[chName])
+                        vlayout.addLayout(hlayout)
+            else:
+                initSettings = {}
+                for chName in config["personal"]:
+                    if "iem_bus" in config["personal"][chName]:
+                        initSettings[config["talkbackChannel"] + "/mix/" + config["personal"][chName]["iem_bus"] + "/on"] = None
+                
+                    initValues = osc["iemClient"].bulk_send_messages(initSettings)
+
+                for chName in config["personal"]:
+                    if "iem_bus" in config["personal"][chName]:
+                        hlayout = QHBoxLayout()
+                        hlayout.addWidget(QLabel(chName + ":"))
+                        hlayout.addWidget(TalkbackMeButton(osc, self.talkbacks, chName))
+                        self.talkbacks[chName] = TalkbackTwoBox(config, osc, initValues, chName)
+                        spacer = QWidget()
+                        spacer.setFixedWidth(30)
+                        hlayout.addWidget(spacer)
+                        hlayout.addWidget(self.talkbacks[chName])
+                        vlayout.addLayout(hlayout)
 
             self.setLayout(vlayout)
         except Exception as ex:
@@ -64,7 +86,31 @@ class TalkbackDialog(QDialog):
             vlayout.addWidget(label)
             self.setLayout(vlayout)
 
-class TalkbackBox(QCheckBox):
+# 1 Mixer
+class TalkbackOneBox(QCheckBox):
+    def __init__(self, config, osc, bitmap, chName, command):
+        super().__init__()
+        self.osc = osc
+        self.bitmap = bitmap
+        self.index = 18 - int(config["personal"][chName]["iem_bus"])
+        self.command = command
+        self.setFixedWidth(20)
+        self.setChecked(self.bitmap[self.index] == "1")
+        self.stateChanged.connect(self.clicked)
+    
+    def clicked(self, value):
+        try:
+            self.bitmap[self.index] = "1" if value == 2 else "0"
+            self.osc["fohClient"].send_message(self.command, int("".join(self.bitmap), 2))
+        except Exception as ex:
+            print(traceback.format_exc())
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Talkback")
+            dlg.setText("Error: " + str(ex))
+            dlg.exec()
+
+# 2 Mixers
+class TalkbackTwoBox(QCheckBox):
     def __init__(self, config, osc, initValues, chName):
         super().__init__()
         self.osc = osc
@@ -92,15 +138,9 @@ class TalkbackAllButton(QPushButton):
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        if not self.osc["iemClient"].connected:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Talkback")
-            dlg.setText("Error: Not Connected to IEM Client")
-            dlg.exec()
-        else:
-            for name in self.boxes:
-                self.boxes[name].setChecked(True)
-        
+        for name in self.boxes:
+            self.boxes[name].setChecked(True)
+
         self.setDown(False)
 
 class TalkbackMeButton(QPushButton):
@@ -113,16 +153,10 @@ class TalkbackMeButton(QPushButton):
         self.setFixedWidth(150)
     
     def clicked(self):
-        if not self.osc["iemClient"].connected:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Talkback")
-            dlg.setText("Error: Not Connected to IEM Client")
-            dlg.exec()
-        else:
-            for name in self.boxes:
-                if (name == self.chName):
-                    self.boxes[name].setChecked(True)
-                else:
-                    self.boxes[name].setChecked(False)
+        for name in self.boxes:
+            if (name == self.chName):
+                self.boxes[name].setChecked(True)
+            else:
+                self.boxes[name].setChecked(False)
 
         self.setDown(False)
