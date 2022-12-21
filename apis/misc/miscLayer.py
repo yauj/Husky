@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from util.constants import MIXER_TYPE
 
 class MiscLayer(QWidget):
     def __init__(self, config, widgets, osc):
@@ -15,10 +16,11 @@ class MiscLayer(QWidget):
         self.osc = osc
 
         vlayout = QVBoxLayout()
-        vlayout.addWidget(TalkbackButton(self.config, self.osc)) # TODO: Make this disappear if xr18 mixer
-        vlayout.addWidget(RoutingButton(self.config, self.widgets, self.osc))
-        if "iem" in config["osc"]:
-            vlayout.addWidget(TransferButton(self.config, self.osc))
+        if MIXER_TYPE == "X32":
+            vlayout.addWidget(TalkbackButton(self.config, self.osc))
+            vlayout.addWidget(RoutingButton(self.config, self.widgets, self.osc))
+            if "iem" in config["osc"]:
+                vlayout.addWidget(TransferButton(self.config, self.osc))
         vlayout.addWidget(ResetButton(self.config, self.osc))
 
         self.setLayout(vlayout)

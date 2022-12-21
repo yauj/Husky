@@ -1,7 +1,8 @@
-PORT = 10023
+MIXER_TYPE = "X32" # Options: X32, XR18
+PORT = 10023 if MIXER_TYPE == "X32" else 10024
 START_PORT = 10000
 NUM_THREADS = 10
-MIDI_SERVER_NAME = "X32Helper"
+MIDI_SERVER_NAME = "X32Helper" # TODO: Rename X32 Helper to something more generic
 
 ALL_CHANNELS = [
     "/ch/01", "/ch/02", "/ch/03", "/ch/04", "/ch/05", "/ch/06", "/ch/07", "/ch/08",
