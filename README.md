@@ -123,7 +123,6 @@ pip3 install python-osc
 pip3 install mido
 pip3 install python-rtmidi
 pip3 install PyQt6
-pip3 install PyATEMMax
 ```
 
 ## X32 OSC Commands Reference File

@@ -6,25 +6,11 @@ from PyQt6.QtWidgets import (
 )
 from pythonosc.udp_client import SimpleUDPClient
 
-class ConnectAtemPort(QComboBox):
-    def __init__(self, config, status):
-        super().__init__()
-        self.status = status
-
-        self.setEditable(True)
-        self.setCurrentText(config["atemPort"])
-        self.currentTextChanged.connect(self.onChange)
-
-    def onChange(self):
-        self.status.setText("Modified")
-        self.status.setStyleSheet("color: gray")
-
 class ConnectAtemButton(QPushButton):
-    def __init__(self, osc, port, status):
+    def __init__(self, osc, port):
         super().__init__("Set")
         self.osc = osc
         self.port = port
-        self.status = status
 
         try:
             self.init()
@@ -52,9 +38,7 @@ class ConnectAtemButton(QPushButton):
     def init(self):
         try:
             self.osc["atemClient"] = SimpleUDPClient("0.0.0.0", int(self.port.currentText()))
-            self.status.setText("Connected!")
-            self.status.setStyleSheet("color: green")
+            self.port.connected()
         except Exception as ex:
-            self.status.setText("INVALID")
-            self.status.setStyleSheet("color: red")
+            self.port.invalid()
             raise ex

@@ -1,4 +1,4 @@
-from apis.connection.connectAtem import ConnectAtemButton, ConnectAtemPort
+from apis.connection.connectAtem import ConnectAtemButton
 from apis.connection.connectOSC import ConnectOscButton
 from apis.connection.connectMIDI import ConnectMidiButton
 from apis.connection.listenMIDI import ListenMidiButton
@@ -29,18 +29,12 @@ class ConnectionLayer(QWidget):
             label.setFixedWidth(150)
             hlayout.addWidget(label)
 
-            address = QComboBox()
-            address.setEditable(True)
-            address.addItems(validIPs)
-            address.setCurrentText(self.config["osc"][mixerName])
+            address = AddressBox(self.config["osc"][mixerName], validIPs)
             self.widgets["connection"][mixerName + "Client"] = address
-            hlayout.addWidget(address)
-
-            status = QLabel()
-            status.setFixedWidth(80)
-            hlayout.addWidget(status)
             
-            hlayout.addWidget(ConnectOscButton(self.osc, address, status, mixerName, idx, self.widgets, "iem" not in self.config["osc"]))
+            hlayout.addWidget(address) 
+            hlayout.addWidget(address.status) 
+            hlayout.addWidget(ConnectOscButton(self.osc, address, mixerName, idx, self.widgets, "iem" not in self.config["osc"]))
 
             vlayout.addLayout(hlayout)
         
@@ -49,13 +43,12 @@ class ConnectionLayer(QWidget):
         label.setFixedWidth(150)
         hlayout.addWidget(label)
 
-        status = QLabel()
-        status.setFixedWidth(80)
-        self.widgets["connection"]["atemClient"] = ConnectAtemPort(self.config, status)
+        address = AddressBox(self.config["atemPort"])
+        self.widgets["connection"]["atemClient"] = address
         
-        hlayout.addWidget(self.widgets["connection"]["atemClient"])  
-        hlayout.addWidget(status)  
-        hlayout.addWidget(ConnectAtemButton(self.osc, self.widgets["connection"]["atemClient"], status))
+        hlayout.addWidget(address)  
+        hlayout.addWidget(address.status)  
+        hlayout.addWidget(ConnectAtemButton(self.osc, address))
 
         vlayout.addLayout(hlayout)
 
@@ -64,20 +57,12 @@ class ConnectionLayer(QWidget):
         label.setFixedWidth(150)
         hlayout.addWidget(label)
 
-        port = QComboBox()
-        port.setEditable(True)
-        port.setCurrentText(self.config["serverMidi"])
-        self.widgets["connection"]["serverMidi"] = port
-        hlayout.addWidget(port)
-
-        status = QLabel()
-        status.setFixedWidth(80)
-        hlayout.addWidget(status)
-
-        hlayout.addWidget(ListenMidiButton(self.osc, status, port))
-
-        port.addItems(self.osc["serverMidi"].get_input_names())
-        port.setCurrentText(self.config["serverMidi"])
+        address = AddressBox(self.config["serverMidi"])
+        self.widgets["connection"]["serverMidi"] = address
+        
+        hlayout.addWidget(address)
+        hlayout.addWidget(address.status)
+        hlayout.addWidget(ListenMidiButton(self.osc, address))
 
         vlayout.addLayout(hlayout)
         
@@ -87,21 +72,57 @@ class ConnectionLayer(QWidget):
             label.setFixedWidth(150)
             hlayout.addWidget(label)
 
-            port = QComboBox()
-            port.setEditable(True)
-            port.setCurrentText(self.config["midi"][name]["default"])
-            self.widgets["connection"][name + "Midi"] = port
-            hlayout.addWidget(port)
-
-            status = QLabel()
-            status.setFixedWidth(80)
-            hlayout.addWidget(status)
-
-            hlayout.addWidget(ConnectMidiButton(self.osc, name, status, port))
-
-            port.addItems(self.osc[name + "Midi"].get_output_names())
-            port.setCurrentText(self.config["midi"][name]["default"])
+            address = AddressBox(self.config["midi"][name]["default"])
+            self.widgets["connection"][name + "Midi"] = address
+            
+            hlayout.addWidget(address)
+            hlayout.addWidget(address.status)
+            hlayout.addWidget(ConnectMidiButton(self.osc, name, address))
 
             vlayout.addLayout(hlayout)
 
         self.setLayout(vlayout)
+
+class AddressBox(QComboBox):
+    def __init__(self, initVal, options = None):
+        super().__init__()
+        self.status = QLabel()
+        self.status.setFixedWidth(80)
+
+        self.currentState = {
+            "text": initVal,
+            "statusText": "",
+            "statusStyle": ""
+        }
+
+        self.setEditable(True)
+        if options is not None:
+            self.addItems(options)
+        self.setCurrentText(initVal)
+        self.currentTextChanged.connect(self.onChange)
+    
+    def connected(self):
+        self.currentState["statusText"] = "Connected!"
+        self.currentState["statusStyle"] = "color: green"
+        self.status.setText(self.currentState["statusText"])
+        self.status.setStyleSheet(self.currentState["statusStyle"])
+
+    def invalid(self):
+        self.currentState["statusText"] = "INVALID"
+        self.currentState["statusStyle"] = "color: red"
+        self.status.setText(self.currentState["statusText"])
+        self.status.setStyleSheet(self.currentState["statusStyle"])
+
+    def onChange(self, text):
+        if text == self.currentState["text"]:
+            self.status.setText(self.currentState["statusText"])
+            self.status.setStyleSheet(self.currentState["statusStyle"])
+        else:
+            self.status.setText("Modified")
+            self.status.setStyleSheet("color: gray")
+    
+    def addItems(self, texts):
+        super().addItems(texts)
+        super().setCurrentText(self.currentState["text"])
+        self.status.setText(self.currentState["statusText"])
+        self.status.setStyleSheet(self.currentState["statusStyle"])

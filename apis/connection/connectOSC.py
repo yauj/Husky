@@ -5,11 +5,10 @@ from PyQt6.QtWidgets import (
 from util.defaultOSC import NUM_THREADS, RetryingServer, SimpleClient
 
 class ConnectOscButton(QPushButton):
-    def __init__(self, osc, address, status, mixerName, index, widgets, pointIEM):
+    def __init__(self, osc, address, mixerName, index, widgets, pointIEM):
         super().__init__("Connect")
         self.osc = osc
         self.address = address
-        self.status = status
         self.mixerName = mixerName
         self.index = index
         self.widgets = widgets
@@ -43,10 +42,8 @@ class ConnectOscButton(QPushButton):
             self.osc["iemClient"] = self.osc[self.mixerName + "Client"]
 
         if (self.osc[self.mixerName + "Client"].connect(self.osc[self.mixerName + "Server"])):
-            self.status.setText("Connected!")
-            self.status.setStyleSheet("color: green")
+            self.address.connected()
             return True
         else:
-            self.status.setText("INVALID")
-            self.status.setStyleSheet("color: red")
+            self.address.invalid()
             return False

@@ -5,13 +5,12 @@ from PyQt6.QtWidgets import (
 from util.defaultOSC import MIDIServer
 
 class ListenMidiButton(QPushButton):
-    def __init__(self, osc, status, port):
+    def __init__(self, osc, port):
         super().__init__("Connect")
         self.osc = osc
-        self.status = status
         self.port = port
         self.osc["serverMidi"] = MIDIServer(self.port)
-        self.init()
+        self.init(True)
         self.pressed.connect(self.connect)
         self.setFixedWidth(80)
     
@@ -29,13 +28,15 @@ class ListenMidiButton(QPushButton):
         
         self.setDown(False)
 
-    def init(self):
+    def init(self, init = False):
+        if init:
+            currentText = self.port.currentText()
+            self.port.addItems(self.osc["serverMidi"].get_input_names())
+            self.port.setCurrentText(currentText)
+
         if (self.osc["serverMidi"].open_input()):
-            self.status.setText("Connected!")
-            self.status.setStyleSheet("color: green")
+            self.port.connected()
             return True
         else:
-            self.status.setText("INVALID")
-            self.status.setStyleSheet("color: red")
-
+            self.port.invalid()
             return False
