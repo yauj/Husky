@@ -3,7 +3,7 @@ config = {
         "foh": "10.246.1.10",
         "iem": "10.246.1.15"
     },
-    "atem": "10.246.1.11",
+    "atemPort": "3333",
     "serverMidi": "X-USB",
     "midi": {
         "audio": {

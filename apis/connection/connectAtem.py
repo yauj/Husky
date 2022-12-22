@@ -1,42 +1,60 @@
+import traceback
 from PyQt6.QtWidgets import (
+    QComboBox,
     QMessageBox,
     QPushButton,
 )
-from util.defaultOSC import AtemClient
+from pythonosc.udp_client import SimpleUDPClient
 
-class ConnectAtemButton(QPushButton):
-    def __init__(self, osc, address, status):
-        super().__init__("Connect")
-        self.osc = osc
-        self.address = address
+class ConnectAtemPort(QComboBox):
+    def __init__(self, config, status):
+        super().__init__()
         self.status = status
 
-        self.osc["atemClient"] = AtemClient()
+        self.setEditable(True)
+        self.setCurrentText(config["atemPort"])
+        self.currentTextChanged.connect(self.onChange)
 
-        self.init()
+    def onChange(self):
+        self.status.setText("Modified")
+        self.status.setStyleSheet("color: gray")
+
+class ConnectAtemButton(QPushButton):
+    def __init__(self, osc, port, status):
+        super().__init__("Set")
+        self.osc = osc
+        self.port = port
+        self.status = status
+
+        try:
+            self.init()
+        except Exception:
+            print(traceback.format_exc())
         self.pressed.connect(self.connect)
         self.setFixedWidth(80)
     
     def connect(self):
-        if (self.init()):
+        try:
+            self.init()
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Atem Connection")
-            dlg.setText("Connected to Atem mixer")
+            dlg.setText("Sending Atem OSC commands to local port " + self.port.currentText())
             dlg.exec()
-        else:
+        except Exception as ex:
+            print(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Atem Connection")
-            dlg.setText("Invalid IP Address for Atem mixer")
+            dlg.setText("Error: " + str(ex))
             dlg.exec()
 
         self.setDown(False)
 
     def init(self):
-        if (self.osc["atemClient"].connect(self.address.currentText())):
+        try:
+            self.osc["atemClient"] = SimpleUDPClient("0.0.0.0", int(self.port.currentText()))
             self.status.setText("Connected!")
             self.status.setStyleSheet("color: green")
-            return True
-        else:
+        except Exception as ex:
             self.status.setText("INVALID")
             self.status.setStyleSheet("color: red")
-            return False
+            raise ex

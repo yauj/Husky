@@ -1,4 +1,4 @@
-from apis.connection.connectAtem import ConnectAtemButton
+from apis.connection.connectAtem import ConnectAtemButton, ConnectAtemPort
 from apis.connection.connectOSC import ConnectOscButton
 from apis.connection.connectMIDI import ConnectMidiButton
 from apis.connection.listenMIDI import ListenMidiButton
@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from util.defaultOSC import AvailableAtemIPs, AvailableIPs
+from util.defaultOSC import AvailableIPs
 
 class ConnectionLayer(QWidget):
     def __init__(self, config, widgets, osc):
@@ -49,18 +49,13 @@ class ConnectionLayer(QWidget):
         label.setFixedWidth(150)
         hlayout.addWidget(label)
 
-        address = QComboBox()
-        address.setEditable(True)
-        address.addItems(AvailableAtemIPs().get())
-        address.setCurrentText(self.config["atem"])
-        self.widgets["connection"]["atemClient"] = address
-        hlayout.addWidget(address)
-
         status = QLabel()
         status.setFixedWidth(80)
-        hlayout.addWidget(status)
+        self.widgets["connection"]["atemClient"] = ConnectAtemPort(self.config, status)
         
-        hlayout.addWidget(ConnectAtemButton(self.osc, address, status))
+        hlayout.addWidget(self.widgets["connection"]["atemClient"])  
+        hlayout.addWidget(status)  
+        hlayout.addWidget(ConnectAtemButton(self.osc, self.widgets["connection"]["atemClient"], status))
 
         vlayout.addLayout(hlayout)
 
