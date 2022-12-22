@@ -32,7 +32,7 @@ class LoadButton(QPushButton):
         
     def main(self, dlg):
         try:
-            dlg.initBar.emit(loadSingleNumSettings(self.filename.currentText(), self.chName != "Mains"))
+            dlg.initBar.emit(loadSingleNumSettings(self.config, self.filename.currentText(), self.chName != "Mains"))
             runSingle(self.config, self.osc, "data/" + self.filename.currentText(), self.chName != "Mains", self.chName, dlg)
             self.person.setCurrentText(self.filename.currentText().split(".")[0].split("_")[2])
             dlg.complete.emit()
@@ -95,10 +95,12 @@ def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None)
     print("Loaded " + filename)
 
 def fireLines(config, osc, lines, iemCopy, dlg = None):
-    fohSettings = {}
-    fohFadeSettings = {}
-    iemSettings = {}
-    iemFadeSettings = {}
+    settings = {"foh": {}, "iem": {}, "atem": {}}
+    fadeSettings = {"foh": {}, "iem": {}, "atem": {}}
+    for mixerName in config["osc"]: # Make sure that any additional mixers will be added
+        settings[mixerName] = {}
+        fadeSettings[mixerName] = {}
+
     for line in lines:
         components = line.split()
 
@@ -114,7 +116,7 @@ def fireLines(config, osc, lines, iemCopy, dlg = None):
                         osc[components[1] + "Midi"].send(mido.Message("note_off", channel = channel, note = control))
                     else:
                         osc[components[1] + "Midi"].send(mido.Message("note_on", channel = channel, note = control))
-        else:
+        elif components[0] in settings:
             arg = " ".join(components[3:])
             fadeTime = None
             if (components[2] == "int"):
@@ -123,26 +125,23 @@ def fireLines(config, osc, lines, iemCopy, dlg = None):
                 arg = float(components[3])
                 if len(components) >= 5:
                     fadeTime = float(components[4])
+            
+            if fadeTime is not None:
+                fadeSettings[components[0]][components[1]] = {"endVal": arg, "fadeTime": fadeTime}
+            else:
+                settings[components[0]][components[1]] = arg
 
-            if (components[0] == "foh"):
+            if (components[0] == "foh" and iemCopy):
                 if fadeTime is not None:
-                    fohFadeSettings[components[1]] = {"endVal": arg, "fadeTime": fadeTime}
+                    fadeSettings["iem"][components[1]] = {"endVal": arg, "fadeTime": fadeTime}
                 else:
-                    fohSettings[components[1]] = arg
+                    settings["iem"][components[1]] = arg
+    
+    for mixerName in settings:
+        if len(settings[mixerName]) > 0 or len(fadeSettings[mixerName]) > 0:
+            osc[mixerName + "Client"].bulk_send_messages(settings[mixerName], dlg, fadeSettings[mixerName])
 
-            if (components[0] == "iem" or (components[0] == "foh" and iemCopy)):
-                if fadeTime is not None:
-                    iemFadeSettings[components[1]] = {"endVal": arg, "fadeTime": fadeTime}
-                else:
-                    iemSettings[components[1]] = arg
-
-    if len(fohSettings) > 0 or len(fohFadeSettings) > 0:
-        osc["fohClient"].bulk_send_messages(fohSettings, dlg, fohFadeSettings)
-
-    if len(iemSettings) > 0 or len(iemFadeSettings) > 0:
-        osc["iemClient"].bulk_send_messages(iemSettings, dlg, iemFadeSettings)
-
-def loadSingleNumSettings(filename, iemCopy):
+def loadSingleNumSettings(config, filename, iemCopy):
     num = 0
     if (os.path.exists("data/" + filename)):
         with open("data/" + filename) as file:
@@ -150,11 +149,10 @@ def loadSingleNumSettings(filename, iemCopy):
             while (line := file.readline().strip()):
                 components = line.split()
 
-                if (components[0] == "foh"):
-                    if iemCopy:
-                        num = num + 2
-                    else:
-                        num = num + 1
-                elif (components[0] == "iem"):
+                if components[0] in ["foh", "iem", "atem"] or components[0] in config["osc"]:
                     num = num + 1
+                
+                if components[0] == "foh" and iemCopy:
+                    num = num + 1
+
     return num

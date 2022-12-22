@@ -1,10 +1,9 @@
 import traceback
 from PyQt6.QtWidgets import (
-    QComboBox,
     QMessageBox,
     QPushButton,
 )
-from pythonosc.udp_client import SimpleUDPClient
+from util.defaultOSC import AtemClient
 
 class ConnectAtemButton(QPushButton):
     def __init__(self, osc, port):
@@ -37,7 +36,7 @@ class ConnectAtemButton(QPushButton):
 
     def init(self):
         try:
-            self.osc["atemClient"] = SimpleUDPClient("0.0.0.0", int(self.port.currentText()))
+            self.osc["atemClient"] = AtemClient(int(self.port.currentText()))
             self.port.connected()
         except Exception as ex:
             self.port.invalid()

@@ -63,7 +63,7 @@ def fadersLayer(config, osc, widgets, index, itr):
         sliderLayout = QVBoxLayout()
         sliderLayout.addWidget(fader["slider"])
         sliderLayout.addWidget(fader["name"])
-        sliderLayout.addWidget(FadersEditButton(osc, fader))
+        sliderLayout.addWidget(FadersEditButton(config, osc, fader))
 
         widgets["faders"].append(fader)
         hlayout.addLayout(sliderLayout)

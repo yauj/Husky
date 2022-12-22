@@ -58,6 +58,9 @@ class TalkbackDialog(QDialog):
                         hlayout.addWidget(self.talkbacks[chName])
                         vlayout.addLayout(hlayout)
             else:
+                if "talkbackChannel" not in config:
+                    raise KeyError("talkbackChannel is not specified in config.py")
+
                 initSettings = {}
                 for chName in config["personal"]:
                     if "iem_bus" in config["personal"][chName]:

@@ -83,10 +83,8 @@ class FadersSlider(QSlider):
                     containsCommand = True
 
             if not containsCommand:
-                if oldComponents[0] == "foh":
-                    self.osc["fohServer"].subscription.remove(oldComponents[1])
-                elif oldComponents[0] == "iem":
-                    self.osc["iemServer"].subscription.remove(oldComponents[1])
+                if oldComponents[0] in ["foh", "iem"] or oldComponents in self.config["osc"]:
+                    self.osc[oldComponents[0] + "Server"].subscription.remove(oldComponents[1])
 
         for newCommand in newCommands:
             newComponents = newCommand.split()
@@ -98,14 +96,12 @@ class FadersSlider(QSlider):
                     containsCommand = True
 
             if not containsCommand:
-                if newComponents[0] == "foh":
-                    self.osc["fohServer"].subscription.add(newComponents[1], self.processSubscription)
-                elif newComponents[0] == "iem":
-                    self.osc["iemServer"].subscription.add(newComponents[1], self.processSubscription)
+                if newComponents[0] in ["foh", "iem"] or newComponents[0] in self.config["osc"]:
+                    self.osc[newComponents[0] + "Server"].subscription.add(newComponents[1], self.processSubscription)
 
     def onValueChange(self, value):
         try:
-            # Change X32 Value
+            # Change Target Value
             for command in self.fader["commands"]:
                 components = command.split()
                 if self.lock.owner != components[0] + " " + components[1]: # Don't loopback if command is source of input
@@ -117,13 +113,12 @@ class FadersSlider(QSlider):
                         min = float(components[2])
                         max = float(components[3])
                         arg = (faderPosition * (max - min)) + min
-                        
-                        if components[0] == "foh":
-                            self.osc["fohClient"].send_message(components[1], arg)
-                        elif components[0] == "iem":
-                            self.osc["iemClient"].send_message(components[1], arg)
+
+                        if components[0] in ["foh", "iem", "atem"] or components[0] in self.config["osc"]:
+                            self.osc[components[0] + "Client"].send_message(components[1], arg)
             
             # Change X32 User Encoder MIDI Knob
+            # TODO: Add MIDI feedback
             if self.lock.owner != "midi": # Don't loopback if MIDI is source of input
                 if self.osc["serverMidi"].input is not None and self.oscFeedback is not None: # Is source of midi input and has OSC feedback command
                     self.osc["fohClient"].send_message(self.oscFeedback, value)

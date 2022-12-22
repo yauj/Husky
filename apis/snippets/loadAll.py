@@ -23,7 +23,7 @@ class LoadAllButton(QPushButton):
         
     def main(self, dlg):
         try:
-            dlg.initBar.emit(loadAllNumSettings(self.filenames))
+            dlg.initBar.emit(loadAllNumSettings(self.config, self.filenames))
             for chName in self.filenames:
                 if (self.filenames[chName].currentText() != ""):
                     if (os.path.exists("data/" + self.filenames[chName].currentText())):
@@ -36,9 +36,9 @@ class LoadAllButton(QPushButton):
             print(traceback.format_exc())
             dlg.raiseException.emit(ex)
 
-def loadAllNumSettings(filenames):
+def loadAllNumSettings(config, filenames):
     num = 0
     for chName in filenames:
         if (filenames[chName].currentText() != "" and os.path.exists("data/" + filenames[chName].currentText())):
-            num = num + loadSingleNumSettings(filenames[chName].currentText(), chName != "Mains")
+            num = num + loadSingleNumSettings(config, filenames[chName].currentText(), chName != "Mains")
     return num

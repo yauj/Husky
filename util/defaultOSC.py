@@ -326,6 +326,51 @@ class AvailableIPs:
                 if client.connect(server):
                     self.validIPs.append(ip)
 
+# Atem Client - Creates a single threaded connection to a local AtemOSC application
+class AtemClient(SimpleUDPClient):
+    def __init__(self, port):
+        super().__init__("0.0.0.0", port)
+        self.prevSettings = None # Previous settings before last bulk send command was fired.
+    
+    # Undo previously applied settings
+    # Returns whether or not settings were succesfully undone.
+    def undo(self, dlg = None):
+        if self.prevSettings is None:
+            return False
+        else:
+            self.bulk_send_messages(self.prevSettings, dlg)
+            self.prevSettings = None
+            return True
+    
+    # Send a bunch of messages. Return results if arg is None.
+    def bulk_send_messages(self, addresses, progressDialog = None, fadeAddresses = {}):
+        # Send Addresses
+        for address in addresses:
+            self.send_message(address, addresses[address])
+            if progressDialog:
+                progressDialog.progressOne.emit()
+        
+        # Send Fader
+        for address in fadeAddresses:
+            fadeAddresses[address]["endFired"] = 0 # Number of times end command was fired
+        startTime = time()
+        while len(fadeAddresses) > 0:
+            for address in fadeAddresses.copy():
+                ratio = (time() - startTime) / fadeAddresses[address]["fadeTime"]
+                if ratio >= 1:
+                    self.send_message(address, fadeAddresses[address]["endVal"])
+                    fadeAddresses[address]["endFired"] = fadeAddresses[address]["endFired"] + 1
+                    if fadeAddresses[address]["endFired"] == 5: # Send End Command 5 times, to ensure that end state is reached
+                        del fadeAddresses[address]
+                        if progressDialog:
+                            progressDialog.progressOne.emit()
+                else:
+                    self.send_message(
+                        address,
+                        round(self.prevSettings[address] + (ratio * (fadeAddresses[address]["endVal"] - self.prevSettings[address])), 5)
+                    )
+            sleep(0.01 * len(fadeAddresses)) # Max 100 commands per second to ensure that no requests are dropped
+
 # MIDI Client
 class MIDIClient(mido.Backend):
     def __init__(self, port):

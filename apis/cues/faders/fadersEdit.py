@@ -9,18 +9,19 @@ from PyQt6.QtWidgets import (
 import traceback
 
 class FadersEditButton(QPushButton):
-    def __init__(self, osc, fader):
+    def __init__(self, config, osc, fader):
         super().__init__("Edit")
+        self.config = config
         self.osc = osc
         self.fader = fader
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        FadersEditDialog(self.osc, self.fader).exec()
+        FadersEditDialog(self.config, self.osc, self.fader).exec()
         self.setDown(False)
 
 class FadersEditDialog(QDialog):
-    def __init__(self, osc, fader):
+    def __init__(self, config, osc, fader):
         super().__init__()
 
         textbox = QTextEdit()
@@ -31,8 +32,8 @@ class FadersEditDialog(QDialog):
         vlayout = QVBoxLayout()
 
         hlayout = QHBoxLayout()
-        hlayout.addWidget(UpdateButton(osc, textbox, "Minimum"))
-        hlayout.addWidget(UpdateButton(osc, textbox, "Maximum"))
+        hlayout.addWidget(UpdateButton(config, osc, textbox, "Minimum"))
+        hlayout.addWidget(UpdateButton(config, osc, textbox, "Maximum"))
         vlayout.addLayout(hlayout)
 
         vlayout.addWidget(textbox)
@@ -65,8 +66,9 @@ class EditButton(QPushButton):
         dlg.exec()
 
 class UpdateButton(QPushButton):
-    def __init__(self, osc, textbox, name):
+    def __init__(self, config, osc, textbox, name):
         super().__init__("Update " + name)
+        self.config = config
         self.osc = osc
         self.textbox = textbox
         self.name = name
@@ -86,33 +88,30 @@ class UpdateButton(QPushButton):
 
     def main(self):
         lines = []
-        fohSettings = {}
-        iemSettings = {}
+        settings = {"foh": {}, "iem": {}}
+        for mixerName in self.config["osc"]:
+            settings[mixerName] = {}
         for line in self.textbox.toPlainText().splitlines():
             if line.strip() != "":
                 lines.append(line)
                 components = line.split()
-                if components[0] == "foh":
-                    fohSettings[components[1]] = None
-                elif components[0] == "iem":
-                    iemSettings[components[1]] = None
-                
-        fohValues = self.osc["fohClient"].bulk_send_messages(fohSettings)
-        iemValues = self.osc["iemClient"].bulk_send_messages(iemSettings)
+                if components[0] in settings:
+                    settings[components[0]][components[1]] = None
+        
+        values = {}
+        for mixerName in settings:
+            if len(settings[mixerName]) > 0:
+                values[mixerName] = self.osc[mixerName + "Client"].bulk_send_messages(settings[mixerName])
 
         self.textbox.clear()
         for line in lines:
             components = line.split()
-            if components[0] == "midi":
-                self.textbox.append(line)
-            else:
-                value = components[2]
-                if components[0] == "foh":
-                    value = fohValues[components[1]]
-                elif components[0] == "iem":
-                    value = iemValues[components[1]]
+            if components[0] in values and components[1] in values[components[0]]:
+                value = values[components[0]][components[1]]
 
                 if self.name == "Minimum":
                     self.textbox.append(components[0] + " " + components[1] + " " + str(value) + " " + components[3])
-                if self.name == "Maximum":
+                else:
                     self.textbox.append(components[0] + " " + components[1] + " " + components[2] + " " + str(value))
+            else:
+                self.textbox.append(line)
