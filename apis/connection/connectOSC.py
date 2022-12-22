@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
+from util.constants import START_PORT
 from util.defaultOSC import NUM_THREADS, RetryingServer, SimpleClient
 
 class ConnectOscButton(QPushButton):
@@ -14,7 +15,7 @@ class ConnectOscButton(QPushButton):
         self.widgets = widgets
         self.pointIEM = pointIEM # Whether or not to point IEM client and server to here.
 
-        self.osc[self.mixerName + "Server"] = RetryingServer(10000 + NUM_THREADS + (self.index * 2), mixerName)
+        self.osc[self.mixerName + "Server"] = RetryingServer(START_PORT + 1 + NUM_THREADS + (self.index * 2), mixerName)
         if self.mixerName == "foh" and self.pointIEM:
             self.osc["iemServer"] = self.osc[self.mixerName + "Server"]
 

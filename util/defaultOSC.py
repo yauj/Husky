@@ -113,7 +113,7 @@ class SimpleClient(SimpleUDPClient):
             raise SystemError("Not Connected to " + self.name.upper() + " Client")
     
     def child(self, index, addresses, results, progressDialog = None):
-        with RetryingServer(START_PORT + index) as server:
+        with RetryingServer(START_PORT + 1 + index) as server:
             client = SimpleClient(self.name, self.ipAddress, False)
             client._sock = server.socket
             for address in addresses:
@@ -304,7 +304,7 @@ class AvailableIPs:
             except OSError as ex:
                 if str(ex) == "[Errno 51] Network is unreachable":
                     print("Not Connected to Internet. Just checking 0.0.0.0")
-                    with RetryingServer(10000) as server:
+                    with RetryingServer(START_PORT + 1) as server:
                         server.timeout = 0.1
                         ip = "0.0.0.0"
                         client = SimpleClient("Test", ip, False)
@@ -316,7 +316,7 @@ class AvailableIPs:
                     raise ex
     
     def child(self, index):
-        with RetryingServer(10000 + index) as server:
+        with RetryingServer(START_PORT + 1 + index) as server:
             server.timeout = 0.1
             for i in range(index, 256, NUM_THREADS):
                 ip = self.prefix + str(i)
@@ -370,6 +370,35 @@ class AtemClient(SimpleUDPClient):
                         round(self.prevSettings[address] + (ratio * (fadeAddresses[address]["endVal"] - self.prevSettings[address])), 5)
                     )
             sleep(0.01 * len(fadeAddresses)) # Max 100 commands per second to ensure that no requests are dropped
+
+# Atem Subscription
+class AtemSubscriptionServer: # Wrapper for Atem Server
+    def __init__(self):
+        self.subscription = AtemServer()
+    def shutdown(self):
+        self.subscription.shutdown()
+class AtemServer(ThreadingOSCUDPServer):
+    def __init__(self):
+        dispatcher = Dispatcher()
+        dispatcher.set_default_handler(self.functionHandler)
+
+        super().__init__(("0.0.0.0", START_PORT), dispatcher)
+
+        self.subscriptions = {}
+        threading.Thread(target = self.serve_forever).start()
+    
+    def shutdown(self):
+        super().shutdown() # Finishes up server thread
+
+    def functionHandler(self, address, *args):
+        if address in self.subscriptions:
+            self.subscriptions[address]("atem", address, args[0])
+
+    def add(self, address, command):
+        self.subscriptions[address] = command
+    
+    def remove(self, address):
+        self.subscriptions.pop(address, None)
 
 # MIDI Client
 class MIDIClient(mido.Backend):

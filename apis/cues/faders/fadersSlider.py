@@ -39,7 +39,7 @@ class FadersSlider(QSlider):
             if self.lock.acquire("midi"):
                 self.setValue(message.value)
     
-    # TODO: What happens if a command is in multiple? Right now will just override
+    # TODO: What happens if a command is in multiple faders? Right now will just override
     def processSubscription(self, mixerName, message, arg):
         idx, components = self.getLineComponents(mixerName, message)
 
@@ -50,18 +50,24 @@ class FadersSlider(QSlider):
         max = float(components[3])
         margin = abs(max - min) / 127.0
         increasingFader = max >= min
-        if (increasingFader and arg > max + margin) or (not increasingFader and arg < max - margin):
-            self.fader["commands"][idx] = components[0] + " " + components[1] + " " + components[2] + " " + str(arg)
-            max = arg
-        elif (increasingFader and arg < min - margin) or (not increasingFader and arg > min + margin):
-            self.fader["commands"][idx] = components[0] + " " + components[1] + " " + str(arg) + " " + components[3]
-            min = arg
-        
-        midiVal = round(((arg - min) / (max - min)) * 127.0)
+
+        midiVal = 0
+        if (arg == float("inf") and increasingFader) or (arg == float("-inf") and not increasingFader):
+            midiVal = 127
+        elif (arg == float("-inf") and increasingFader) or (arg == float("inf") and not increasingFader):
+            midiVal = 0
+        else:
+            if (increasingFader and arg > max + margin) or (not increasingFader and arg < max - margin):
+                self.fader["commands"][idx] = components[0] + " " + components[1] + " " + components[2] + " " + str(arg)
+                max = arg
+            elif (increasingFader and arg < min - margin) or (not increasingFader and arg > min + margin):
+                self.fader["commands"][idx] = components[0] + " " + components[1] + " " + str(arg) + " " + components[3]
+                min = arg
+            
+            midiVal = round(((arg - min) / (max - min)) * 127.0)
 
         if midiVal == self.value():
             return
-        
         if self.lock.acquire(mixerName + " " + message):
             self.setValue(midiVal)
     
@@ -83,7 +89,7 @@ class FadersSlider(QSlider):
                     containsCommand = True
 
             if not containsCommand:
-                if oldComponents[0] in ["foh", "iem"] or oldComponents in self.config["osc"]:
+                if oldComponents[0] in ["foh", "iem", "atem"] or oldComponents in self.config["osc"]:
                     self.osc[oldComponents[0] + "Server"].subscription.remove(oldComponents[1])
 
         for newCommand in newCommands:
@@ -96,7 +102,7 @@ class FadersSlider(QSlider):
                     containsCommand = True
 
             if not containsCommand:
-                if newComponents[0] in ["foh", "iem"] or newComponents[0] in self.config["osc"]:
+                if newComponents[0] in ["foh", "iem", "atem"] or newComponents[0] in self.config["osc"]:
                     self.osc[newComponents[0] + "Server"].subscription.add(newComponents[1], self.processSubscription)
 
     def onValueChange(self, value):

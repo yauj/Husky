@@ -81,6 +81,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, a0):
         for mixerName in self.config["osc"]:
             self.osc[mixerName + "Server"].shutdown()
+        self.osc["atemServer"].shutdown()
 
         if self.saveCache:
             with open("connection.cache", "w") as file:

@@ -3,13 +3,15 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
-from util.defaultOSC import AtemClient
+from util.defaultOSC import AtemClient, AtemSubscriptionServer
 
 class ConnectAtemButton(QPushButton):
     def __init__(self, osc, port):
         super().__init__("Set")
         self.osc = osc
         self.port = port
+
+        self.osc["atemServer"] = AtemSubscriptionServer()
 
         try:
             self.init()
