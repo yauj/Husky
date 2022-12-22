@@ -1,6 +1,7 @@
 from itertools import islice
 from math import ceil
 import mido
+from PyATEMMax import ATEMMax
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer, ThreadingOSCUDPServer
@@ -325,6 +326,72 @@ class AvailableIPs:
                 client = SimpleClient("Test", ip, False)
                 if client.connect(server):
                     self.validIPs.append(ip)
+
+# Atem Client
+class AtemClient(ATEMMax):
+    def __init__(self):
+        super().__init__()
+    
+    def connect(self, ipAddress):
+        super().connect(ipAddress)
+        super().waitForConnection(infinite = False, timeout = 1)
+
+        if self.connected:
+            print("Connected to Atem at " + ipAddress)
+        else:
+            print("Failed to connect to Atem at " + ipAddress)
+
+        return self.connected
+    
+class AvailableAtemIPs:
+    def get(self):
+        self.validIPs = []
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.settimeout(0.1)
+            try:
+                s.connect(("8.8.8.8", 80))
+                self.thisIp = s.getsockname()[0]
+                components = self.thisIp.split(".")
+                self.prefix = components[0] + "." + components[1] + "." + components[2] + "."
+
+                threads = []
+                for index in range(0, NUM_THREADS):
+                    th = threading.Thread(target = self.child, args = (index,))
+                    th.start()
+                    threads.append(th)
+
+                for th in threads:
+                    th.join()
+                
+                return self.validIPs
+            except OSError as ex:
+                if str(ex) == "[Errno 51] Network is unreachable":
+                    print("Not Connected to Internet. Just checking 0.0.0.0")
+                    with RetryingServer(10000) as server:
+                        server.timeout = 0.1
+                        ip = "0.0.0.0"
+                        client = SimpleClient("Test", ip, False)
+                        if client.connect(server):
+                            return [ip]
+                        else:
+                            return []
+                else:
+                    raise ex
+    
+    # TODO: Cleanup logs for bad connections
+    def child(self, index):
+        for i in range(index, 256, NUM_THREADS):
+            ip = self.prefix + str(i)
+            if ip == self.thisIp:
+                ip = "0.0.0.0"
+            try:
+                switcher = ATEMMax()
+                switcher.ping(ip, timeout = 0.1)
+                if switcher.waitForConnection():
+                    self.validIPs.append(ip)
+                switcher.disconnect()
+            except Exception as ex:
+                print(ex)
 
 # MIDI Client
 class MIDIClient(mido.Backend):

@@ -56,7 +56,7 @@ def main(config, osc, prevIndex, index, cues):
             osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 102, value = 127)) # Type Message
 
         if cues[index]["lead"].currentText() != "":
-            bkgdVox = ["05", "06", "07", "08"]
+            bkgdVox = ["05", "06", "07", "08"] # TODO: Move this to config
             leadVox = ""
             if cues[index]["lead"].currentText() == "1":
                 leadVox = "05"
