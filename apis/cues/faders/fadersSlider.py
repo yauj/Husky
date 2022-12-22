@@ -35,7 +35,7 @@ class FadersSlider(QSlider):
         self.osc["serverMidi"].callback(self.midiInput)
 
     def midiInput(self, message):
-        if message.channel == 4 and message.control == 13 + self.index:
+        if message.channel == 4 and message.control == 13 + self.index: # TODO: Generalize this, be able to map input midi.
             if self.lock.acquire("midi"):
                 self.setValue(message.value)
     

@@ -66,7 +66,7 @@ config = {
     },
     "cues": {
         "cuePages": 5,
-        "faderPages": 3,
+        "faderPages": 5,
         "faders": {
             "VOX EQ": {"oscFeedback": "/-stat/userpar/29/value", "commands": ["foh /ch/05/eq/1/g 0.2 0.5"]},
             "VOX Pan": {"oscFeedback": "/-stat/userpar/30/value", "commands": ["foh /ch/06/mix/pan 0.5 0.2", "foh /ch/07/mix/pan 0.5 0.8"]},
@@ -76,6 +76,18 @@ config = {
             "EG/Keys Tracks": {"defaultValue": 63, "commands": ["midi audio 2 51"]},
             "Bass Tracks": {"defaultValue": 63, "commands": ["midi audio 2 52"]},
             "Drum Tracks": {"defaultValue": 63, "commands": ["midi audio 2 53"]},
+            "Stream Lead VOX": {"commands": ["foh /bus/01/mix/03/level 0.5 1.0"]},
+            "Stream Para Xpres": {"commands": ["foh /bus/02/mix/03/level 0.5 1.0"]},
+            "Stream Bkgd VOX": {"commands": ["foh /bus/03/mix/03/level 0.5 1.0"]},
+            "Stream Crowd Mics": {"commands": ["foh /ch/31/mix/13/level 0.5 1.0"]},
+            "Stream Instruments": {"commands": ["foh /bus/05/mix/03/level 0.5 1.0"]},
+            "Stream Drums": {"commands": ["foh /bus/07/mix/03/level 0.5 1.0"]},
+            "Stream Wireless": {"commands": ["foh /bus/08/mix/03/level 0.5 1.0"]},
+            "Stream FX": {"commands": ["foh /bus/09/mix/03/level 0.5 1.0"]},
+            "Stream Podium": {"commands": ["atem /atem/audio/input/9/gain -10 10"]},
+            "Stream ProPre": {"commands": ["atem /atem/audio/input/10/gain -10 10"]},
+            "Stream MP3": {"commands": ["foh /auxin/05/mix/13/level 0.5 1.0"]},
+            "Stream Overall": {"commands": ["atem /atem/audio/output/gain -60 10"]}
         },
     },
     "talkbackChannel": "/ch/30",

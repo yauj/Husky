@@ -39,7 +39,7 @@ class ConnectionLayer(QWidget):
             vlayout.addLayout(hlayout)
         
         hlayout = QHBoxLayout()
-        label = QLabel("Atem IP Address:")
+        label = QLabel("AtemOSC Port:")
         label.setFixedWidth(150)
         hlayout.addWidget(label)
 
@@ -52,6 +52,7 @@ class ConnectionLayer(QWidget):
 
         vlayout.addLayout(hlayout)
 
+        # TODO: Add ability to have multiple MIDI Inputs
         hlayout = QHBoxLayout()
         label = QLabel("MIDI Input: ")
         label.setFixedWidth(150)
