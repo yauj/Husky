@@ -40,4 +40,4 @@ def main(config, osc, textbox):
         if line.strip() != "":
             lines.append(line)
 
-    fireLines(config, osc, lines, False)
+    fireLines(config, osc, lines)

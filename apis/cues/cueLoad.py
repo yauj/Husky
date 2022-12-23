@@ -30,34 +30,33 @@ def loadCue(file, widgets):
             lst.append(command)
         prevCommands.append(lst)
 
-    file.readline() # Skip Header Line
+    categories = file.readline().strip().split("\t")
+    categories = categories[1:]
+
     cueIdx = 0
     faderIdx = -1
     lastFaderName = None
     while (line := file.readline().strip()):
-        components = line.split()
+        components = line.split("\t")
 
         if components[0] == "cue":
             if cueIdx < len(widgets["cues"]):
-                if components[1] == "N":
-                    widgets["cues"][cueIdx]["key"].setCurrentIndex(-1)
-                else:
-                    widgets["cues"][cueIdx]["key"].setCurrentText(components[1])
-
-                if components[2] == "N":
-                    widgets["cues"][cueIdx]["lead"].setCurrentIndex(-1)
-                else:
-                    widgets["cues"][cueIdx]["lead"].setCurrentText(components[2])
-
-                if components[3] == "N":
-                    widgets["cues"][cueIdx]["snippet"].setFilename("")
-                else:
-                    filename = " ".join(components[3:])
-                    if os.path.exists(filename):
-                        widgets["cues"][cueIdx]["snippet"].setFilename(filename)
-                    else:
-                        print("Cue Snippet File not found: " + filename)
-                        widgets["cues"][cueIdx]["snippet"].setFilename("")
+                for idx, component in enumerate(components[1:]):
+                    if categories[idx] == "snippet":
+                        if component == "N":
+                            widgets["cues"][cueIdx]["snippet"].setFilename("")
+                        else:
+                            filename = " ".join(components[3:])
+                            if os.path.exists(filename):
+                                widgets["cues"][cueIdx]["snippet"].setFilename(filename)
+                            else:
+                                print("Cue Snippet File not found: " + filename)
+                                widgets["cues"][cueIdx]["snippet"].setFilename("")
+                    elif categories[idx] in widgets["cues"][cueIdx]:
+                        if component == "N":
+                            widgets["cues"][cueIdx][categories[idx]].setCurrentIndex(-1)
+                        else:
+                            widgets["cues"][cueIdx][categories[idx]].setCurrentText(component)
                 cueIdx = cueIdx + 1
         elif components[0] == "fader":
             command = " ".join(components[1:5])

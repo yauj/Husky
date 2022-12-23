@@ -11,8 +11,10 @@ class CueClearButton(QPushButton):
     
     def clicked(self):
         for cue in self.widgets["cues"]:
-            cue["key"].setCurrentIndex(-1)
-            cue["lead"].setCurrentIndex(-1)
-            cue["snippet"].setFilename("")
+            for category in cue:
+                if category == "snippet":
+                    cue["snippet"].setFilename("")
+                else:
+                    cue[category].setCurrentIndex(-1)
         
         self.setDown(False)

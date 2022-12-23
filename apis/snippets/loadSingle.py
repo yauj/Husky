@@ -94,7 +94,7 @@ def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None)
 
     print("Loaded " + filename)
 
-def fireLines(config, osc, lines, iemCopy, dlg = None):
+def fireLines(config, osc, lines, iemCopy = False, dlg = None):
     settings = {"foh": {}, "iem": {}, "atem": {}}
     fadeSettings = {"foh": {}, "iem": {}, "atem": {}}
     for mixerName in config["osc"]: # Make sure that any additional mixers will be added

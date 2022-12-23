@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
+from apis.snippets.loadSingle import fireLines
 from util.customWidgets import ProgressDialog
 
 class ResetButton(QPushButton):
@@ -20,15 +21,17 @@ class ResetButton(QPushButton):
 
     def main(self, dlg):
         try:
-            dlg.initBar.emit(len(self.config["resetCommands"]))
+            dlg.initBar.emit(len(self.config["resetCommands"])) # TODO: [Low Priority] Add the osc commands in cueOptions
 
             self.osc["fohClient"].bulk_send_messages(self.config["resetCommands"], dlg)
 
-            # Reset Auto-Tune
-            #self.osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 100, value = 127)) # On/Off Message
-            self.osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 101, value = 0)) # Key Message
-            self.osc["audioMidi"].send(mido.Message("control_change", channel = 1, control = 102, value = 0)) # Type Message
-            
+            lines = []
+            for category in self.config["cues"]["cueOptions"]:
+                if "RESET" in self.config["cues"]["cueOptions"][category]:
+                    lines.extend(self.config["cues"]["cueOptions"][category]["RESET"])
+
+            fireLines(self.config, self.osc, lines)
+
             print("Settings Reset")
             dlg.complete.emit()
         except Exception as ex:

@@ -5,8 +5,9 @@ from PyQt6.QtWidgets import (
 )
 
 class CueSaveButton(QPushButton):
-    def __init__(self, widgets):
+    def __init__(self, config, widgets):
         super().__init__("Save Set")
+        self.config = config
         self.widgets = widgets
         self.pressed.connect(self.clicked)
     
@@ -21,26 +22,29 @@ class CueSaveButton(QPushButton):
         dlg.setDefaultSuffix(".cue") 
         if dlg.exec():
             with open(dlg.selectedFiles()[0], "w") as file:
-                saveCue(file, self.widgets)
+                saveCue(self.config, file, self.widgets)
         
         self.setDown(False)
 
-def saveCue(file, widgets):
+def saveCue(config, file, widgets):
+    categories = list(config["cues"]["cueOptions"])
+    file.write("cueHeaders")
+    for category in categories:
+        file.write("\t" + category)
+    file.write("\tsnippet")
+
     for cue in widgets["cues"]:
-        key = cue["key"].currentText()
-        if key == "":
-            key = "N"
-
-        lead = cue["lead"].currentText()
-        if lead == "":
-            lead = "N"
-
-        snippet = cue["snippet"].filename
-        if snippet == "":
-            snippet = "N"
-
-        file.write("\n" + "cue " + key + " " + lead + " " + snippet)
+        file.write("\n" + "cue")
+        for category in categories:
+            value = cue[category].currentText()
+            if value == "":
+                value = "N"
+            file.write("\t" + value)
+        value = cue["snippet"].filename
+        if value == "":
+            value = "N"
+        file.write("\t" + value)
     
     for fader in widgets["faders"]:
         for command in fader["commands"]:
-            file.write("\n" + "fader " + command + " " + fader["name"].text())
+            file.write("\n" + "fader\t" + command + "\t" + fader["name"].text())

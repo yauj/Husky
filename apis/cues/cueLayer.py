@@ -26,7 +26,7 @@ class CueLayer(QTabWidget):
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(CueLoadButton(self.widgets))
-        hlayout.addWidget(CueSaveButton(self.widgets))
+        hlayout.addWidget(CueSaveButton(self.config, self.widgets))
         vlayout.addLayout(hlayout)
 
         subLayer = QTabWidget()

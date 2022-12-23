@@ -89,7 +89,7 @@ class MainWindow(QMainWindow):
                     file.write("\n" + param + " " + self.widgets["connection"][param].currentText())
 
             with open("cue.cache", "w") as file:
-                saveCue(file, self.widgets)
+                saveCue(self.config, file, self.widgets)
 
         return super().closeEvent(a0)
 

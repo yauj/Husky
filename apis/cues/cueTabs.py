@@ -76,19 +76,20 @@ def cuesTriggerLayer(config, osc, widgets, prevIndex, pageIndex):
         options["label"] = QLabel(printIndex + ":")
         options["label"].setFixedWidth(20)
         hlayout.addWidget(options["label"])
-    
-        options["key"] = QComboBox()
-        options["key"].setFixedWidth(120)
-        options["key"].setPlaceholderText("Key of Song")
-        options["key"].addItem("")
-        options["key"].addItems(KEYS)
-        hlayout.addWidget(options["key"])
 
-        options["lead"] = QComboBox()
-        options["lead"].setFixedWidth(120)
-        options["lead"].setPlaceholderText("Vocal Lead")
-        options["lead"].addItems(["", "1", "2", "3", "4"])
-        hlayout.addWidget(options["lead"])
+        for category in config["cues"]["cueOptions"]:
+            items = list(config["cues"]["cueOptions"][category].keys())
+            try:
+                items.remove("RESET")
+            except ValueError:
+                pass
+            options[category] = QComboBox()
+            options[category] = QComboBox()
+            options[category].setFixedWidth(120)
+            options[category].setPlaceholderText(category)
+            options[category].addItem("")
+            options[category].addItems(items)
+            hlayout.addWidget(options[category])
 
         snippet = CueSnippetButton(config, osc)
         hlayout.addWidget(snippet)

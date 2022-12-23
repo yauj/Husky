@@ -67,6 +67,55 @@ config = {
     "cues": {
         "cuePages": 5,
         "faderPages": 5,
+        "cueOptions": {
+            "Key of Song": {
+                "RESET": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 0"],
+                "C": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 127"],
+                "Db": ["midi audio 2 100 127", "midi audio 2 101 12", "midi audio 2 102 127"],
+                "D": ["midi audio 2 100 127", "midi audio 2 101 23", "midi audio 2 102 127"],
+                "Eb": ["midi audio 2 100 127", "midi audio 2 101 35", "midi audio 2 102 127"],
+                "E": ["midi audio 2 100 127", "midi audio 2 101 46", "midi audio 2 102 127"],
+                "F": ["midi audio 2 100 127", "midi audio 2 101 58", "midi audio 2 102 127"],
+                "Gb": ["midi audio 2 100 127", "midi audio 2 101 69", "midi audio 2 102 127"],
+                "G": ["midi audio 2 100 127", "midi audio 2 101 81", "midi audio 2 102 127"],
+                "Ab": ["midi audio 2 100 127", "midi audio 2 101 92", "midi audio 2 102 127"],
+                "A": ["midi audio 2 100 127", "midi audio 2 101 104", "midi audio 2 102 127"],
+                "Bb": ["midi audio 2 100 127", "midi audio 2 101 115", "midi audio 2 102 127"],
+                "B": ["midi audio 2 100 127", "midi audio 2 101 127", "midi audio 2 102 127"],
+            },
+            "Vocal Lead": {
+                "RESET": [
+                    "foh /ch/05/mix/01/on int 1", "/ch/05/mix/02/on int 1", "/ch/05/mix/03/on int 0",
+                    "foh /ch/06/mix/01/on int 0", "/ch/06/mix/02/on int 0", "/ch/06/mix/03/on int 1",
+                    "foh /ch/07/mix/01/on int 0", "/ch/07/mix/02/on int 0", "/ch/07/mix/03/on int 1",
+                    "foh /ch/08/mix/01/on int 0", "/ch/08/mix/02/on int 0", "/ch/08/mix/03/on int 1",
+                ],
+                "1": [
+                    "foh /ch/05/mix/01/on int 1", "/ch/05/mix/02/on int 1", "/ch/05/mix/03/on int 0",
+                    "foh /ch/06/mix/01/on int 0", "/ch/06/mix/02/on int 0", "/ch/06/mix/03/on int 1",
+                    "foh /ch/07/mix/01/on int 0", "/ch/07/mix/02/on int 0", "/ch/07/mix/03/on int 1",
+                    "foh /ch/08/mix/01/on int 0", "/ch/08/mix/02/on int 0", "/ch/08/mix/03/on int 1",
+                ],
+                "2": [
+                    "foh /ch/05/mix/01/on int 0", "/ch/05/mix/02/on int 0", "/ch/05/mix/03/on int 1",
+                    "foh /ch/06/mix/01/on int 1", "/ch/06/mix/02/on int 1", "/ch/06/mix/03/on int 0",
+                    "foh /ch/07/mix/01/on int 0", "/ch/07/mix/02/on int 0", "/ch/07/mix/03/on int 1",
+                    "foh /ch/08/mix/01/on int 0", "/ch/08/mix/02/on int 0", "/ch/08/mix/03/on int 1",
+                ],
+                "3": [
+                    "foh /ch/05/mix/01/on int 0", "/ch/05/mix/02/on int 0", "/ch/05/mix/03/on int 1",
+                    "foh /ch/06/mix/01/on int 0", "/ch/06/mix/02/on int 0", "/ch/06/mix/03/on int 1",
+                    "foh /ch/07/mix/01/on int 1", "/ch/07/mix/02/on int 1", "/ch/07/mix/03/on int 0",
+                    "foh /ch/08/mix/01/on int 0", "/ch/08/mix/02/on int 0", "/ch/08/mix/03/on int 1",
+                ],
+                "4": [
+                    "foh /ch/05/mix/01/on int 0", "/ch/05/mix/02/on int 0", "/ch/05/mix/03/on int 1",
+                    "foh /ch/06/mix/01/on int 0", "/ch/06/mix/02/on int 0", "/ch/06/mix/03/on int 1",
+                    "foh /ch/07/mix/01/on int 0", "/ch/07/mix/02/on int 0", "/ch/07/mix/03/on int 1",
+                    "foh /ch/08/mix/01/on int 1", "/ch/08/mix/02/on int 1", "/ch/08/mix/03/on int 0",
+                ],
+            }
+        },
         "faders": {
             "VOX EQ": {"oscFeedback": "/-stat/userpar/29/value", "commands": ["foh /ch/05/eq/1/g 0.2 0.5"]},
             "VOX Pan": {"oscFeedback": "/-stat/userpar/30/value", "commands": ["foh /ch/06/mix/pan 0.5 0.2", "foh /ch/07/mix/pan 0.5 0.8"]},
