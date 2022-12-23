@@ -430,10 +430,11 @@ class MIDIClient(mido.Backend):
 
 # MIDI Server
 class MIDIServer(mido.Backend):
-    def __init__(self, port):
+    def __init__(self, port = None, widgets = None):
         super().__init__("mido.backends.rtmidi")
         self.ioPort = None
         self.port = port
+        self.widgets = widgets # This goes against philosophy to make servers lightweight
         self.subscriptions = {}
 
     def open_ioPort(self):
@@ -477,10 +478,43 @@ class MIDIServer(mido.Backend):
         for id in self.subscriptions:
             if message.type == "control_change" and self.subscriptions[id]["midi"]["type"] == "Control Change":
                 if message.channel == self.subscriptions[id]["midi"]["channel"] and message.control == self.subscriptions[id]["midi"]["control"]:
-                    print(message.value) # TODO: Fix this
+                    if self.subscriptions[id]["command"]["type"] == "Cue":
+                        if message.value > 0:
+                            page = self.getPageIdx(self.widgets["tabs"]["Cue"], self.subscriptions[id]["command"]["page"])
+                            if self.subscriptions[id]["command"]["index"] == "Prev Page":
+                                if page > 0:
+                                    self.widgets["tabs"]["Cue"].setCurrentIndex(page - 1)
+                            elif self.subscriptions[id]["command"]["index"] == "Next Page":
+                                if page < self.widgets["tabs"]["Cue"].count() - 1:
+                                    self.widgets["tabs"]["Cue"].setCurrentIndex(page + 1)
+                            else:
+                                idx = int(self.subscriptions[id]["command"]["index"]) - 1
+                                if idx < len(self.widgets["tabs"]["Cue"].widget(page).buttons):
+                                    self.widgets["tabs"]["Cue"].widget(page).buttons[idx].clicked()
+                    else: #Fader
+                        page = self.getPageIdx(self.widgets["tabs"]["Fader"], self.subscriptions[id]["command"]["page"])
+                        if self.subscriptions[id]["command"]["index"] == "Prev Page":
+                            if message.value > 0 and page > 0:
+                                self.widgets["tabs"]["Fader"].setCurrentIndex(page - 1)
+                        elif self.subscriptions[id]["command"]["index"] == "Next Page":
+                            if message.value > 0 and page < self.widgets["tabs"]["Fader"].count() - 1:
+                                self.widgets["tabs"]["Fader"].setCurrentIndex(page + 1)
+                        else:
+                            idx = int(self.subscriptions[id]["command"]["index"]) - 1
+                            if idx < len(self.widgets["tabs"]["Fader"].widget(page).faders):
+                                self.widgets["tabs"]["Fader"].widget(page).faders[idx].setValue(message.value) # TODO: Need to figure how to incorporate lock
             elif message.type == "note_off" or message.type == "note_on" and self.subscriptions[id]["midi"]["type"] == "Note":
                 if message.channel == self.subscriptions[id]["midi"]["channel"] and message.note == self.subscriptions[id]["midi"]["control"]:
-                    print(message.type) # TODO: Fix this
+                    print(message) # TODO: Figure out how you want to treat incoming MIDI notes
+
+    def getPageIdx(self, tabs, value):
+        if value == "CURRENT":
+            return tabs.currentIndex()
+        else:
+            for idx in range(0, tabs.count()):
+                if value == tabs.tabText(idx):
+                    return idx
+        return None
     
     def connected(self):
         return self.ioPort is not None

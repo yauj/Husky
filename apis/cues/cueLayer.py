@@ -1,9 +1,9 @@
 from apis.cues.cueClear import CueClearButton
 from apis.cues.cueLoad import CueLoadButton
 from apis.cues.cueSave import CueSaveButton
-from apis.cues.cueTabs import CueTab, cuesTriggerLayer
+from apis.cues.cueTabs import CueTab
 from apis.cues.faders.fadersReset import FadersResetButton
-from apis.cues.faders.fadersTab import FaderTab, fadersLayer
+from apis.cues.faders.fadersTab import FaderTab
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,

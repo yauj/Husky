@@ -26,7 +26,7 @@ class MidiInputsButton(QPushButton):
 
         self.osc["serverMidi"] = {}
         for name in self.config["serverMidi"]:
-            self.osc["serverMidi"][name] = MIDIServer(name)
+            self.osc["serverMidi"][name] = MIDIServer(name, widgets)
             for param in self.config["serverMidi"][name]:
                 self.osc["serverMidi"][name].addCallback(param)
     
@@ -60,7 +60,7 @@ class MidiInputDialog(QDialog):
 
         address = QComboBox()
         address.setEditable(True)
-        address.addItems(MIDIServer(None).get_ioport_names())
+        address.addItems(MIDIServer().get_ioport_names())
         address.setCurrentIndex(-1)
         
         hlayout.addWidget(address)
@@ -96,7 +96,7 @@ class AddRemoveButton(QPushButton):
     def onPressed(self):
         name = self.address.currentText()
         if self.isAdd:
-            self.osc["serverMidi"][name] = MIDIServer(name)
+            self.osc["serverMidi"][name] = MIDIServer(name, self.widgets)
             newIdx = self.tabs.count()
             self.tabs.addTab(MidiPage(self.osc, self.widgets, self.tabs, name), name)
             if (self.osc["serverMidi"][name].open_ioPort()):

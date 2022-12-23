@@ -12,7 +12,6 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-import traceback
 
 class CueTab(QTabWidget):
     def __init__(self, config, osc, widgets):
@@ -23,7 +22,7 @@ class CueTab(QTabWidget):
         self.prevIndex = [None]
         
         for i in range(0, self.config["cues"]["cuePages"]):
-            self.addTab(cuesTriggerLayer(config, osc, widgets, self.prevIndex, i), chr(97 + i))
+            self.addTab(CuesObject(config, osc, widgets, self.prevIndex, i), chr(97 + i))
             self.addAction(TabShortcut(self, chr(97 + i), i))
 
 class TabShortcut(QAction):
@@ -38,46 +37,50 @@ class TabShortcut(QAction):
     def tabChange(self):
         self.cueTab.setCurrentIndex(self.index)
 
-def cuesTriggerLayer(config, osc, widgets, prevIndex, pageIndex):
-    vlayout = QVBoxLayout()
+class CuesObject(QScrollArea):
+    def __init__(self, config, osc, widgets, prevIndex, pageIndex):
+        super().__init__()
+        self.buttons = []
 
-    for cue in range(0, 10):
-        index = (pageIndex * 10) + cue
-        printIndex = str(cue + 1)
-        options = {}
+        vlayout = QVBoxLayout()
 
-        hlayout = QHBoxLayout()
+        for cue in range(0, 10):
+            index = (pageIndex * 10) + cue
+            printIndex = str(cue + 1)
+            options = {}
 
-        options["label"] = QLabel(printIndex + ":")
-        options["label"].setFixedWidth(20)
-        hlayout.addWidget(options["label"])
+            hlayout = QHBoxLayout()
 
-        for category in config["cues"]["cueOptions"]:
-            items = list(config["cues"]["cueOptions"][category].keys())
-            try:
-                items.remove("RESET")
-            except ValueError:
-                pass
-            options[category] = QComboBox()
-            options[category].setFixedWidth(120)
-            options[category].setPlaceholderText(category)
-            options[category].addItem("")
-            options[category].addItems(items)
-            hlayout.addWidget(options[category])
+            options["label"] = QLabel(printIndex + ":")
+            options["label"].setFixedWidth(20)
+            hlayout.addWidget(options["label"])
 
-        snippet = CueSnippetButton(config, osc)
-        hlayout.addWidget(snippet)
-        options["snippet"] = snippet
+            for category in config["cues"]["cueOptions"]:
+                items = list(config["cues"]["cueOptions"][category].keys())
+                try:
+                    items.remove("RESET")
+                except ValueError:
+                    pass
+                options[category] = QComboBox()
+                options[category].setFixedWidth(120)
+                options[category].setPlaceholderText(category)
+                options[category].addItem("")
+                options[category].addItems(items)
+                hlayout.addWidget(options[category])
 
-        hlayout.addWidget(CueFireButton(config, osc, prevIndex, index, printIndex, widgets["cues"]))
+            snippet = CueSnippetButton(config, osc)
+            hlayout.addWidget(snippet)
+            options["snippet"] = snippet
 
-        vlayout.addLayout(hlayout)
-        widgets["cues"].append(options)
+            button = CueFireButton(config, osc, prevIndex, index, printIndex, widgets["cues"])
+            hlayout.addWidget(button)
+            self.buttons.append(button)
 
-    widget = QWidget()
-    widget.setLayout(vlayout)
+            vlayout.addLayout(hlayout)
+            widgets["cues"].append(options)
 
-    scroll = QScrollArea()
-    scroll.setWidget(widget)
-    scroll.setWidgetResizable(True)
-    return scroll
+        widget = QWidget()
+        widget.setLayout(vlayout)
+
+        self.setWidget(widget)
+        self.setWidgetResizable(True)

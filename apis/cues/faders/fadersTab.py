@@ -22,7 +22,7 @@ class FaderTab(QTabWidget):
         itr = enumerate(self.config["cues"]["faders"])
         
         for i in range(0, self.config["cues"]["faderPages"]):
-            self.addTab(fadersLayer(config, osc, widgets, self.index, itr), chr(97 + i))
+            self.addTab(FaderObject(config, osc, widgets, self.index, itr), chr(97 + i))
             self.addAction(TabShortcut(self, chr(97 + i), i))
 
 class TabShortcut(QAction):
@@ -37,41 +37,44 @@ class TabShortcut(QAction):
     def tabChange(self):
         self.cueTab.setCurrentIndex(self.index)
 
-def fadersLayer(config, osc, widgets, index, itr):
-    vlayout = QVBoxLayout()
+class FaderObject(QWidget):
+    def __init__(self, config, osc, widgets, index, itr):
+        super().__init__()
+        self.faders = []
+        
+        vlayout = QVBoxLayout()
 
-    hlayout = QHBoxLayout()
+        hlayout = QHBoxLayout()
 
-    for _ in range(0, 4):
-        fader = {}
-        defaultValue = None
-        oscFeedback = None
-        try:
-            _, name = itr.__next__()
-            fader["commands"] = config["cues"]["faders"][name]["commands"]
-            fader["name"] = QLineEdit(name)
-            if ("defaultValue" in config["cues"]["faders"][name]):
-                defaultValue = config["cues"]["faders"][name]["defaultValue"]
-            if ("oscFeedback" in config["cues"]["faders"][name]):
-                oscFeedback = config["cues"]["faders"][name]["oscFeedback"]
-        except StopIteration:
-            fader["commands"] = []
-            fader["name"] = QLineEdit()
+        for _ in range(0, 4):
+            fader = {}
+            defaultValue = None
+            oscFeedback = None
+            try:
+                _, name = itr.__next__()
+                fader["commands"] = config["cues"]["faders"][name]["commands"]
+                fader["name"] = QLineEdit(name)
+                if ("defaultValue" in config["cues"]["faders"][name]):
+                    defaultValue = config["cues"]["faders"][name]["defaultValue"]
+                if ("oscFeedback" in config["cues"]["faders"][name]):
+                    oscFeedback = config["cues"]["faders"][name]["oscFeedback"]
+            except StopIteration:
+                fader["commands"] = []
+                fader["name"] = QLineEdit()
 
-        fader["slider"] = FadersSlider(config, osc, fader, index[0], defaultValue, oscFeedback)
+            fader["slider"] = FadersSlider(config, osc, fader, index[0], defaultValue, oscFeedback)
+            self.faders.append(fader["slider"])
 
-        sliderLayout = QVBoxLayout()
-        sliderLayout.addWidget(fader["slider"])
-        sliderLayout.addWidget(fader["name"])
-        sliderLayout.addWidget(FadersEditButton(config, osc, fader))
+            sliderLayout = QVBoxLayout()
+            sliderLayout.addWidget(fader["slider"])
+            sliderLayout.addWidget(fader["name"])
+            sliderLayout.addWidget(FadersEditButton(config, osc, fader))
 
-        widgets["faders"].append(fader)
-        hlayout.addLayout(sliderLayout)
+            widgets["faders"].append(fader)
+            hlayout.addLayout(sliderLayout)
 
-        index[0] = index[0] + 1
+            index[0] = index[0] + 1
 
-    vlayout.addLayout(hlayout)
+        vlayout.addLayout(hlayout)
 
-    widget = QWidget()
-    widget.setLayout(vlayout)
-    return widget
+        self.setLayout(vlayout)
