@@ -46,7 +46,7 @@ class SnippetEditDialog(QDialog):
                 # Process Tags
                 tags = {}
                 self.headerLine = file.readline().strip()
-                for pair in self.headerLine.split():
+                for pair in self.headerLine.split()[1:]:
                     keyVal = pair.split("=")
                     tags[keyVal[0]] = keyVal[1]
 

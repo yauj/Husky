@@ -47,8 +47,8 @@ def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None)
         tags = {}
         replaceTags = {} # Extra tags to replace
         removeTags = {} # Commands that are to be removed
-        headerLine = scnFile.readline()
-        if headerLine.strip() != "":
+        headerLine = scnFile.readline().strip()
+        if headerLine != "":
             if chName != None:
                 # Loading to chName
                 if "channels" in config["personal"][chName]:
@@ -61,7 +61,7 @@ def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None)
                     value = "mix/" + config["personal"][chName]["iem_bus"]
                     tags[key] = value
 
-                for pair in headerLine.split():
+                for pair in headerLine.split()[1:]:
                     keyVal = pair.split("=")
                     if (keyVal[0] not in tags):
                         removeTags[keyVal[0]] = keyVal[1]
@@ -69,7 +69,7 @@ def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None)
                         replaceTags[tags[keyVal[0]]] = keyVal[1]
             else:
                 # Default to what is given in the header tags
-                for pair in headerLine.split():
+                for pair in headerLine.split()[1:]:
                     keyVal = pair.split("=")
                     tags[keyVal[0]] = keyVal[1]
 

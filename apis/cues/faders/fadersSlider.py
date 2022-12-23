@@ -89,7 +89,7 @@ class FadersSlider(QSlider):
                     containsCommand = True
 
             if not containsCommand:
-                if oldComponents[0] in ["foh", "iem", "atem"] or oldComponents in self.config["osc"]:
+                if oldComponents[0] in ["foh", "iem", "atem"] or oldComponents[0] in self.config["osc"]:
                     self.osc[oldComponents[0] + "Server"].subscription.remove(oldComponents[1])
 
         for newCommand in newCommands:

@@ -23,7 +23,7 @@ class SnippetSaveButton(QPushButton):
             with open(dlg.selectedFiles()[0], "w") as file:
                 # Write Header
                 tags = {}
-                for pair in self.headerLine.split():
+                for pair in self.headerLine.split()[1:]:
                     keyVal = pair.split("=")
                     tags[keyVal[1]] = keyVal[0]
                 file.write(self.headerLine)

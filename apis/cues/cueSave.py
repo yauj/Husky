@@ -28,7 +28,7 @@ class CueSaveButton(QPushButton):
 
 def saveCue(config, file, widgets):
     categories = list(config["cues"]["cueOptions"])
-    file.write("cueHeaders")
+    file.write("v1.0")
     for category in categories:
         file.write("\t" + category)
     file.write("\tsnippet")
@@ -47,4 +47,4 @@ def saveCue(config, file, widgets):
     
     for fader in widgets["faders"]:
         for command in fader["commands"]:
-            file.write("\n" + "fader\t" + command + "\t" + fader["name"].text())
+            file.write("\n" + "fader\t" + fader["name"].text() + "\t" + command)

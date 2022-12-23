@@ -30,7 +30,7 @@ class UpdateDialog(QDialog):
         hlayout = QHBoxLayout()
         hlayout.addWidget(QLabel("Version:"))
         branchName = QComboBox()
-        os.system("git fetch; git branch -r > update.log")
+        os.system("git fetch; git branch -r > update.log") # TODO: Figure out how to timeout git fetch call
         with open("update.log") as file:
             while (line := file.readline().strip()):
                 if " -> " not in line:

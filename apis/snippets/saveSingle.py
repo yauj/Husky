@@ -52,20 +52,19 @@ def runSingle(osc, chName, personName, config, dlg = None):
                 saveMains(osc, file, dlg)
             else:
                 # Produce Header Line
+                file.write("v1.0")
                 tags = {}
-                headersLine = []
                 if "channels" in config["personal"][chName]:
                     for idx, channel in enumerate(config["personal"][chName]["channels"]):
                         key = "<ch" + str(idx) + ">"
                         value = "/ch/" + channel
                         tags[value] = key
-                        headersLine.append(key + "=" + value)
+                        file.write(" " + key + "=" + value)
                 if "iem_bus" in config["personal"][chName]:
                     key = "<iem_bus>"
                     value = "mix/" + config["personal"][chName]["iem_bus"]
                     tags[value] = key
-                    headersLine.append(key + "=" + value)
-                file.write(" ".join(headersLine))       
+                    file.write(" " + key + "=" + value)
 
                 if "channels" in config["personal"][chName]:
                     saveChannels(osc, file, tags, config["personal"][chName]["channels"], dlg)

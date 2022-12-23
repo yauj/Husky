@@ -59,8 +59,8 @@ def loadCue(file, widgets):
                             widgets["cues"][cueIdx][categories[idx]].setCurrentText(component)
                 cueIdx = cueIdx + 1
         elif components[0] == "fader":
-            command = " ".join(components[1:5])
-            name = " ".join(components[5:])
+            name = components[1]
+            command = components[2]
             if lastFaderName != name:
                 faderIdx = faderIdx + 1
                 if faderIdx < len(widgets["faders"]):
