@@ -45,11 +45,8 @@ class CueLayer(QTabWidget):
         hlayout.addWidget(CueClearButton(self.widgets))
         vlayout.addLayout(hlayout)
 
-        if "cuePages" not in self.config["cues"] or self.config["cues"]["cuePages"] < 2:
-            self.prevIndex = [None]
-            vlayout.addWidget(cuesTriggerLayer(self.config, self.osc, self.widgets, self.prevIndex, 0))
-        else:
-            vlayout.addWidget(CueTab(self.config, self.osc, self.widgets))
+        self.widgets["tabs"]["Cue"] = CueTab(self.config, self.osc, self.widgets)
+        vlayout.addWidget(self.widgets["tabs"]["Cue"])
 
         widget = QWidget()
         widget.setLayout(vlayout)
@@ -63,10 +60,8 @@ class CueLayer(QTabWidget):
         hlayout.addWidget(FadersResetButton(self.config, self.widgets))
         vlayout.addLayout(hlayout)
 
-        if "faderPages" not in self.config["cues"] or self.config["cues"]["faderPages"] < 2:
-            vlayout.addWidget(fadersLayer(self.config, self.osc, self.widgets, [0], enumerate(self.config["cues"]["faders"])))
-        else:
-            vlayout.addWidget(FaderTab(self.config, self.widgets, self.osc))
+        self.widgets["tabs"]["Fader"] = FaderTab(self.config, self.widgets, self.osc)
+        vlayout.addWidget(self.widgets["tabs"]["Fader"])
 
         widget = QWidget()
         widget.setLayout(vlayout)

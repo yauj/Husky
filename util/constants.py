@@ -166,5 +166,3 @@ SETTINGS_MAIN = {
     ],
     "Dynamics": ["/dyn/thr", "/dyn/ratio", "/dyn/knee", "/dyn/mgain", "/dyn/attack", "/dyn/hold", "/dyn/release", "/dyn/mix"]
 }
-
-KEYS = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]

@@ -23,7 +23,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.config = config
-        self.widgets = {"connection": {}, "servers": {}, "personal": {}, "cues": [], "faders": [], "routing": {}}
+        self.widgets = {"connection": {}, "personal": {}, "tabs": {}, "cues": [], "faders": [], "routing": {}}
         self.osc = {}
         self.saveCache = True
         self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
@@ -63,9 +63,6 @@ class MainWindow(QMainWindow):
             for mixerName in self.config["osc"]:
                 if mixerName + "Client" in connections:
                     self.config["osc"][mixerName] = connections[mixerName + "Client"]
-
-            if "serverMidi" in connections:
-                self.config["serverMidi"] = connections["serverMidi"]
 
             for name in self.config["midi"]:
                 if name + "Midi" in connections:

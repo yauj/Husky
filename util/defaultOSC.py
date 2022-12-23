@@ -1,5 +1,6 @@
 from itertools import islice
 from math import ceil
+from uuid import uuid4
 import mido
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
@@ -431,35 +432,67 @@ class MIDIClient(mido.Backend):
 class MIDIServer(mido.Backend):
     def __init__(self, port):
         super().__init__("mido.backends.rtmidi")
-        self.input = None
+        self.ioPort = None
         self.port = port
-        self.callbackFunctions = []
+        self.subscriptions = {}
 
-    def open_input(self):
-        if self.input is not None:
-            self.input.close()
-            print("Stopped listening to MIDI Port " + self.port.currentText())
+    def open_ioPort(self):
+        self.close()
 
         try:
-            self.input = super().open_input(self.port.currentText())
-            self.input.callback = self.callbackFunction
-            print("Listening to MIDI Port " + self.port.currentText())
+            self.ioPort = super().open_ioport(self.port)
+            self.ioPort.input.callback = self.callbackFunction
+            print("Listening to MIDI Port " + self.port)
         except Exception as ex:
             print(ex)
-            print("Failed to connect to MIDI at " + self.port.currentText())
-            self.input = None
+            print("Failed to connect to MIDI at " + self.port)
+            self.ioPort = None
 
-        return self.input is not None
+        return self.ioPort is not None
     
-    def callback(self, function):
-        self.callbackFunctions.append(function)
+    def send(self, message):
+        if self.ioPort is not None:
+            self.ioPort.output.send(message)
+        else:
+            raise SystemError("Not Connected to MIDI Port")
+    
+    def addCallback(self, params):
+        id = str(uuid4())
+        self.subscriptions[id] = params
+        return id
+
+    def editCallback(self, id, params):
+        self.subscriptions[id] = params
+    
+    def removeCallback(self, id):
+        del self.subscriptions[id]
+    
+    def getCallback(self, id):
+        return self.subscriptions[id]
+
+    def getCallbacks(self):
+        return self.subscriptions
 
     def callbackFunction(self, message):
-        for function in self.callbackFunctions:
-            function(message)
+        for id in self.subscriptions:
+            if message.type == "control_change" and self.subscriptions[id]["midi"]["type"] == "Control Change":
+                if message.channel == self.subscriptions[id]["midi"]["channel"] and message.control == self.subscriptions[id]["midi"]["control"]:
+                    print(message.value) # TODO: Fix this
+            elif message.type == "note_off" or message.type == "note_on" and self.subscriptions[id]["midi"]["type"] == "Note":
+                if message.channel == self.subscriptions[id]["midi"]["channel"] and message.note == self.subscriptions[id]["midi"]["control"]:
+                    print(message.type) # TODO: Fix this
+    
+    def connected(self):
+        return self.ioPort is not None
+    
+    def close(self):
+        if self.ioPort is not None:
+            self.ioPort.close()
+            print("Stopped listening to MIDI Port " + self.port)
+            self.ioPort = None
 
-    def get_input_names(self):
-        return set(super().get_input_names())
+    def get_ioport_names(self):
+        return set(super().get_ioport_names())
 
 # MIDI Virtual Port
 class MIDIVirtualPort(mido.Backend):

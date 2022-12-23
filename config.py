@@ -4,7 +4,6 @@ config = {
         "iem": "10.246.1.15"
     },
     "atemPort": "3333",
-    "serverMidi": "X-USB",
     "midi": {
         "audio": {
             "default": "X32Helper",
@@ -21,6 +20,90 @@ config = {
             "type": "note",
             "defaultChannel": 15
         },
+    },
+    "serverMidi": {
+        "X-USB": [
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 0},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "1"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 1},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "2"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 2},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "3"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 3},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "4"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 4},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "5"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 5},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "6"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 6},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "7"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 7},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "8"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 8},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "9"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 9},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "10"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 10},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "Prev Page"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 11},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "Next Page"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 12},
+                "command": {"type": "Cue", "page": "a", "index": "1"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 13},
+                "command": {"type": "Cue", "page": "a", "index": "2"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 14},
+                "command": {"type": "Cue", "page": "a", "index": "3"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 15},
+                "command": {"type": "Cue", "page": "a", "index": "4"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 16},
+                "command": {"type": "Cue", "page": "b", "index": "1"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 17},
+                "command": {"type": "Cue", "page": "b", "index": "2"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 18},
+                "command": {"type": "Cue", "page": "b", "index": "3"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 19},
+                "command": {"type": "Cue", "page": "b", "index": "4"}
+            }
+        ]
     },
     "personal": {
         "DPA": {

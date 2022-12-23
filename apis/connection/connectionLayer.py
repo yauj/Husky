@@ -1,7 +1,7 @@
 from apis.connection.connectAtem import ConnectAtemButton
 from apis.connection.connectOSC import ConnectOscButton
 from apis.connection.connectMIDI import ConnectMidiButton
-from apis.connection.listenMIDI import ListenMidiButton
+from apis.connection.listenMIDI import MidiInputsButton
 from PyQt6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -52,21 +52,6 @@ class ConnectionLayer(QWidget):
 
         vlayout.addLayout(hlayout)
 
-        # TODO: Add ability to have multiple MIDI Inputs
-        hlayout = QHBoxLayout()
-        label = QLabel("MIDI Input: ")
-        label.setFixedWidth(150)
-        hlayout.addWidget(label)
-
-        address = AddressBox(self.config["serverMidi"])
-        self.widgets["connection"]["serverMidi"] = address
-        
-        hlayout.addWidget(address)
-        hlayout.addWidget(address.status)
-        hlayout.addWidget(ListenMidiButton(self.osc, address))
-
-        vlayout.addLayout(hlayout)
-        
         for name in self.config["midi"]:
             hlayout = QHBoxLayout()
             label = QLabel(name.capitalize() + " MIDI: ")
@@ -81,6 +66,8 @@ class ConnectionLayer(QWidget):
             hlayout.addWidget(ConnectMidiButton(self.osc, name, address))
 
             vlayout.addLayout(hlayout)
+
+        vlayout.addWidget(MidiInputsButton(self.config, self.osc, self.widgets))
 
         self.setLayout(vlayout)
 

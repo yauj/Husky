@@ -13,7 +13,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 import traceback
-from util.constants import KEYS
 
 class CueTab(QTabWidget):
     def __init__(self, config, osc, widgets):
@@ -26,30 +25,6 @@ class CueTab(QTabWidget):
         for i in range(0, self.config["cues"]["cuePages"]):
             self.addTab(cuesTriggerLayer(config, osc, widgets, self.prevIndex, i), chr(97 + i))
             self.addAction(TabShortcut(self, chr(97 + i), i))
-
-        self.osc["serverMidi"].callback(self.callbackFunction)
-
-    def callbackFunction(self, message):
-        if message.channel == 4 and message.value > 0:
-            if message.control >= 0 and message.control < 10:
-                index = (self.currentIndex() * 10) + message.control
-                try:
-                    main(
-                        self.osc,
-                        self.prevIndex,
-                        index,
-                        self.widgets["cues"]
-                    )
-                    
-                    print("Cue " + chr(97 + self.currentIndex()) + str(message.control + 1) + " Fired")
-                except Exception:
-                    print(traceback.format_exc())
-            elif message.control == 10:
-                self.setCurrentIndex(self.currentIndex() - 1)
-            elif message.control == 11:
-                self.setCurrentIndex(self.currentIndex() + 1)
-            elif message.control == 12 and message.value <= self.config["cues"]["cuePages"]:
-                self.setCurrentIndex(message.value - 1)
 
 class TabShortcut(QAction):
     def __init__(self, cueTab, page, index):
@@ -83,7 +58,6 @@ def cuesTriggerLayer(config, osc, widgets, prevIndex, pageIndex):
                 items.remove("RESET")
             except ValueError:
                 pass
-            options[category] = QComboBox()
             options[category] = QComboBox()
             options[category].setFixedWidth(120)
             options[category].setPlaceholderText(category)

@@ -32,13 +32,6 @@ class FadersSlider(QSlider):
         if defaultValue:
             self.setValue(defaultValue)
 
-        self.osc["serverMidi"].callback(self.midiInput)
-
-    def midiInput(self, message):
-        if message.channel == 4 and message.control == 13 + self.index: # TODO: Generalize this, be able to map input midi.
-            if self.lock.acquire("midi"):
-                self.setValue(message.value)
-    
     # TODO: What happens if a command is in multiple faders? Right now will just override
     def processSubscription(self, mixerName, message, arg):
         idx, components = self.getLineComponents(mixerName, message)
@@ -125,9 +118,10 @@ class FadersSlider(QSlider):
             
             # Change X32 User Encoder MIDI Knob
             # TODO: Add MIDI feedback
-            if self.lock.owner != "midi": # Don't loopback if MIDI is source of input
-                if self.osc["serverMidi"].input is not None and self.oscFeedback is not None: # Is source of midi input and has OSC feedback command
-                    self.osc["fohClient"].send_message(self.oscFeedback, value)
+# TODO: TEMP DISABLE
+#            if self.lock.owner != "midi": # Don't loopback if MIDI is source of input
+#                if self.osc["serverMidi"].input is not None and self.oscFeedback is not None: # Is source of midi input and has OSC feedback command
+#                    self.osc["fohClient"].send_message(self.oscFeedback, value)
         except Exception:
             # Fail Quietly
             print(traceback.format_exc())
