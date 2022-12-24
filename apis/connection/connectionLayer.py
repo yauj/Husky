@@ -67,7 +67,7 @@ class ConnectionLayer(QWidget):
 
             vlayout.addLayout(hlayout)
 
-        vlayout.addWidget(MidiInputsButton(self.config, self.osc, self.widgets))
+        vlayout.addWidget(MidiInputsButton(self.osc, self.widgets))
 
         self.setLayout(vlayout)
 

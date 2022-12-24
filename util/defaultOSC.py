@@ -446,7 +446,7 @@ class MIDIServer(mido.Backend):
             print("Listening to MIDI Port " + self.port)
         except Exception as ex:
             print(ex)
-            print("Failed to connect to MIDI at " + self.port)
+            print("Failed to listen to MIDI at " + self.port)
             self.ioPort = None
 
         return self.ioPort is not None

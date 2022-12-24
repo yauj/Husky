@@ -17,19 +17,12 @@ from util.defaultOSC import MIDIServer
 from util.lock import OwnerLock
 
 class MidiInputsButton(QPushButton):
-    def __init__(self, config, osc, widgets):
+    def __init__(self, osc, widgets):
         super().__init__("Edit MIDI Inputs")
-        self.config = config
         self.osc = osc
         self.widgets = widgets
         self.pressed.connect(self.clicked)
 
-        self.osc["serverMidi"] = {}
-        for name in self.config["serverMidi"]:
-            self.osc["serverMidi"][name] = MIDIServer(name, widgets)
-            for param in self.config["serverMidi"][name]:
-                self.osc["serverMidi"][name].addCallback(param)
-    
     def clicked(self):
         MidiInputDialog(self.osc, self.widgets).exec()
         self.setDown(False)
@@ -45,8 +38,6 @@ class MidiInputDialog(QDialog):
         for idx, name in enumerate(self.osc["serverMidi"]):
             self.tabs.addTab(MidiPage(self.osc, self.widgets, self.tabs, name), name)
             if (self.osc["serverMidi"][name].connected()):
-                self.tabs.tabBar().setTabTextColor(idx, QColor(0, 255, 0))
-            elif self.osc["serverMidi"][name].open_ioPort():
                 self.tabs.tabBar().setTabTextColor(idx, QColor(0, 255, 0))
             else:
                 self.tabs.tabBar().setTabTextColor(idx, QColor(255, 0, 0))
@@ -79,6 +70,7 @@ class AddRemoveButton(QPushButton):
         self.tabs = tabs
         self.address = address
         self.isAdd = True
+        self.setEnabled(False)
         
         self.address.currentTextChanged.connect(self.updateButton)
 
@@ -86,6 +78,8 @@ class AddRemoveButton(QPushButton):
         self.setFixedWidth(80)
     
     def updateButton(self, name):
+        self.setEnabled(name != "")
+
         if getTabIndex(self.tabs, name) is None:
             self.isAdd = True
             self.setText("Add")

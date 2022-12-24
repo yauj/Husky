@@ -16,7 +16,7 @@ from PyQt6.QtWidgets import (
     QTabWidget,
 )
 import sys
-from util.defaultOSC import MIDIVirtualPort
+from util.defaultOSC import MIDIServer, MIDIVirtualPort
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -24,7 +24,7 @@ class MainWindow(QMainWindow):
 
         self.config = config
         self.widgets = {"connection": {}, "personal": {}, "tabs": {}, "cues": [], "faders": [], "routing": {}}
-        self.osc = {}
+        self.osc = {"serverMidi": {}}
         self.saveCache = True
         self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
 
@@ -67,6 +67,30 @@ class MainWindow(QMainWindow):
             for name in self.config["midi"]:
                 if name + "Midi" in connections:
                     self.config["midi"][name]["default"] = connections[name + "Midi"]
+            
+        if os.path.exists("serverMidi.cache"):
+            with open("serverMidi.cache") as file:
+                portName = None
+                file.readline() # Skip Header Line
+                while (line := file.readline().strip()):
+                    components = line.split("\t")
+                    if components[0] != portName:
+                        portName = components[0]
+                        self.osc["serverMidi"][portName] = MIDIServer(portName, self.widgets)
+                        self.osc["serverMidi"][portName].open_ioPort()
+                    param = {
+                        "midi": {"type": components[1], "channel": int(components[2]), "control": int(components[3])},
+                        "command": {"type": components[4], "page": components[5], "index": components[6]}
+                    }
+                    self.osc["serverMidi"][portName].addCallback(param)
+        else:
+            # Load Default
+            for portName in config["serverMidi"]:
+                self.osc["serverMidi"][portName] = MIDIServer(portName, self.widgets)
+                for param in config["serverMidi"][portName]:
+                    self.osc["serverMidi"][portName].addCallback(param)
+                self.osc["serverMidi"][portName].open_ioPort()
+        
 
     # Load Cue Cache
     def loadCueCache(self):
@@ -82,8 +106,19 @@ class MainWindow(QMainWindow):
 
         if self.saveCache:
             with open("connection.cache", "w") as file:
+                file.write("v1.0")
                 for param in self.widgets["connection"]:
                     file.write("\n" + param + " " + self.widgets["connection"][param].currentText())
+
+            with open("serverMidi.cache", "w") as file:
+                file.write("v1.0")
+                for portName in self.osc["serverMidi"]:
+                    callbacks = self.osc["serverMidi"][portName].getCallbacks()
+                    for id in callbacks:
+                        file.write("\n" + portName 
+                            + "\t" + callbacks[id]["midi"]["type"] + "\t" + str(callbacks[id]["midi"]["channel"]) + "\t" + str(callbacks[id]["midi"]["control"])
+                            + "\t" + callbacks[id]["command"]["type"] + "\t" + callbacks[id]["command"]["page"] + "\t" + callbacks[id]["command"]["index"]
+                        )
 
             with open("cue.cache", "w") as file:
                 saveCue(self.config, file, self.widgets)
