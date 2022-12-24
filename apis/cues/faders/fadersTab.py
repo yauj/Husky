@@ -22,7 +22,7 @@ class FaderTab(QTabWidget):
         itr = enumerate(self.config["cues"]["faders"])
         
         for i in range(0, self.config["cues"]["faderPages"]):
-            self.addTab(FaderObject(config, osc, widgets, self.index, itr), chr(97 + i))
+            self.addTab(FaderObject(config, osc, widgets, chr(97 + i), self.index, itr), chr(97 + i))
             self.addAction(TabShortcut(self, chr(97 + i), i))
 
 class TabShortcut(QAction):
@@ -38,7 +38,7 @@ class TabShortcut(QAction):
         self.cueTab.setCurrentIndex(self.index)
 
 class FaderObject(QWidget):
-    def __init__(self, config, osc, widgets, index, itr):
+    def __init__(self, config, osc, widgets, page, index, itr):
         super().__init__()
         self.faders = []
         
@@ -46,7 +46,7 @@ class FaderObject(QWidget):
 
         hlayout = QHBoxLayout()
 
-        for _ in range(0, 4):
+        for pageIdx in range(0, 4):
             fader = {}
             defaultValue = None
             oscFeedback = None
@@ -62,7 +62,7 @@ class FaderObject(QWidget):
                 fader["commands"] = []
                 fader["name"] = QLineEdit()
 
-            fader["slider"] = FadersSlider(config, osc, fader, index[0], defaultValue, oscFeedback)
+            fader["slider"] = FadersSlider(config, osc, fader, page, pageIdx, index[0], defaultValue, oscFeedback)
             self.faders.append(fader["slider"])
 
             sliderLayout = QVBoxLayout()

@@ -6,12 +6,14 @@ import traceback
 from util.lock import OwnerLock
 
 class FadersSlider(QSlider):
-    def __init__(self, config, osc, fader, index, defaultValue, oscFeedback):
+    def __init__(self, config, osc, fader, page, pageIdx, index, defaultValue, oscFeedback):
         super().__init__()
 
         self.config = config
         self.osc = osc
         self.fader = fader
+        self.page = page
+        self.pageIdx = pageIdx
         self.index = index
         self.oscFeedback = oscFeedback # MIDI knob on X32 is controlled through OSC, not MIDI
 
@@ -116,12 +118,19 @@ class FadersSlider(QSlider):
                         if components[0] in ["foh", "iem", "atem"] or components[0] in self.config["osc"]:
                             self.osc[components[0] + "Client"].send_message(components[1], arg)
             
+            # MIDI Feedback
+            components = self.lock.owner.split()
+            ogId = None
+            if len(components) >= 2:
+                if components[0] == "midi":
+                    ogId = components[1]
+            for portName in self.osc["serverMidi"]:
+                self.osc["serverMidi"][portName].processFeedback(self.page, str(self.pageIdx + 1), value, ogId)
+
             # Change X32 User Encoder MIDI Knob
-            # TODO: Add MIDI feedback
-# TODO: TEMP DISABLE
-#            if self.lock.owner != "midi": # Don't loopback if MIDI is source of input
-#                if self.osc["serverMidi"].input is not None and self.oscFeedback is not None: # Is source of midi input and has OSC feedback command
-#                    self.osc["fohClient"].send_message(self.oscFeedback, value)
+            if len(components) >= 3:
+                if components[0] != "midi" or components[2] != "X-USB" and self.oscFeedback is not None:
+                    self.osc["fohClient"].send_message(self.oscFeedback, value)
         except Exception:
             # Fail Quietly
             print(traceback.format_exc())

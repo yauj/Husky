@@ -451,12 +451,6 @@ class MIDIServer(mido.Backend):
 
         return self.ioPort is not None
     
-    def send(self, message):
-        if self.ioPort is not None:
-            self.ioPort.output.send(message)
-        else:
-            raise SystemError("Not Connected to MIDI Port")
-    
     def addCallback(self, params):
         id = str(uuid4())
         self.subscriptions[id] = params
@@ -491,7 +485,7 @@ class MIDIServer(mido.Backend):
                                 idx = int(self.subscriptions[id]["command"]["index"]) - 1
                                 if idx < len(self.widgets["tabs"]["Cue"].widget(page).buttons):
                                     self.widgets["tabs"]["Cue"].widget(page).buttons[idx].clicked()
-                    else: #Fader
+                    elif self.subscriptions[id]["command"]["type"] == "Fader":
                         page = self.getPageIdx(self.widgets["tabs"]["Fader"], self.subscriptions[id]["command"]["page"])
                         if self.subscriptions[id]["command"]["index"] == "Prev Page":
                             if message.value > 0 and page > 0:
@@ -502,10 +496,43 @@ class MIDIServer(mido.Backend):
                         else:
                             idx = int(self.subscriptions[id]["command"]["index"]) - 1
                             if idx < len(self.widgets["tabs"]["Fader"].widget(page).faders):
-                                self.widgets["tabs"]["Fader"].widget(page).faders[idx].setValue(message.value) # TODO: Need to figure how to incorporate lock
-            elif message.type == "note_off" or message.type == "note_on" and self.subscriptions[id]["midi"]["type"] == "Note":
-                if message.channel == self.subscriptions[id]["midi"]["channel"] and message.note == self.subscriptions[id]["midi"]["control"]:
-                    print(message) # TODO: Figure out how you want to treat incoming MIDI notes
+                                fader = self.widgets["tabs"]["Fader"].widget(page).faders[idx]
+                                if fader.lock.acquire("midi " + id + " " + self.port):
+                                    fader.setValue(message.value)
+            elif message.type == "note_on" and self.subscriptions[id]["midi"]["type"] == "Note":
+                # Only support cues
+                if message.channel == self.subscriptions[id]["midi"]["channel"] \
+                    and message.note == self.subscriptions[id]["midi"]["control"] \
+                    and self.subscriptions[id]["command"]["type"] == "Cue":
+                        page = self.getPageIdx(self.widgets["tabs"]["Cue"], self.subscriptions[id]["command"]["page"])
+                        if self.subscriptions[id]["command"]["index"] == "Prev Page":
+                            if page > 0:
+                                self.widgets["tabs"]["Cue"].setCurrentIndex(page - 1)
+                        elif self.subscriptions[id]["command"]["index"] == "Next Page":
+                            if page < self.widgets["tabs"]["Cue"].count() - 1:
+                                self.widgets["tabs"]["Cue"].setCurrentIndex(page + 1)
+                        else:
+                            idx = int(self.subscriptions[id]["command"]["index"]) - 1
+                            if idx < len(self.widgets["tabs"]["Cue"].widget(page).buttons):
+                                self.widgets["tabs"]["Cue"].widget(page).buttons[idx].clicked()
+
+    # Only support feedback for fader
+    def processFeedback(self, page, index, value, ogId = None):
+        if self.ioPort is not None:
+            for id in self.subscriptions:
+                if ogId != id \
+                    and self.subscriptions[id]["command"]["type"] == "Fader" \
+                    and self.subscriptions[id]["command"]["index"] == index:
+                        if self.subscriptions[id]["command"]["page"] == page \
+                            or (self.subscriptions[id]["command"]["page"] == "CURRENT" and self.widgets["tabs"]["Fader"].currentIndex() == page):
+                            channel = self.subscriptions[id]["midi"]["channel"]
+                            control = self.subscriptions[id]["midi"]["control"]
+                            if self.subscriptions[id]["midi"]["type"] == "Control Change":
+                                type = "control_change"
+                                self.ioPort.output.send(mido.Message(type = type, channel = channel, control = control, value = value))
+                            elif self.subscriptions[id]["midi"]["type"] == "Note":
+                                type = "note_off" if value == 0 else "note_on"
+                                self.ioPort.output.send(mido.Message(type = type, channel = channel, note = control))
 
     def getPageIdx(self, tabs, value):
         if value == "CURRENT":
