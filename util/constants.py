@@ -16,6 +16,11 @@ AUX_CHANNELS = [
     "/auxin/01", "/auxin/02", "/auxin/03", "/auxin/04", "/auxin/05", "/auxin/06", "/auxin/07", "/auxin/08",
     "/fxrtn/01", "/fxrtn/02", "/fxrtn/03", "/fxrtn/04", "/fxrtn/05", "/fxrtn/06", "/fxrtn/07", "/fxrtn/08"
 ]
+HEADAMP_CHANNELS = {
+    "Local": ["{:03d}".format(idx) for idx in range(0, 32)],
+    "AES-A": ["{:03d}".format(idx) for idx in range(32, 80)],
+    "AES-B": ["{:03d}".format(idx) for idx in range(80, 128)]
+}
 LINK_CHANNELS = [
     "1-2", "3-4", "5-6", "7-8", "9-10", "11-12", "13-14", "15-16",
     "17-18", "19-20", "21-22", "23-24", "25-26", "27-28", "29-30", "31-32"
