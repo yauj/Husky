@@ -8,7 +8,7 @@ from util.customWidgets import ProgressDialog
 
 class ResetButton(QPushButton):
     def __init__(self, config, osc):
-        super().__init__("Reset Channel Mute, Pan, Fader to Default")
+        super().__init__("Reset Faders to Default")
         self.config = config
         self.osc = osc
         self.pressed.connect(self.clicked)

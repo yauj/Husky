@@ -82,7 +82,9 @@ class GainDialog(QDialog):
 
         for idx, channel in enumerate(HEADAMP_CHANNELS[type]):
             vlayout = QVBoxLayout()
-            vlayout.addWidget(QLabel(str(idx + 1)))
+            label = QLabel(str(idx + 1))
+            label.setFixedHeight(35)
+            vlayout.addWidget(label)
             vlayout.addWidget(PhantomBox(self.osc, mixerName, initValues, channel))
             vlayout.addWidget(GainSlider(self.osc, mixerName, initValues, channel))
             hlayout.addLayout(vlayout)
@@ -92,6 +94,7 @@ class GainDialog(QDialog):
         scroll = QScrollArea()
         scroll.setWidget(widget)
         scroll.setWidgetResizable(True)
+        scroll.setMinimumHeight(450)
         return scroll
 
 class PhantomBox(QWidget):
@@ -110,6 +113,7 @@ class PhantomBox(QWidget):
         layout.addWidget(QLabel("48V: "))
         layout.addWidget(self.box)
         self.setLayout(layout)
+        self.setFixedHeight(35)
     
     def onClicked(self, checked):
         try:
@@ -136,12 +140,13 @@ class GainSlider(QWidget):
 
         self.slider = QSlider()
 
-        self.slider.setRange(0, (self.MAX - self.MIN) * self.STEP)
+        self.slider.setRange(0, (self.MAX - self.MIN) / self.STEP)
         self.slider.setSingleStep(1)
         self.slider.setTickInterval(24)
-        self.slider.setTickPosition(QSlider.TickPosition.TicksRight)
+        self.slider.setTickPosition(QSlider.TickPosition.TicksLeft)
         self.slider.setValue(round(initValues[self.command] * (self.MAX - self.MIN) * self.STEP))
         self.slider.valueChanged.connect(self.onSliderValueChange)
+        self.slider.setMinimumWidth(20)
 
         self.box = QDoubleSpinBox()
         self.box.setRange(self.MIN, self.MAX)

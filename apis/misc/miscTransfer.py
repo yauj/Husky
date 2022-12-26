@@ -7,7 +7,7 @@ from util.customWidgets import ProgressDialog
 
 class TransferButton(QPushButton):
     def __init__(self, config, osc):
-        super().__init__("Transfer Channel Labeling, EQ, Compression, Mute settings from FOH to IEM Mixer")
+        super().__init__("Transfer Settings from FOH to IEM Mixer")
         self.config = config
         self.osc = osc
         self.pressed.connect(self.clicked)
