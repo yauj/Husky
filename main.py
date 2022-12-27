@@ -1,4 +1,5 @@
 from apis.connection.connectionLayer import ConnectionLayer
+from apis.connection.listenMIDI import loadMidi, saveMidi
 from apis.cues.cueLayer import CueLayer
 from apis.cues.cueLoad import loadCue
 from apis.cues.cueSave import saveCue
@@ -24,7 +25,7 @@ class MainWindow(QMainWindow):
 
         self.config = config
         self.widgets = {"connection": {}, "personal": {}, "tabs": {}, "cues": [], "faders": [], "routing": {}}
-        self.osc = {"serverMidi": {}}
+        self.osc = {}
         self.saveCache = True
         self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
 
@@ -70,21 +71,10 @@ class MainWindow(QMainWindow):
             
         if os.path.exists("serverMidi.cache"):
             with open("serverMidi.cache") as file:
-                portName = None
-                file.readline() # Skip Header Line
-                while (line := file.readline().strip()):
-                    components = line.split("\t")
-                    if components[0] != portName:
-                        portName = components[0]
-                        self.osc["serverMidi"][portName] = MIDIServer(portName, self.widgets)
-                        self.osc["serverMidi"][portName].open_ioPort()
-                    param = {
-                        "midi": {"type": components[1], "channel": int(components[2]), "control": int(components[3])},
-                        "command": {"type": components[4], "page": components[5], "index": components[6]}
-                    }
-                    self.osc["serverMidi"][portName].addCallback(param)
+                loadMidi(file, self.osc, self.widgets)
         else:
             # Load Default
+            self.osc["serverMidi"] = {}
             for portName in config["serverMidi"]:
                 self.osc["serverMidi"][portName] = MIDIServer(portName, self.widgets)
                 for param in config["serverMidi"][portName]:
@@ -111,14 +101,7 @@ class MainWindow(QMainWindow):
                     file.write("\n" + param + " " + self.widgets["connection"][param].currentText())
 
             with open("serverMidi.cache", "w") as file:
-                file.write("v1.0")
-                for portName in self.osc["serverMidi"]:
-                    callbacks = self.osc["serverMidi"][portName].getCallbacks()
-                    for id in callbacks:
-                        file.write("\n" + portName 
-                            + "\t" + callbacks[id]["midi"]["type"] + "\t" + str(callbacks[id]["midi"]["channel"]) + "\t" + str(callbacks[id]["midi"]["control"])
-                            + "\t" + callbacks[id]["command"]["type"] + "\t" + callbacks[id]["command"]["page"] + "\t" + callbacks[id]["command"]["index"]
-                        )
+                saveMidi(file, self.osc)
 
             with open("cue.cache", "w") as file:
                 saveCue(self.config, file, self.widgets)

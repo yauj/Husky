@@ -1,8 +1,9 @@
-from uuid import uuid4
+from datetime import date, timedelta
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
+    QFileDialog,
     QHBoxLayout,
     QLabel,
     QMessageBox,
@@ -15,6 +16,7 @@ from PyQt6.QtWidgets import (
 )
 from util.defaultOSC import MIDIServer
 from util.lock import OwnerLock
+from uuid import uuid4
 
 class MidiInputsButton(QPushButton):
     def __init__(self, osc, widgets):
@@ -35,12 +37,7 @@ class MidiInputDialog(QDialog):
 
         # Init Tabs
         self.tabs = QTabWidget()
-        for idx, name in enumerate(self.osc["serverMidi"]):
-            self.tabs.addTab(MidiPage(self.osc, self.widgets, self.tabs, name), name)
-            if (self.osc["serverMidi"][name].connected()):
-                self.tabs.tabBar().setTabTextColor(idx, QColor(0, 255, 0))
-            else:
-                self.tabs.tabBar().setTabTextColor(idx, QColor(255, 0, 0))
+        initTabs(self.osc, self.widgets, self.tabs)
 
         vlayout = QVBoxLayout()
 
@@ -59,6 +56,12 @@ class MidiInputDialog(QDialog):
 
         vlayout.addLayout(hlayout)
         vlayout.addWidget(self.tabs)
+
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(MidiLoadButton(self.osc, self.widgets, self.tabs))
+        hlayout.addWidget(MidiSaveButton(self.osc))
+        vlayout.addLayout(hlayout)
+
         self.setLayout(vlayout)
         self.setMinimumSize(930, 380)
 
@@ -396,3 +399,87 @@ def getTabIndex(tabs, name):
         if name == tabs.tabText(idx):
             return idx
     return None
+
+class MidiLoadButton(QPushButton):
+    def __init__(self, osc, widgets, tabs):
+        super().__init__("Load MIDI Config")
+        self.osc = osc
+        self.widgets = widgets
+        self.tabs = tabs
+        self.pressed.connect(self.clicked)
+    
+    def clicked(self):
+        dlg = QFileDialog()
+        dlg.setWindowTitle("Load MIDI Config")
+        dlg.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
+        dlg.setDirectory("data")
+        dlg.setNameFilter("*.midi")
+        if dlg.exec():
+            with open(dlg.selectedFiles()[0]) as file:
+                loadMidi(file, self.osc, self.widgets)
+            initTabs(self.osc, self.widgets, self.tabs)
+        
+        self.setDown(False)
+
+class MidiSaveButton(QPushButton):
+    def __init__(self, osc):
+        super().__init__("Save MIDI Config")
+        self.osc = osc
+        self.pressed.connect(self.clicked)
+    
+    def clicked(self):
+        nextSun = (date.today() + timedelta(6 - date.today().weekday())).strftime("%Y%m%d")
+
+        dlg = QFileDialog()
+        dlg.setWindowTitle("Save MIDI Config")
+        dlg.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        dlg.setDirectory("data")
+        dlg.selectFile(nextSun + "_SWS.midi")
+        dlg.setDefaultSuffix(".midi") 
+        if dlg.exec():
+            with open(dlg.selectedFiles()[0], "w") as file:
+                saveMidi(file, self.osc)
+        
+        self.setDown(False)
+
+def loadMidi(file, osc, widgets):
+    if "serverMidi" in osc:
+        for portName in osc["serverMidi"]:
+            osc["serverMidi"][portName].close()
+    
+    osc["serverMidi"] = {}
+
+    portName = None
+    file.readline() # Skip Header Line
+    while (line := file.readline().strip()):
+        components = line.split("\t")
+        if components[0] != portName:
+            portName = components[0]
+            osc["serverMidi"][portName] = MIDIServer(portName, widgets)
+            osc["serverMidi"][portName].open_ioPort()
+        param = {
+            "midi": {"type": components[1], "channel": int(components[2]), "control": int(components[3])},
+            "command": {"type": components[4], "page": components[5], "index": components[6]}
+        }
+        osc["serverMidi"][portName].addCallback(param)
+
+def saveMidi(file, osc):
+    file.write("v1.0")
+    for portName in osc["serverMidi"]:
+        callbacks = osc["serverMidi"][portName].getCallbacks()
+        for id in callbacks:
+            file.write("\n" + portName 
+                + "\t" + callbacks[id]["midi"]["type"] + "\t" + str(callbacks[id]["midi"]["channel"]) + "\t" + str(callbacks[id]["midi"]["control"])
+                + "\t" + callbacks[id]["command"]["type"] + "\t" + callbacks[id]["command"]["page"] + "\t" + callbacks[id]["command"]["index"]
+            )
+
+def initTabs(osc, widgets, tabs):
+    while(tabs.count() > 0):
+        tabs.removeTab(0)
+
+    for idx, name in enumerate(osc["serverMidi"]):
+        tabs.addTab(MidiPage(osc, widgets, tabs, name), name)
+        if (osc["serverMidi"][name].connected()):
+            tabs.tabBar().setTabTextColor(idx, QColor(0, 255, 0))
+        else:
+            tabs.tabBar().setTabTextColor(idx, QColor(255, 0, 0))
