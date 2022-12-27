@@ -23,7 +23,7 @@ class UpdateDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
         isApp = None
-        exStr = ""
+        exStr = None
         
         if os.path.exists("pyinstaller.sh"): # In Main Directory
             isApp = False
@@ -33,14 +33,18 @@ class UpdateDialog(QDialog):
             exStr = "Not in valid Directory"
 
         try:
-            subprocess.check_output("git fetch", timeout = 10.0)
+            subprocess.check_output("git fetch", shell = True, stderr = subprocess.STDOUT, timeout = 10.0)
+        except subprocess.CalledProcessError as ex:
+            exStr = ex.output.decode("utf-8")
+        except subprocess.TimeoutExpired as ex:
+            exStr = "Timed out waiting to fetch latest code. Check Internet Connection."
         except Exception as ex:
             exStr = str(ex)
 
         if exStr is None:
             vlayout = QVBoxLayout()
 
-            vlayout.addWidget(QLabel("Update App to Latest Version (Expect this to take long)"))
+            vlayout.addWidget(QLabel("Update App to Latest Version"))
 
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("Version:"))
@@ -69,7 +73,7 @@ class UpdateDialog(QDialog):
 
 class UpdateButton(QPushButton):
     def __init__(self, parent, branchName, isApp):
-        super().__init__("Update", parent)
+        super().__init__("Update (Expect this to take approx 1 minute)", parent)
         self.parent = parent
         self.branchName = branchName
         self.isApp = isApp
