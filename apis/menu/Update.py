@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
 )
+import subprocess
 
 class UpdateApp(QAction):
     def __init__(self, parent):
@@ -22,19 +23,21 @@ class UpdateDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
         isApp = None
+        exStr = ""
         
         if os.path.exists("pyinstaller.sh"): # In Main Directory
             isApp = False
         elif os.path.exists("../../../../pyinstaller.sh"): # In Dist Directory
             isApp = True
         else:
-            vlayout = QVBoxLayout()
-            label = QLabel("Unable to Update")
-            label.setStyleSheet("color:red")
-            vlayout.addWidget(label)
-            self.setLayout(vlayout)
-        
-        if isApp is not None:
+            exStr = "Not in valid Directory"
+
+        try:
+            subprocess.check_output("git fetch", timeout = 10.0)
+        except Exception as ex:
+            exStr = str(ex)
+
+        if exStr is None:
             vlayout = QVBoxLayout()
 
             vlayout.addWidget(QLabel("Update App to Latest Version (Expect this to take long)"))
@@ -42,7 +45,7 @@ class UpdateDialog(QDialog):
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("Version:"))
             branchName = QComboBox()
-            os.system("git fetch; git branch -r > update.log") # TODO: Figure out how to timeout git fetch call
+            os.system("git branch -r > update.log")
             with open("update.log") as file:
                 while (line := file.readline().strip()):
                     if " -> " not in line:
@@ -56,6 +59,12 @@ class UpdateDialog(QDialog):
 
             vlayout.addWidget(UpdateButton(parent, branchName, isApp))
 
+            self.setLayout(vlayout)
+        else:
+            vlayout = QVBoxLayout()
+            label = QLabel("Unable to Update")
+            label.setStyleSheet("color:red")
+            vlayout.addWidget(label)
             self.setLayout(vlayout)
 
 class UpdateButton(QPushButton):
