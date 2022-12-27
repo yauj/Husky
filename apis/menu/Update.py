@@ -71,14 +71,15 @@ class UpdateButton(QPushButton):
         statusCode = os.system("git switch " + self.branchName.currentText())
         
         if statusCode == 0:
+            if self.isApp:
+                os.system("../../../../pyinstaller.sh")
+            else:
+                os.system("./pyinstaller.sh")
+
             dlg = QMessageBox(self.parent)
             dlg.setWindowTitle("Update App")
             dlg.setText("App Updated. Quitting App now. Please open again.")
             if dlg.exec():
-                if self.isApp:
-                    os.system("../../../../pyinstaller.sh")
-                else:
-                    os.system("./pyinstaller.sh")
                 os._exit(os.EX_OK)
         else:
             dlg = QMessageBox(self.parent)
