@@ -24,5 +24,5 @@ class ClearCache(QAction):
         else:
             dlg = QMessageBox(self.s)
             dlg.setWindowTitle("Clear Cache")
-            dlg.setText("Error Updating. Please check logs for details: \nscreen -r X32Helper")
+            dlg.setText("Error Updating. Please check logs for details: \nscreen -r Husky")
             dlg.exec()

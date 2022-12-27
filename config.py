@@ -6,7 +6,7 @@ config = {
     "atemPort": "3333",
     "midi": {
         "audio": {
-            "default": "X32Helper",
+            "default": "Husky",
             "type": "cc",
             "defaultChannel": 2
         },

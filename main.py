@@ -29,7 +29,7 @@ class MainWindow(QMainWindow):
         self.saveCache = True
         self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
 
-        self.setWindowTitle("X32 Helper")
+        self.setWindowTitle("Husky")
 
         self.loadConnectionCache()
 
@@ -44,7 +44,7 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(tabs)
         
-        menu = self.menuBar().addMenu("&X32 Helper")
+        menu = self.menuBar().addMenu("&Husky")
         prevCmdMenu = menu.addMenu("Undo Previous Commands")
         for mixerName in self.config["osc"]:
             prevCmdMenu.addAction(UndoCommands(self, self.osc, mixerName))

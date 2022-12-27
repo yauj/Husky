@@ -1,9 +1,9 @@
 # x32-scripts
 Custom scripts for X32
 
-Run the following: `python3 __main__.py`
+Run the following: `python3 main.py`
 
-For Macs, just open `X32Helper.app`.
+For Macs, just open `Husky.app`.
 
 ## config.py
 
@@ -23,7 +23,7 @@ This contains the name of the name of the default port to listen to, for incomin
 
 ### midi
 
-These are the default MIDI ports to connect to for each particular category of midi commands. Note that `X32Helper` is a virtual MIDI port that is opened by this application that can be used by all programs on the computer running this app.
+These are the default MIDI ports to connect to for each particular category of midi commands. Note that `Husky` is a virtual MIDI port that is opened by this application that can be used by all programs on the computer running this app.
 
 #### default
 
@@ -99,7 +99,7 @@ There are 3 different options to fire cues:
 
 1. Press the "Fire" button next to the cue
 2. Use cmd+\<cue number\> to fire that numbered cue (Note that Cue 10 is fired by cmd+0. Also cmd+\<page name\> will change pages)
-3. Send a MIDI cue to the X32Helper port, where channel=5, control=\<cue number - 1\> and value=127 (Also, control=10 moves to previous page, control=11 moves to next page and control=12 moves to page specified by \<value\>)
+3. Send a MIDI cue, as configured in the `MIDI Input` page in the connection tab.
 
 ## Dependencies:
 
@@ -119,10 +119,7 @@ Then after completing the post completion steps of homebrew:
 brew install git
 brew install python
 python3 -m ensurepip --upgrade
-pip3 install python-osc
-pip3 install mido
-pip3 install python-rtmidi
-pip3 install PyQt6
+pip3 install -r requirements.txt
 ```
 
 ## X32 OSC Commands Reference File

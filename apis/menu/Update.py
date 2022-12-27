@@ -66,5 +66,5 @@ class UpdateButton(QPushButton):
         else:
             dlg = QMessageBox(self.parent)
             dlg.setWindowTitle("Update App")
-            dlg.setText("Error Updating. Please check logs for details: \nscreen -r X32Helper")
+            dlg.setText("Error Updating. Please check logs for details: \nscreen -r Husky")
             dlg.exec()
