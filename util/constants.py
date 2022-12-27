@@ -1,3 +1,5 @@
+VERSION = "v1.0" # Version of the app. Should be itereated on each major update.
+
 MIXER_TYPE = "X32" # Options: X32, XR18
 PORT = 10023 if MIXER_TYPE == "X32" else 10024
 START_PORT = 10000 # Ports: 10000 - AtemServer; 10001 - 10010 - bulk_send_message; 10011 - fohServer; 10012 - fohServer.subscription; 10013 - iemServer; 10014 - iemServer.subscription

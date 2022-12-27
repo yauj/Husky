@@ -3,6 +3,7 @@ from apis.connection.listenMIDI import loadMidi, saveMidi
 from apis.cues.cueLayer import CueLayer
 from apis.cues.cueLoad import loadCue
 from apis.cues.cueSave import saveCue
+from apis.menu.About import About
 from apis.menu.ClearCache import ClearCache
 from apis.menu.UndoCommands import UndoCommands
 from apis.menu.Update import UpdateApp
@@ -45,6 +46,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(tabs)
         
         menu = self.menuBar().addMenu("&Menu")
+        menu.addAction(About(self))
         prevCmdMenu = menu.addMenu("Undo Previous Commands")
         for mixerName in self.config["osc"]:
             prevCmdMenu.addAction(UndoCommands(self, self.osc, mixerName))
