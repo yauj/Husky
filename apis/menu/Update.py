@@ -62,7 +62,7 @@ class UpdateDialog(QDialog):
             self.setLayout(vlayout)
         else:
             vlayout = QVBoxLayout()
-            label = QLabel("Unable to Update")
+            label = QLabel(exStr)
             label.setStyleSheet("color:red")
             vlayout.addWidget(label)
             self.setLayout(vlayout)
