@@ -82,7 +82,6 @@ class MainWindow(QMainWindow):
                 for param in config["serverMidi"][portName]:
                     self.osc["serverMidi"][portName].addCallback(param)
                 self.osc["serverMidi"][portName].open_ioPort()
-        
 
     # Load Cue Cache
     def loadCueCache(self):

@@ -21,7 +21,6 @@ class TalkbackButton(QPushButton):
         TalkbackDialog(self.config, self.osc).exec()
         self.setDown(False)
 
-# TODO: Figure out how to not have button picked by default
 class TalkbackDialog(QDialog):
     def __init__(self, config, osc):
         super().__init__()

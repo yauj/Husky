@@ -34,7 +34,6 @@ class FadersSlider(QSlider):
         if defaultValue:
             self.setValue(defaultValue)
 
-    # TODO: What happens if a command is in multiple faders? Right now will just override
     def processSubscription(self, mixerName, message, arg):
         idx, components = self.getLineComponents(mixerName, message)
 
@@ -84,7 +83,7 @@ class FadersSlider(QSlider):
                     containsCommand = True
 
             if not containsCommand:
-                if oldComponents[0] in ["foh", "iem", "atem"] or oldComponents[0] in self.config["osc"]:
+                if oldComponents[0] in ["foh", "iem"] or oldComponents[0] in self.config["osc"]:
                     self.osc[oldComponents[0] + "Server"].subscription.remove(oldComponents[1])
 
         for newCommand in newCommands:
@@ -97,7 +96,7 @@ class FadersSlider(QSlider):
                     containsCommand = True
 
             if not containsCommand:
-                if newComponents[0] in ["foh", "iem", "atem"] or newComponents[0] in self.config["osc"]:
+                if newComponents[0] in ["foh", "iem"] or newComponents[0] in self.config["osc"]:
                     self.osc[newComponents[0] + "Server"].subscription.add(newComponents[1], self.processSubscription)
 
     def onValueChange(self, value):

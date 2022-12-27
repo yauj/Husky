@@ -1,9 +1,8 @@
-import mido
+from apis.snippets.loadSingle import fireLines
 from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
-from apis.snippets.loadSingle import fireLines
 from util.customWidgets import ProgressDialog
 
 class ResetButton(QPushButton):
@@ -21,7 +20,7 @@ class ResetButton(QPushButton):
 
     def main(self, dlg):
         try:
-            dlg.initBar.emit(len(self.config["resetCommands"])) # TODO: [Low Priority] Add the osc commands in cueOptions
+            dlg.initBar.emit(len(self.config["resetCommands"]))
 
             self.osc["fohClient"].bulk_send_messages(self.config["resetCommands"], dlg)
 
