@@ -13,7 +13,7 @@ class ClearCache(QAction):
         self.triggered.connect(self.main)
 
     def main(self):
-        statusCode = os.system("rm ./*.cache")
+        statusCode = os.system("rm ./data/*.cache")
         
         if statusCode == 0:
             self.s.saveCache = False

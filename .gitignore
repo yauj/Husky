@@ -7,6 +7,10 @@ __pycache__/
 .DS_Store
 .vscode
 
+# App Installation
+build/
+dist/
+
 # Custom File Suffixes
 *.osc
 *.cue

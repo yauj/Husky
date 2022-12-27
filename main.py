@@ -44,7 +44,7 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(tabs)
         
-        menu = self.menuBar().addMenu("&Husky")
+        menu = self.menuBar().addMenu("&Menu")
         prevCmdMenu = menu.addMenu("Undo Previous Commands")
         for mixerName in self.config["osc"]:
             prevCmdMenu.addAction(UndoCommands(self, self.osc, mixerName))
@@ -53,9 +53,9 @@ class MainWindow(QMainWindow):
     
     # Load Connection Cache
     def loadConnectionCache(self):
-        if os.path.exists("connection.cache"):
+        if os.path.exists("data/connection.cache"):
             connections = {}
-            with open("connection.cache") as file:
+            with open("data/connection.cache") as file:
                 file.readline() # Skip Header Line
                 while (line := file.readline().strip()):
                     components = line.split()
@@ -69,8 +69,8 @@ class MainWindow(QMainWindow):
                 if name + "Midi" in connections:
                     self.config["midi"][name]["default"] = connections[name + "Midi"]
             
-        if os.path.exists("serverMidi.cache"):
-            with open("serverMidi.cache") as file:
+        if os.path.exists("data/serverMidi.cache"):
+            with open("data/serverMidi.cache") as file:
                 loadMidi(file, self.osc, self.widgets)
         else:
             # Load Default
@@ -84,8 +84,8 @@ class MainWindow(QMainWindow):
 
     # Load Cue Cache
     def loadCueCache(self):
-        if os.path.exists("cue.cache"):
-            with open("cue.cache") as file:
+        if os.path.exists("data/cue.cache"):
+            with open("data/cue.cache") as file:
                 loadCue(file, self.widgets)
 
     # Save Cache
@@ -95,20 +95,23 @@ class MainWindow(QMainWindow):
         self.osc["atemServer"].shutdown()
 
         if self.saveCache:
-            with open("connection.cache", "w") as file:
+            with open("data/connection.cache", "w") as file:
                 file.write("v1.0")
                 for param in self.widgets["connection"]:
                     file.write("\n" + param + " " + self.widgets["connection"][param].currentText())
 
-            with open("serverMidi.cache", "w") as file:
+            with open("data/serverMidi.cache", "w") as file:
                 saveMidi(file, self.osc)
 
-            with open("cue.cache", "w") as file:
+            with open("data/cue.cache", "w") as file:
                 saveCue(self.config, file, self.widgets)
 
         return super().closeEvent(a0)
 
 faulthandler.enable()
+os.chdir(os.path.dirname(__file__))
+if len(sys.argv) == 0: # So that we're able to test locally
+    os.chdir("../Resources")
 app = QApplication(sys.argv)
 window = MainWindow()
 window.resize(599, 599)

@@ -2,6 +2,7 @@ from itertools import islice
 from math import ceil
 from uuid import uuid4
 import mido
+import mido.backends.rtmidi # For PyInstaller
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer, ThreadingOSCUDPServer
