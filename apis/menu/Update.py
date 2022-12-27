@@ -37,7 +37,7 @@ class UpdateDialog(QDialog):
         if isApp is not None:
             vlayout = QVBoxLayout()
 
-            vlayout.addWidget(QLabel("Update App to Latest Version"))
+            vlayout.addWidget(QLabel("Update App to Latest Version (Expect this to take long)"))
 
             hlayout = QHBoxLayout()
             hlayout.addWidget(QLabel("Version:"))
@@ -84,5 +84,5 @@ class UpdateButton(QPushButton):
         else:
             dlg = QMessageBox(self.parent)
             dlg.setWindowTitle("Update App")
-            dlg.setText("Error Updating. Please check logs for details: \nscreen -r Husky")
+            dlg.setText("Error Updating. Please check logs for details.")
             dlg.exec()
