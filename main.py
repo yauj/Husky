@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
 
 faulthandler.enable()
 os.chdir(os.path.dirname(__file__))
-if len(sys.argv) == 0: # So that we're able to test locally
+if not os.path.exists("pyinstaller.sh"): # Not in Main Directory
     os.chdir("../Resources")
 app = QApplication(sys.argv)
 window = MainWindow()

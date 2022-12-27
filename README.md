@@ -1,7 +1,7 @@
 # x32-scripts
 Custom scripts for X32
 
-Run the following: `python3 main.py test`
+Run the following: `python3 main.py`
 
 For Macs, run `./pyinstller.sh` to create `Husky.app` within the `dist` directory.
 
