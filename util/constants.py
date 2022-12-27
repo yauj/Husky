@@ -1,4 +1,4 @@
-VERSION = "v1.0" # Version of the app. Should be itereated on each major update.
+VERSION = "v1.0.0" # Version of the app. Should be itereated on each major update.
 
 MIXER_TYPE = "X32" # Options: X32, XR18
 PORT = 10023 if MIXER_TYPE == "X32" else 10024
