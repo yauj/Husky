@@ -4,7 +4,7 @@ from PyQt6.QtGui import (
 from PyQt6.QtWidgets import (
     QMessageBox,
 )
-from util.constants import MIXER_TYPE, VERSION
+from util.constants import VERSION
 
 class About(QAction):
     def __init__(self, s):
@@ -13,6 +13,6 @@ class About(QAction):
 
         dlg = QMessageBox(self.s)
         dlg.setWindowTitle("About Husky")
-        dlg.setText("Version: " + VERSION + "; Mixer: " + MIXER_TYPE)
+        dlg.setText("Version: " + VERSION)
 
         self.triggered.connect(dlg.exec)

@@ -7,14 +7,13 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from util.constants import MIXER_TYPE
 
 class MiscLayer(QWidget):
     def __init__(self, config, widgets, osc):
         super().__init__()
 
         vlayout = QVBoxLayout()
-        if MIXER_TYPE == "X32":
+        if osc["fohClient"].mixerType == "X32":
             vlayout.addWidget(TalkbackButton(config, osc))
             if "iem" in config["osc"]:
                 vlayout.addWidget(TransferButton(config, osc))

@@ -1,5 +1,5 @@
 from apis.connection.connectAtem import ConnectAtemButton
-from apis.connection.connectOSC import ConnectOscButton
+from apis.connection.connectOSC import OscHLayout
 from apis.connection.connectMIDI import ConnectMidiButton
 from apis.connection.listenMIDI import MidiInputsButton
 from PyQt6.QtWidgets import (
@@ -21,22 +21,8 @@ class ConnectionLayer(QWidget):
         vlayout = QVBoxLayout()
 
         validIPs = AvailableIPs().get()
-
         for idx, mixerName in enumerate(self.config["osc"]):
-            hlayout = QHBoxLayout()
-
-            label = QLabel(mixerName.upper() + " Mixer IP Address:" if "iem" in self.config["osc"] else "Mixer IP Address:")
-            label.setFixedWidth(150)
-            hlayout.addWidget(label)
-
-            address = AddressBox(self.config["osc"][mixerName], validIPs)
-            self.widgets["connection"][mixerName + "Client"] = address
-            
-            hlayout.addWidget(address) 
-            hlayout.addWidget(address.status) 
-            hlayout.addWidget(ConnectOscButton(self.osc, address, mixerName, idx, self.widgets, "iem" not in self.config["osc"]))
-
-            vlayout.addLayout(hlayout)
+            vlayout.addLayout(OscHLayout(self.config, self.osc, self.widgets, mixerName, idx, validIPs, "iem" not in self.config["osc"]))
         
         hlayout = QHBoxLayout()
         label = QLabel("AtemOSC Port:")

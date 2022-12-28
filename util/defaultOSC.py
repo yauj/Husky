@@ -9,14 +9,15 @@ from pythonosc.osc_server import BlockingOSCUDPServer, ThreadingOSCUDPServer
 import socket
 import threading
 from time import time, sleep
-from util.constants import MIDI_SERVER_NAME, NUM_THREADS, PORT, START_PORT
+from util.constants import MIDI_SERVER_NAME, NUM_THREADS, START_PORT, getPort
 
 # Simple Client that has logic, since testing client has logic
 class SimpleClient(SimpleUDPClient):
-    def __init__(self, name, ipAddress, parent = True):
-        super().__init__(ipAddress, PORT)
+    def __init__(self, name, ipAddress, mixerType, parent = True):
+        super().__init__(ipAddress, getPort(mixerType))
         self.name = name
         self.ipAddress = ipAddress
+        self.mixerType = mixerType
         self.parent = parent
         self.connected = False
         self.prevSettings = None # Previous settings before last bulk send command was fired.
@@ -34,15 +35,15 @@ class SimpleClient(SimpleUDPClient):
 
         if self.parent:
             if self.connected:
-                print("Connected to " + self.name.upper() + " at " + self.ipAddress)
+                print("Connected to " + self.name.upper() + " at " + self.ipAddress + ":" + str(getPort(self.mixerType)))
             else:
-                print("Failed to connect to " + self.name.upper() + " at " + self.ipAddress)
+                print("Failed to connect to " + self.name.upper() + " at " + self.ipAddress + ":" + str(getPort(self.mixerType)))
         
         if server.subscription is not None:
             if self.connected:
-                server.subscription.initIpAddress(self.ipAddress)
+                server.subscription.initIpAddress(self.ipAddress, getPort(self.mixerType))
             else:
-                server.subscription.initIpAddress(None)
+                server.subscription.initIpAddress(None, None)
 
         return self.connected
 
@@ -116,7 +117,7 @@ class SimpleClient(SimpleUDPClient):
     
     def child(self, index, addresses, results, progressDialog = None):
         with RetryingServer(START_PORT + 1 + index) as server:
-            client = SimpleClient(self.name, self.ipAddress, False)
+            client = SimpleClient(self.name, self.ipAddress, self.mixerType, False)
             client._sock = server.socket
             for address in addresses:
                 client.send_message(address, addresses[address])
@@ -133,7 +134,7 @@ class SimpleClient(SimpleUDPClient):
         for address in fadeAddresses:
             fadeAddresses[address]["endFired"] = 0 # Number of times end command was fired
 
-        client = SimpleClient(self.name, self.ipAddress, False)
+        client = SimpleClient(self.name, self.ipAddress, self.mixerType, False)
         startTime = time()
         while len(fadeAddresses) > 0:
             for address in fadeAddresses.copy():
@@ -214,15 +215,17 @@ class SubscriptionServer(ThreadingOSCUDPServer):
 
         self.mixerName = mixerName
         self.ipAddress = None
+        self.ipPort = None
         self.subscriptions = {}
         self.activeSubscriptions = {} # Internal
         self.shutdownFlag = False
         threading.Thread(target = self.serve_forever).start()
         threading.Thread(target = self.renewThread).start()
 
-    def initIpAddress(self, ipAddress):
+    def initIpAddress(self, ipAddress, ipPort):
         self.activeSubscriptions = {} # Kill all current renewals
         self.ipAddress = ipAddress
+        self.ipPort = ipPort
         if self.ipAddress is not None:
             threading.Thread(target = self.subscribeThread).start()
     
@@ -237,7 +240,7 @@ class SubscriptionServer(ThreadingOSCUDPServer):
     def add(self, address, command):
         self.subscriptions[address] = command
         if self.ipAddress is not None:
-            client = SimpleUDPClient(self.ipAddress, PORT)
+            client = SimpleUDPClient(self.ipAddress, self.ipPort)
             client._sock = self.socket
             client.send_message("/subscribe", address)
             self.activeSubscriptions[address] = command
@@ -259,7 +262,7 @@ class SubscriptionServer(ThreadingOSCUDPServer):
         args = args.copy()
         startTime = time()
         if self.ipAddress is not None and len(args) > 0:
-            client = SimpleUDPClient(self.ipAddress, PORT)
+            client = SimpleUDPClient(self.ipAddress, self.ipPort)
             client._sock = self.socket
             sleepTime = 4.0 / len(args) # Spread out commands across approx 4.0 seconds
             for arg in args:
@@ -284,6 +287,12 @@ class SubscriptionServer(ThreadingOSCUDPServer):
 
 class AvailableIPs:
     def get(self):
+        return {
+            "X32": self.getMixer("X32"),
+            "X-Air": self.getMixer("XR18")
+        }
+
+    def getMixer(self, mixerType):
         self.validIPs = []
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             s.settimeout(0.1)
@@ -295,7 +304,7 @@ class AvailableIPs:
 
                 threads = []
                 for index in range(0, NUM_THREADS):
-                    th = threading.Thread(target = self.child, args = (index,))
+                    th = threading.Thread(target = self.child, args = (index, mixerType))
                     th.start()
                     threads.append(th)
 
@@ -309,7 +318,7 @@ class AvailableIPs:
                     with RetryingServer(START_PORT + 1) as server:
                         server.timeout = 0.1
                         ip = "0.0.0.0"
-                        client = SimpleClient("Test", ip, False)
+                        client = SimpleClient("Test", ip, mixerType, False)
                         if client.connect(server):
                             return [ip]
                         else:
@@ -317,14 +326,14 @@ class AvailableIPs:
                 else:
                     raise ex
     
-    def child(self, index):
+    def child(self, index, mixerType):
         with RetryingServer(START_PORT + 1 + index) as server:
             server.timeout = 0.1
             for i in range(index, 256, NUM_THREADS):
                 ip = self.prefix + str(i)
                 if ip == self.thisIp:
                     ip = "0.0.0.0"
-                client = SimpleClient("Test", ip, False)
+                client = SimpleClient("Test", ip, mixerType, False)
                 if client.connect(server):
                     self.validIPs.append(ip)
 

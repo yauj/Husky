@@ -1,10 +1,17 @@
 VERSION = "v1.0.0" # Version of the app. Should be itereated on each major update.
 
-MIXER_TYPE = "X32" # Options: X32, XR18
-PORT = 10023 if MIXER_TYPE == "X32" else 10024
+VALID_MIXER_TYPES = ["X32", "XR18", "XR16", "XR12"]
 START_PORT = 10000 # Ports: 10000 - AtemServer; 10001 - 10010 - bulk_send_message; 10011 - fohServer; 10012 - fohServer.subscription; 10013 - iemServer; 10014 - iemServer.subscription
 NUM_THREADS = 10
 MIDI_SERVER_NAME = "Husky"
+
+def getPort(mixerType):
+    if mixerType in ["X32"]:
+        return 10023
+    elif mixerType in ["XR18", "XR16", "XR12"]:
+        return 10024
+    else:
+        raise LookupError("Invalid Mixer Type")
 
 ALL_CHANNELS = [
     "/ch/01", "/ch/02", "/ch/03", "/ch/04", "/ch/05", "/ch/06", "/ch/07", "/ch/08",
@@ -22,7 +29,7 @@ HEADAMP_CHANNELS = {
     "Local": ["{:03d}".format(idx) for idx in range(0, 32)],
     "AES-A": ["{:03d}".format(idx) for idx in range(32, 80)],
     "AES-B": ["{:03d}".format(idx) for idx in range(80, 128)]
-}
+} # Only valid for X32 Mixers
 LINK_CHANNELS = [
     "1-2", "3-4", "5-6", "7-8", "9-10", "11-12", "13-14", "15-16",
     "17-18", "19-20", "21-22", "23-24", "25-26", "27-28", "29-30", "31-32"
@@ -31,6 +38,7 @@ LINK_CHANNELS = [
 ALL_BUSES = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"]
 ODD_BUSES = ["01", "03", "05", "07", "09", "11", "13", "15"]
 
+# Only Valid for X32
 BANKS_32 = ["1-8", "9-16", "17-24", "25-32"]
 BANKS_48 = ["1-8", "9-16", "17-24", "25-32", "33-40", "41-48"]
 BANKS_16 = ["1-4", "5-8", "9-12", "13-16"]

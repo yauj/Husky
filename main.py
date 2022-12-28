@@ -55,21 +55,22 @@ class MainWindow(QMainWindow):
     
     # Load Connection Cache
     def loadConnectionCache(self):
-        if os.path.exists("data/connection.cache"):
-            connections = {}
-            with open("data/connection.cache") as file:
-                file.readline() # Skip Header Line
-                while (line := file.readline().strip()):
-                    components = line.split()
-                    connections[components[0]] = " ".join(components[1:])
-            
-            for mixerName in self.config["osc"]:
-                if mixerName + "Client" in connections:
-                    self.config["osc"][mixerName] = connections[mixerName + "Client"]
-
-            for name in self.config["midi"]:
-                if name + "Midi" in connections:
-                    self.config["midi"][name]["default"] = connections[name + "Midi"]
+        # TODO: Replace this with saving and reloading self.config into config.cache
+        #if os.path.exists("data/connection.cache"):
+        #    connections = {}
+        #    with open("data/connection.cache") as file:
+        #        file.readline() # Skip Header Line
+        #        while (line := file.readline().strip()):
+        #            components = line.split()
+        #           connections[components[0]] = " ".join(components[1:])
+        #    
+        #    for mixerName in self.config["osc"]:
+        #        if mixerName + "Client" in connections:
+        #            self.config["osc"][mixerName] = connections[mixerName + "Client"]
+        #
+        #    for name in self.config["midi"]:
+        #        if name + "Midi" in connections:
+        #            self.config["midi"][name]["default"] = connections[name + "Midi"]
             
         if os.path.exists("data/serverMidi.cache"):
             with open("data/serverMidi.cache") as file:
@@ -96,10 +97,10 @@ class MainWindow(QMainWindow):
         self.osc["atemServer"].shutdown()
 
         if self.saveCache:
-            with open("data/connection.cache", "w") as file:
-                file.write("v1.0")
-                for param in self.widgets["connection"]:
-                    file.write("\n" + param + " " + self.widgets["connection"][param].currentText())
+            #with open("data/connection.cache", "w") as file:
+            #    file.write("v1.0")
+            #    for param in self.widgets["connection"]:
+            #        file.write("\n" + param + " " + self.widgets["connection"][param].currentText())
 
             with open("data/serverMidi.cache", "w") as file:
                 saveMidi(file, self.osc)

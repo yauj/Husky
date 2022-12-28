@@ -1,4 +1,3 @@
-from constants import PORT
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import ThreadingOSCUDPServer
 from pythonosc.udp_client import SimpleUDPClient
@@ -9,7 +8,7 @@ class X32Emulator():
     def __init__(self):
         dispatcher = Dispatcher()
         dispatcher.set_default_handler(self.loopbackHandler, True)
-        self.server = ThreadingOSCUDPServer(("0.0.0.0", PORT), dispatcher)
+        self.server = ThreadingOSCUDPServer(("0.0.0.0", 10023), dispatcher)
         print("Server Started for port " + str(self.server.server_address))
 
     def start(self):

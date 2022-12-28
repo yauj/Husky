@@ -1,5 +1,6 @@
-# x32-scripts
-Custom scripts for X32
+# Husky
+
+Custom scripts for osc mixers.
 
 Run the following: `python3 main.py`
 
