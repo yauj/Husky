@@ -1,17 +1,17 @@
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import ThreadingOSCUDPServer
 from pythonosc.udp_client import SimpleUDPClient
+import sys
 
 DEBUG = False
 
 class X32Emulator():
-    def __init__(self):
+    def __init__(self, port):
         dispatcher = Dispatcher()
         dispatcher.set_default_handler(self.loopbackHandler, True)
-        self.server = ThreadingOSCUDPServer(("0.0.0.0", 10023), dispatcher)
+        self.server = ThreadingOSCUDPServer(("0.0.0.0", port), dispatcher)
         print("Server Started for port " + str(self.server.server_address))
 
-    def start(self):
         try:
             self.server.serve_forever()
         finally:
@@ -32,4 +32,7 @@ class X32Emulator():
             client.send_message(address, 0.0)
             if DEBUG: print(f"Sending {address}: 0.0")
 
-X32Emulator().start()
+if len(sys.argv) > 1:
+    X32Emulator(int(sys.argv[1]))
+else:
+    X32Emulator(10023)

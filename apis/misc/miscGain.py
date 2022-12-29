@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 import traceback
-from util.constants import getHeadampChannels
+from util.constants import VALID_IEM_MIXER_TYPES, getHeadampChannels
 
 class GainButton(QPushButton):
     def __init__(self, config, widgets, osc):
@@ -37,9 +37,8 @@ class GainDialog(QDialog):
 
         vlayout = QVBoxLayout()
 
-        if len(self.config["osc"]) == 1:
-            for mixerName in self.config["osc"]:
-                vlayout.addWidget(self.gainTabLayer(mixerName)) 
+        if len(self.config["osc"]) == 1 or self.osc["fohClient"].mixerType not in VALID_IEM_MIXER_TYPES:
+            vlayout.addWidget(self.gainTabLayer("foh")) 
         else:
             tabs = QTabWidget()
             for mixerName in self.config["osc"]:
@@ -50,7 +49,7 @@ class GainDialog(QDialog):
 
     def gainTabLayer(self, mixerName):
         try:
-            headampChannels = getHeadampChannels(self.osc[mixerName].mixerType)
+            headampChannels = getHeadampChannels(self.osc[mixerName + "Client"].mixerType)
 
             initValues = getCurrentGain(self.osc, mixerName, headampChannels)
             
@@ -86,8 +85,17 @@ class GainDialog(QDialog):
             vlayout = QVBoxLayout()
             label = QLabel(str(idx + 1))
             label.setFixedHeight(35)
+
+            box = PhantomBox(self.osc, mixerName, initValues, channel)
+            if self.osc[mixerName + "Client"].mixerType == "XR16":
+                if idx >= 8:
+                    box.setEnabled(False)
+            elif self.osc[mixerName + "Client"].mixerType == "XR12":
+                if idx >= 4:
+                    box.setEnabled(False)
+
             vlayout.addWidget(label)
-            vlayout.addWidget(PhantomBox(self.osc, mixerName, initValues, channel))
+            vlayout.addWidget(box)
             vlayout.addWidget(GainSlider(self.osc, mixerName, initValues, channel))
             hlayout.addLayout(vlayout)
 
@@ -126,6 +134,9 @@ class PhantomBox(QWidget):
             dlg.setWindowTitle("Preamp Gain")
             dlg.setText("Error: " + str(ex))
             dlg.exec()
+    
+    def setEnabled(self, enable):
+        self.box.setEnabled(enable)
 
 class GainSlider(QWidget):
     MIN = -12.0
