@@ -28,8 +28,8 @@ class OscHLayout(QHBoxLayout):
         self.addWidget(self.label)
 
         self.currentState = {
-            "type": config["osc"][mixerName]["type"],
-            "ip": config["osc"][mixerName]["ip"],
+            "type": "",
+            "ip": "",
             "statusText": "",
             "statusStyle": ""
         }
@@ -50,12 +50,13 @@ class OscHLayout(QHBoxLayout):
         self.mixerType.setCurrentText(config["osc"][mixerName]["type"])
         self.mixerType.currentTextChanged.connect(self.onMixerChange)
         self.mixerType.setFixedWidth(80)
-        self.reinitOptions()
 
         self.connectButton = QPushButton("Connect")
         self.init()
         self.connectButton.pressed.connect(self.connect)
         self.connectButton.setFixedWidth(80)
+
+        self.reinitOptions()
 
         self.addWidget(self.mixerType)
         self.addWidget(self.address)
@@ -104,16 +105,27 @@ class OscHLayout(QHBoxLayout):
         self.connectButton.setDown(False)
 
     def init(self):
-        self.currentState["type"] = self.mixerType.currentText()
-        self.currentState["ip"] = self.address.currentText()
-
         self.osc[self.mixerName + "Client"] = SimpleClient(self.mixerName, self.address.currentText(), self.mixerType.currentText())
         if self.mixerName == "foh" and "iem" not in self.config["osc"]:
             self.osc["iemClient"] = self.osc["fohClient"]
         
         if self.otherLayouts is not None:
             for layout in self.otherLayouts:
-                layout.iemSetEnabled(self.currentState)
+                layout.iemSetEnabled(self.mixerType.currentText(), self.address.currentText())
+
+            if self.mixerType.currentText() in VALID_IEM_MIXER_TYPES:
+                self.widgets["misc"]["routing"].setEnabled(True)
+                if "iem" in self.config["osc"]:
+                    self.widgets["misc"]["transfer"].setEnabled(True)
+                self.widgets["misc"]["talkback"].setEnabled(True)
+            else:
+                self.widgets["misc"]["routing"].setEnabled(False)
+                if "iem" in self.config["osc"]:
+                    self.widgets["misc"]["transfer"].setEnabled(False)
+                self.widgets["misc"]["talkback"].setEnabled(False)
+
+        self.currentState["type"] = self.mixerType.currentText()
+        self.currentState["ip"] = self.address.currentText()
 
         if (self.osc[self.mixerName + "Client"].connect(self.osc[self.mixerName + "Server"])):
             self.currentState["statusText"] = "Connected!"
@@ -128,16 +140,16 @@ class OscHLayout(QHBoxLayout):
             self.status.setStyleSheet(self.currentState["statusStyle"])
             return False
     
-    def iemSetEnabled(self, fohCurrentState):
-        if fohCurrentState["type"] in VALID_IEM_MIXER_TYPES:
+    def iemSetEnabled(self, type, ip):
+        if type in VALID_IEM_MIXER_TYPES:
             if self.mixerType.currentIndex() == -1:
                 self.mixerType.setEnabled(True)
                 self.address.setEnabled(True)
                 self.connectButton.setEnabled(True)
 
                 self.label.setStyleSheet("")
-                self.mixerType.setCurrentText(fohCurrentState["type"])
-                self.address.setCurrentText(fohCurrentState["ip"])
+                self.mixerType.setCurrentText(type)
+                self.address.setCurrentText(ip)
                 self.init()
         else:
             self.mixerType.setEnabled(False)

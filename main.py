@@ -25,7 +25,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.config = config
-        self.widgets = {"connection": {}, "personal": {}, "tabs": {}, "cues": [], "faders": [], "routing": {}}
+        self.widgets = {"connection": {}, "personal": {}, "tabs": {}, "cues": [], "faders": [], "routing": {}, "misc": {}}
         self.osc = {}
         self.saveCache = True
         self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
@@ -35,11 +35,13 @@ class MainWindow(QMainWindow):
         self.loadConnectionCache()
 
         tabs = QTabWidget()
+        
+        miscLayer = MiscLayer(self.config, self.widgets, self.osc)
 
         tabs.addTab(ConnectionLayer(self.config, self.widgets, self.osc), "Connections")
         tabs.addTab(SnippetsLayer(self.config, self.widgets, self.osc), "Snippets")
         tabs.addTab(CueLayer(self.config, self.widgets, self.osc), "Cues")
-        tabs.addTab(MiscLayer(self.config, self.widgets, self.osc), "Misc")
+        tabs.addTab(miscLayer, "Misc")
 
         self.loadCueCache()
 

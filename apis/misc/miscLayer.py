@@ -13,11 +13,15 @@ class MiscLayer(QWidget):
         super().__init__()
 
         vlayout = QVBoxLayout()
-        if osc["fohClient"].mixerType == "X32":
-            vlayout.addWidget(TalkbackButton(config, osc))
-            if "iem" in config["osc"]:
-                vlayout.addWidget(TransferButton(config, osc))
-            vlayout.addWidget(RoutingButton(config, widgets, osc))
+
+        widgets["misc"]["talkback"] = TalkbackButton(config, osc)
+        widgets["misc"]["transfer"] = TransferButton(config, osc)
+        widgets["misc"]["routing"] = RoutingButton(config, widgets, osc)
+
+        vlayout.addWidget(widgets["misc"]["talkback"])
+        if "iem" in config["osc"]:
+            vlayout.addWidget(widgets["misc"]["transfer"])
+        vlayout.addWidget(widgets["misc"]["routing"])
         vlayout.addWidget(GainButton(config, widgets, osc))
         vlayout.addWidget(ResetButton(config, osc))
 
