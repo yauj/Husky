@@ -21,9 +21,19 @@ class ConnectionLayer(QWidget):
         vlayout = QVBoxLayout()
 
         validIPs = AvailableIPs().get()
-        for idx, mixerName in enumerate(self.config["osc"]):
-            vlayout.addLayout(OscHLayout(self.config, self.osc, self.widgets, mixerName, idx, validIPs, "iem" not in self.config["osc"]))
-        
+        self.otherLines = []
+
+        fohLine = OscHLayout(self.config, self.osc, self.widgets, "foh", 0, validIPs, self.otherLines)
+        vlayout.addLayout(fohLine)
+
+        idx = 1
+        for mixerName in self.config["osc"]:
+            if mixerName != "foh":
+                layout = OscHLayout(self.config, self.osc, self.widgets, mixerName, idx, validIPs)
+                self.otherLines.append(layout)
+                vlayout.addLayout(layout)
+                idx = idx + 1
+
         hlayout = QHBoxLayout()
         label = QLabel("AtemOSC Port:")
         label.setFixedWidth(150)
@@ -93,7 +103,7 @@ class AddressBox(QComboBox):
             self.status.setStyleSheet(self.currentState["statusStyle"])
         else:
             self.status.setText("Modified")
-            self.status.setStyleSheet("color: gray")
+            self.status.setStyleSheet("color: yellow")
     
     def addItems(self, texts):
         super().addItems(texts)

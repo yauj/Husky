@@ -5,11 +5,11 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
-from util.constants import START_PORT, VALID_MIXER_TYPES
+from util.constants import START_PORT, VALID_IEM_MIXER_TYPES, VALID_MIXER_TYPES
 from util.defaultOSC import NUM_THREADS, RetryingServer, SimpleClient
 
 class OscHLayout(QHBoxLayout):
-    def __init__(self, config, osc, widgets, mixerName, index, options, pointIEM):
+    def __init__(self, config, osc, widgets, mixerName, index, options, otherLayouts = None):
         super().__init__()
         self.config = config
         self.osc = osc
@@ -17,15 +17,15 @@ class OscHLayout(QHBoxLayout):
         self.mixerName = mixerName
         self.index = index
         self.options = options
-        self.pointIEM = pointIEM
+        self.otherLayouts = otherLayouts
 
         self.osc[self.mixerName + "Server"] = RetryingServer(START_PORT + 1 + NUM_THREADS + (self.index * 2), self.mixerName)
-        if self.mixerName == "foh" and self.pointIEM:
-            self.osc["iemServer"] = self.osc[self.mixerName + "Server"]
+        if self.mixerName == "foh" and "iem" not in self.config["osc"]:
+            self.osc["iemServer"] = self.osc["fohServer"]
 
-        label = QLabel(mixerName.upper() + " Mixer IP Address:")
-        label.setFixedWidth(150)
-        self.addWidget(label)
+        self.label = QLabel(mixerName.upper() + " Mixer IP Address:")
+        self.label.setFixedWidth(150)
+        self.addWidget(self.label)
 
         self.currentState = {
             "type": config["osc"][mixerName]["type"],
@@ -43,7 +43,10 @@ class OscHLayout(QHBoxLayout):
         self.address.currentTextChanged.connect(self.onAddressChange)
 
         self.mixerType = QComboBox()
-        self.mixerType.addItems(VALID_MIXER_TYPES)
+        if self.mixerName == "iem":
+            self.mixerType.addItems(VALID_IEM_MIXER_TYPES)
+        else:
+            self.mixerType.addItems(VALID_MIXER_TYPES)
         self.mixerType.setCurrentText(config["osc"][mixerName]["type"])
         self.mixerType.currentTextChanged.connect(self.onMixerChange)
         self.mixerType.setFixedWidth(80)
@@ -60,14 +63,14 @@ class OscHLayout(QHBoxLayout):
         self.addWidget(self.connectButton)
 
     def onMixerChange(self, text):
+        self.reinitOptions()
+
         if text == self.currentState["type"]:
             self.status.setText(self.currentState["statusText"])
             self.status.setStyleSheet(self.currentState["statusStyle"])
         else:
             self.status.setText("Modified")
-            self.status.setStyleSheet("color: gray")
-        
-        self.reinitOptions()
+            self.status.setStyleSheet("color: yellow")
 
     def onAddressChange(self, text):
         if text == self.currentState["ip"]:
@@ -75,7 +78,7 @@ class OscHLayout(QHBoxLayout):
             self.status.setStyleSheet(self.currentState["statusStyle"])
         else:
             self.status.setText("Modified")
-            self.status.setStyleSheet("color: gray")
+            self.status.setStyleSheet("color: yellow")
     
     def reinitOptions(self):
         while self.address.itemText(0) != "":
@@ -105,8 +108,12 @@ class OscHLayout(QHBoxLayout):
         self.currentState["ip"] = self.address.currentText()
 
         self.osc[self.mixerName + "Client"] = SimpleClient(self.mixerName, self.address.currentText(), self.mixerType.currentText())
-        if self.mixerName == "foh" and self.pointIEM:
-            self.osc["iemClient"] = self.osc[self.mixerName + "Client"]
+        if self.mixerName == "foh" and "iem" not in self.config["osc"]:
+            self.osc["iemClient"] = self.osc["fohClient"]
+        
+        if self.otherLayouts is not None:
+            for layout in self.otherLayouts:
+                layout.iemSetEnabled(self.currentState)
 
         if (self.osc[self.mixerName + "Client"].connect(self.osc[self.mixerName + "Server"])):
             self.currentState["statusText"] = "Connected!"
@@ -120,3 +127,27 @@ class OscHLayout(QHBoxLayout):
             self.status.setText(self.currentState["statusText"])
             self.status.setStyleSheet(self.currentState["statusStyle"])
             return False
+    
+    def iemSetEnabled(self, fohCurrentState):
+        if fohCurrentState["type"] in VALID_IEM_MIXER_TYPES:
+            if self.mixerType.currentIndex() == -1:
+                self.mixerType.setEnabled(True)
+                self.address.setEnabled(True)
+                self.connectButton.setEnabled(True)
+
+                self.label.setStyleSheet("")
+                self.mixerType.setCurrentText(fohCurrentState["type"])
+                self.address.setCurrentText(fohCurrentState["ip"])
+                self.init()
+        else:
+            self.mixerType.setEnabled(False)
+            self.address.setEnabled(False)
+            self.connectButton.setEnabled(False)
+
+            self.label.setStyleSheet("color: gray")
+            self.mixerType.setCurrentIndex(-1)
+            self.address.setCurrentIndex(-1)
+            self.status.setText("disabled")
+            self.status.setStyleSheet("color: gray")
+
+            self.osc["iemClient"] = self.osc["fohClient"]
