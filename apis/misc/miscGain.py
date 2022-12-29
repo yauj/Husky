@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 import traceback
-from util.constants import HEADAMP_CHANNELS
+from util.constants import getHeadampChannels
 
 class GainButton(QPushButton):
     def __init__(self, config, widgets, osc):
@@ -50,17 +50,19 @@ class GainDialog(QDialog):
 
     def gainTabLayer(self, mixerName):
         try:
-            initValues = getCurrentGain(self.osc, mixerName)
+            headampChannels = getHeadampChannels(self.osc[mixerName].mixerType)
+
+            initValues = getCurrentGain(self.osc, mixerName, headampChannels)
             
             vlayout = QVBoxLayout()
 
-            if len(HEADAMP_CHANNELS) == 1:
-                for type in HEADAMP_CHANNELS:
-                    vlayout.addWidget(self.gainSubTabLayer(initValues, type)) 
+            if len(headampChannels) == 1:
+                for type in headampChannels:
+                    vlayout.addWidget(self.gainSubTabLayer(mixerName, initValues, headampChannels, type)) 
             else:
                 tabs = QTabWidget()
-                for type in HEADAMP_CHANNELS:
-                    tabs.addTab(self.gainSubTabLayer(mixerName, initValues, type), type)
+                for type in headampChannels:
+                    tabs.addTab(self.gainSubTabLayer(mixerName, initValues, headampChannels, type), type)
                 vlayout.addWidget(tabs)
 
             widget = QWidget()
@@ -77,10 +79,10 @@ class GainDialog(QDialog):
             widget.setLayout(vlayout)
             return widget
     
-    def gainSubTabLayer(self, mixerName, initValues, type):
+    def gainSubTabLayer(self, mixerName, initValues, headampChannels, type):
         hlayout = QHBoxLayout()
 
-        for idx, channel in enumerate(HEADAMP_CHANNELS[type]):
+        for idx, channel in enumerate(headampChannels[type]):
             vlayout = QVBoxLayout()
             label = QLabel(str(idx + 1))
             label.setFixedHeight(35)
@@ -181,10 +183,10 @@ class GainSlider(QWidget):
             dlg.setText("Error: " + str(ex))
             dlg.exec()
 
-def getCurrentGain(osc, mixerName):
+def getCurrentGain(osc, mixerName, headampChannels):
     settings = {}
-    for type in HEADAMP_CHANNELS:
-        for channel in HEADAMP_CHANNELS[type]:
+    for type in headampChannels:
+        for channel in headampChannels[type]:
             settings["/headamp/" + channel + "/gain"] = None
             settings["/headamp/" + channel + "/phantom"] = None
 

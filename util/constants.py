@@ -13,30 +13,88 @@ def getPort(mixerType):
     else:
         raise LookupError("Invalid Mixer Type")
 
-ALL_CHANNELS = [
-    "/ch/01", "/ch/02", "/ch/03", "/ch/04", "/ch/05", "/ch/06", "/ch/07", "/ch/08",
-    "/ch/09", "/ch/10", "/ch/11", "/ch/12", "/ch/13", "/ch/14", "/ch/15", "/ch/16",
-    "/ch/17", "/ch/18", "/ch/19", "/ch/20", "/ch/21", "/ch/22", "/ch/23", "/ch/24",
-    "/ch/25", "/ch/26", "/ch/27", "/ch/28", "/ch/29", "/ch/30", "/ch/31", "/ch/32",
-    "/auxin/01", "/auxin/02", "/auxin/03", "/auxin/04", "/auxin/05", "/auxin/06", "/auxin/07", "/auxin/08",
-    "/fxrtn/01", "/fxrtn/02", "/fxrtn/03", "/fxrtn/04", "/fxrtn/05", "/fxrtn/06", "/fxrtn/07", "/fxrtn/08"
-]
-AUX_CHANNELS = [
-    "/auxin/01", "/auxin/02", "/auxin/03", "/auxin/04", "/auxin/05", "/auxin/06", "/auxin/07", "/auxin/08",
-    "/fxrtn/01", "/fxrtn/02", "/fxrtn/03", "/fxrtn/04", "/fxrtn/05", "/fxrtn/06", "/fxrtn/07", "/fxrtn/08"
-]
-HEADAMP_CHANNELS = {
-    "Local": ["{:03d}".format(idx) for idx in range(0, 32)],
-    "AES-A": ["{:03d}".format(idx) for idx in range(32, 80)],
-    "AES-B": ["{:03d}".format(idx) for idx in range(80, 128)]
-} # Only valid for X32 Mixers
-LINK_CHANNELS = [
-    "1-2", "3-4", "5-6", "7-8", "9-10", "11-12", "13-14", "15-16",
-    "17-18", "19-20", "21-22", "23-24", "25-26", "27-28", "29-30", "31-32"
-]
+def getAllChannels(mixerType):
+    if mixerType == "X32":
+        return [
+            "/ch/01", "/ch/02", "/ch/03", "/ch/04", "/ch/05", "/ch/06", "/ch/07", "/ch/08",
+            "/ch/09", "/ch/10", "/ch/11", "/ch/12", "/ch/13", "/ch/14", "/ch/15", "/ch/16",
+            "/ch/17", "/ch/18", "/ch/19", "/ch/20", "/ch/21", "/ch/22", "/ch/23", "/ch/24",
+            "/ch/25", "/ch/26", "/ch/27", "/ch/28", "/ch/29", "/ch/30", "/ch/31", "/ch/32",
+            "/auxin/01", "/auxin/02", "/auxin/03", "/auxin/04", "/auxin/05", "/auxin/06", "/auxin/07", "/auxin/08",
+            "/fxrtn/01", "/fxrtn/02", "/fxrtn/03", "/fxrtn/04", "/fxrtn/05", "/fxrtn/06", "/fxrtn/07", "/fxrtn/08"
+        ]
+    elif mixerType == "XR18" or mixerType == "XR16":
+        return [
+            "/ch/01", "/ch/02", "/ch/03", "/ch/04", "/ch/05", "/ch/06", "/ch/07", "/ch/08",
+            "/ch/09", "/ch/10", "/ch/11", "/ch/12", "/ch/13", "/ch/14", "/ch/15", "/ch/16",
+            "/rtn/1", "/rtn/2", "/rtn/3", "/rtn/4", "/rtn/aux"
+        ]
+    elif mixerType == "XR12":
+        return [
+            "/ch/01", "/ch/02", "/ch/03", "/ch/04", "/ch/05", "/ch/06", "/ch/07", "/ch/08",
+            "/ch/09", "/ch/10", "/ch/11", "/ch/12",
+            "/rtn/1", "/rtn/2", "/rtn/3", "/rtn/4", "/rtn/aux"
+        ]
+    else:
+        raise LookupError("Invalid Mixer Type")
 
-ALL_BUSES = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"]
-ODD_BUSES = ["01", "03", "05", "07", "09", "11", "13", "15"]
+def getAuxChannels(mixerType):
+    if mixerType == "X32":
+        return [
+            "/auxin/01", "/auxin/02", "/auxin/03", "/auxin/04", "/auxin/05", "/auxin/06", "/auxin/07", "/auxin/08",
+            "/fxrtn/01", "/fxrtn/02", "/fxrtn/03", "/fxrtn/04", "/fxrtn/05", "/fxrtn/06", "/fxrtn/07", "/fxrtn/08"
+        ]
+    elif mixerType == "XR18" or mixerType == "XR16" or mixerType == "XR12":
+        return ["/rtn/1", "/rtn/2", "/rtn/3", "/rtn/4", "/rtn/aux"]
+    else:
+        raise LookupError("Invalid Mixer Type")
+
+def getHeadampChannels(mixerType):
+    if mixerType == "X32":
+        return {
+            "Local": ["{:03d}".format(idx) for idx in range(0, 32)],
+            "AES-A": ["{:03d}".format(idx) for idx in range(32, 80)],
+            "AES-B": ["{:03d}".format(idx) for idx in range(80, 128)]
+        }
+    elif mixerType == "XR18" or mixerType == "XR16":
+        return {
+            "Local": ["{:02d}".format(idx) for idx in range(1, 17)]
+        }
+    elif mixerType == "XR12":
+        return {
+            "Local": ["{:02d}".format(idx) for idx in range(1, 13)]
+        }
+    else:
+        raise LookupError("Invalid Mixer Type")
+
+def getLinkChannels(mixerType):
+    if mixerType == "X32":
+        return [
+            "1-2", "3-4", "5-6", "7-8", "9-10", "11-12", "13-14", "15-16",
+            "17-18", "19-20", "21-22", "23-24", "25-26", "27-28", "29-30", "31-32"
+        ]
+    elif mixerType == "XR18" or mixerType == "XR16":
+        return ["1-2", "3-4", "5-6", "7-8", "9-10", "11-12", "13-14", "15-16"]
+    elif mixerType == "XR12":
+        return ["1-2", "3-4", "5-6", "7-8", "9-10", "11-12"]
+    else:
+        raise LookupError("Invalid Mixer Type")
+
+def getAllBuses(mixerType):
+    if mixerType == "X32":
+        return ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"]
+    elif mixerType == "XR18" or mixerType == "XR16" or mixerType == "XR12":
+        return ["1", "2", "3", "4", "5", "6"]
+    else:
+        raise LookupError("Invalid Mixer Type")
+
+def getOddBuses(mixerType):
+    if mixerType == "X32":
+        return ["01", "03", "05", "07", "09", "11", "13", "15"]
+    elif mixerType == "XR18" or mixerType == "XR16" or mixerType == "XR12":
+        return ["1", "3", "5"]
+    else:
+        raise LookupError("Invalid Mixer Type")
 
 # Only Valid for X32
 BANKS_32 = ["1-8", "9-16", "17-24", "25-32"]

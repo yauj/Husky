@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
-from util.constants import ODD_BUSES, ALL_CHANNELS, SETTINGS, SETTINGS_MAIN
+from util.constants import SETTINGS, SETTINGS_MAIN, getAllChannels, getOddBuses
 from util.customWidgets import ProgressDialog
 
 
@@ -36,7 +36,7 @@ class SaveButton(QPushButton):
         
     def main(self, dlg):
         try:
-            dlg.initBar.emit(saveSingleNumSettings(self.config, self.chName))
+            dlg.initBar.emit(saveSingleNumSettings(self.config, self.osc, self.chName))
             runSingle(self.osc, self.chName, self.personName.currentText(), self.config, dlg)
             dlg.complete.emit()
         except Exception as ex:
@@ -96,13 +96,13 @@ def saveChannels(osc, file, tags, channels, dlg = None):
 
 def saveIEMBus(osc, file, tags, bus, dlg = None):
     settings = {}
-    for channel in ALL_CHANNELS:
+    for channel in getAllChannels(osc["iemClient"].mixerType):
         prefix = channel + "/mix/" + bus
 
         settings[prefix + "/on"] = None
         settings[prefix + "/level"] = None
 
-        if bus in ODD_BUSES:
+        if bus in getOddBuses(osc["iemClient"].mixerType):
             settings[prefix + "/pan"] = None
     
     saveSettingsToFile(osc, file, tags, "iem", settings, dlg)
@@ -139,7 +139,7 @@ def getSettings(osc, prefix, settings, dlg = None):
     lines.sort()
     return lines
 
-def saveSingleNumSettings(config, chName):
+def saveSingleNumSettings(config, osc, chName):
     num = 0
     if chName == "Mains":
         for category in SETTINGS_MAIN:
@@ -154,8 +154,8 @@ def saveSingleNumSettings(config, chName):
             num = num + channelNum
 
         if "iem_bus" in config["personal"][chName]:
-            iemNum = len(ALL_CHANNELS)
-            if config["personal"][chName]["iem_bus"] in ODD_BUSES:
+            iemNum = len(getAllChannels(osc["iemClient"].mixerType))
+            if config["personal"][chName]["iem_bus"] in getOddBuses(osc["iemClient"].mixerType):
                 iemNum = iemNum * 3
             else:
                 iemNum = iemNum * 2

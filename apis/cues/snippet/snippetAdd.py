@@ -13,7 +13,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 import traceback
-from util.constants import ALL_BUSES, ALL_CHANNELS, AUX_CHANNELS, ODD_BUSES, SETTINGS
+from util.constants import SETTINGS, getAllBuses, getAllChannels, getAuxChannels, getOddBuses
 
 class SnippetAddButton(QPushButton):
     def __init__(self, config, osc, textbox):
@@ -50,7 +50,7 @@ class SnippetAddDialog(QDialog):
         hlayout = QHBoxLayout()
         hlayout.addWidget(QLabel("Channel: "))
         self.channel = QComboBox()
-        self.channel.addItems(ALL_CHANNELS)
+        self.channel.addItems(getAllChannels(self.osc["fohClient"].mixerType))
         self.channel.currentIndexChanged.connect(self.disableHPF)
         hlayout.addWidget(self.channel)
         vlayout.addLayout(hlayout)
@@ -81,7 +81,7 @@ class SnippetAddDialog(QDialog):
         hlayout = QHBoxLayout()
         hlayout.addWidget(QLabel("Bus: "))
         bus = QComboBox()
-        bus.addItems(ALL_BUSES)
+        bus.addItems(getAllBuses(self.osc["iemClient"].mixerType))
         hlayout.addWidget(bus)
         vlayout.addLayout(hlayout)
 
@@ -130,7 +130,7 @@ class SnippetAddDialog(QDialog):
     
     # Disable HPF and Dynamics if AUX channel selected
     def disableHPF(self):
-        if self.channel.currentText() in AUX_CHANNELS:
+        if self.channel.currentText() in getAuxChannels(self.osc["fohClient"].mixerType):
             self.settings["HPF"].setEnabled(False)
             self.settings["HPF"].setChecked(False)
             self.settings["Dynamics"].setEnabled(False)
@@ -207,13 +207,13 @@ class AddIEMButton(QPushButton):
 
     def main(self):
         settings = {}
-        for channel in ALL_CHANNELS:
+        for channel in getAllChannels(self.osc["iemClient"].mixerType):
             prefix = channel + "/mix/" + self.bus.currentText()
 
             settings[prefix + "/on"] = None
             settings[prefix + "/level"] = None
 
-            if self.bus.currentText() in ODD_BUSES:
+            if self.bus.currentText() in getOddBuses(self.osc["iemClient"].mixerType):
                 settings[prefix + "/pan"] = None
         
         appendSettingsToTextbox(self.osc, self.textbox, "iem", settings)
