@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
-from util.constants import SETTINGS, SETTINGS_MAIN, getAllChannels, getOddBuses
+from util.constants import SETTINGS, SETTINGS_MAIN, formatBus, getAllChannels, getConfig, getMainPrefix, getOddBuses
 from util.customWidgets import ProgressDialog
 
 
@@ -54,23 +54,28 @@ def runSingle(osc, chName, personName, config, dlg = None):
                 # Produce Header Line
                 file.write("v1.0")
                 tags = {}
-                if "channels" in config["personal"][chName]:
-                    for idx, channel in enumerate(config["personal"][chName]["channels"]):
+
+                fohConfig = getConfig(config["personal"][chName], osc["fohClient"].mixerType)
+                iemConfig = getConfig(config["personal"][chName], osc["iemClient"].mixerType)
+
+                if fohConfig is not None and "channels" in fohConfig:
+                    for idx, channel in enumerate(fohConfig["channels"]):
                         key = "<ch" + str(idx) + ">"
                         value = "/ch/" + channel
                         tags[value] = key
                         file.write(" " + key + "=" + value)
-                if "iem_bus" in config["personal"][chName]:
+
+                if iemConfig is not None and "iem_bus" in iemConfig:
                     key = "<iem_bus>"
-                    value = "mix/" + config["personal"][chName]["iem_bus"]
+                    value = "mix/" + formatBus(iemConfig["iem_bus"], osc["iemClient"].mixerType)
                     tags[value] = key
                     file.write(" " + key + "=" + value)
 
-                if "channels" in config["personal"][chName]:
-                    saveChannels(osc, file, tags, config["personal"][chName]["channels"], dlg)
+                if fohConfig is not None and "channels" in fohConfig:
+                    saveChannels(osc, file, tags, fohConfig["channels"], dlg)
 
-                if "iem_bus" in config["personal"][chName]:
-                    saveIEMBus(osc, file, tags, config["personal"][chName]["iem_bus"], dlg)
+                if iemConfig is not None and "iem_bus" in iemConfig:
+                    saveIEMBus(osc, file, tags, iemConfig["iem_bus"], dlg)
         
         print("Created " + filename)
     except Exception as ex:
@@ -78,12 +83,20 @@ def runSingle(osc, chName, personName, config, dlg = None):
         raise ex
 
 def saveMains(osc, file, dlg = None):
+    # Produce Header Line
+    file.write("v1.0")
+    tags = {}
+    key = "<main>"
+    value = getMainPrefix(osc["fohClient"].mixerType)
+    tags[value] = key
+    file.write(" " + key + "=" + value)
+
     settings = {}
     for category in SETTINGS_MAIN:
         for param in SETTINGS_MAIN[category]:
-            settings["/main/st" + param] = None
+            settings[value + param] = None
     
-    saveSettingsToFile(osc, file, {}, "foh", settings, dlg)    
+    saveSettingsToFile(osc, file, tags, "foh", settings, dlg)    
 
 def saveChannels(osc, file, tags, channels, dlg = None):
     settings = {}
@@ -97,7 +110,7 @@ def saveChannels(osc, file, tags, channels, dlg = None):
 def saveIEMBus(osc, file, tags, bus, dlg = None):
     settings = {}
     for channel in getAllChannels(osc["iemClient"].mixerType):
-        prefix = channel + "/mix/" + bus
+        prefix = channel + "/mix/" + formatBus(bus, osc["iemClient"].mixerType)
 
         settings[prefix + "/on"] = None
         settings[prefix + "/level"] = None
@@ -145,17 +158,20 @@ def saveSingleNumSettings(config, osc, chName):
         for category in SETTINGS_MAIN:
             num = num + len(SETTINGS_MAIN[category])
     else:
-        if "channels" in config["personal"][chName]:
+        fohConfig = getConfig(config["personal"][chName], osc["fohClient"].mixerType)
+        iemConfig = getConfig(config["personal"][chName], osc["iemClient"].mixerType)
+
+        if fohConfig is not None and "channels" in fohConfig:
             channelNum = 0
             for category in SETTINGS:
                 channelNum = channelNum + len(SETTINGS[category])
             
-            channelNum = channelNum * len(config["personal"][chName]["channels"])
+            channelNum = channelNum * len(fohConfig["channels"])
             num = num + channelNum
 
-        if "iem_bus" in config["personal"][chName]:
+        if iemConfig is not None and "iem_bus" in iemConfig:
             iemNum = len(getAllChannels(osc["iemClient"].mixerType))
-            if config["personal"][chName]["iem_bus"] in getOddBuses(osc["iemClient"].mixerType):
+            if formatBus(iemConfig["iem_bus"], osc["iemClient"].mixerType) in getOddBuses(osc["iemClient"].mixerType):
                 iemNum = iemNum * 3
             else:
                 iemNum = iemNum * 2

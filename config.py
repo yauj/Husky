@@ -113,44 +113,98 @@ config = {
     },
     "personal": {
         "DPA": {
-            "channels": ["01"]
+            "X32": {
+                "channels": ["01"]
+            },
+            "XR18": {
+                "channels": ["04"]
+            }
         },
         "HH1": {
-            "channels": ["02"]
+            "X32": {
+                "channels": ["02"]
+            },
+            "XR18": {
+                "channels": ["05"]
+            }
         },
         "HH2": {
-            "channels": ["03"]
+            "X32": {
+                "channels": ["03"]
+            }
         },
         "Vocals 1": {
-            "channels": ["05", "09"],
-            "iem_bus": "01"
+            "X32": {
+                "channels": ["05", "09"],
+                "iem_bus": "01"
+            },
+            "XR18": {
+                "channels": ["01", "06"],
+                "iem_bus": "1"
+            }
         },
         "Vocals 2": {
-            "channels": ["06"],
-            "iem_bus": "03"
+            "X32": {
+                "channels": ["06"],
+                "iem_bus": "03"
+            },
+            "XR18": {
+                "channels": ["02"],
+                "iem_bus": "2"
+            }
         },
         "Vocals 3": {
-            "channels": ["07"],
-            "iem_bus": "05"
+            "X32": {
+                "channels": ["07"],
+                "iem_bus": "05"
+            },
+            "XR18": {
+                "channels": ["03"]
+            }
         },
         "Keys": {
-            "channels": ["10", "11", "12"],
-            "iem_bus": "09"
+            "X32": {
+                "channels": ["10", "11", "12"],
+                "iem_bus": "09"
+            },
+            "XR18": {
+                "channels": ["08", "09"],
+                "iem_bus": "4"
+            }
         },
         "EG": {
-            "channels": ["13"],
-            "iem_bus": "11"
+            "X32": {
+                "channels": ["13"],
+                "iem_bus": "11"
+            },
+            "XR18": {
+                "channels": ["07"],
+                "iem_bus": "3"
+            }
         },
         "EG2": {
-            "channels": ["14"],
-            "iem_bus": "07"
+            "X32": {
+                "channels": ["14"],
+                "iem_bus": "07"
+            }
         },
         "Bass": {
-            "channels": ["15"],
-            "iem_bus": "13"
+            "X32": {
+                "channels": ["15"],
+                "iem_bus": "13"
+            },
+            "XR18": {
+                "channels": ["10"],
+                "iem_bus": "5"
+            }
         },
         "Drums": {
-            "iem_bus": "15"
+            "X32": {
+                "iem_bus": "15"
+            },
+            "XR18": {
+                "iem_bus": "6"
+            }
         }
     },
     "cues": {
@@ -159,6 +213,8 @@ config = {
         "cueOptions": {
             "Key of Song": {
                 "RESET": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 0"],
+                "Off": ["midi audio 2 100 0", "midi audio 2 101 0", "midi audio 2 102 0"],
+                "Chromatic": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 0"],
                 "C": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 127"],
                 "Db": ["midi audio 2 100 127", "midi audio 2 101 12", "midi audio 2 102 127"],
                 "D": ["midi audio 2 100 127", "midi audio 2 101 23", "midi audio 2 102 127"],

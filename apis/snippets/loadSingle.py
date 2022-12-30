@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
+from util.constants import formatBus, getConfig, getMainPrefix
 from util.customWidgets import ProgressDialog
 
 class LoadButton(QPushButton):
@@ -49,16 +50,23 @@ def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None)
         removeTags = {} # Commands that are to be removed
         headerLine = scnFile.readline().strip()
         if headerLine != "":
-            if chName != None:
+            if chName == "Mains":
+                key = "<main>"
+                value = getMainPrefix(osc["fohClient"].mixerType)
+                tags[key] = value
+            elif chName != None and chName in config["personal"]:
+                fohConfig = getConfig(config["personal"][chName], osc["fohClient"].mixerType)
+                iemConfig = getConfig(config["personal"][chName], osc["iemClient"].mixerType)
+
                 # Loading to chName
-                if "channels" in config["personal"][chName]:
-                    for idx, channel in enumerate(config["personal"][chName]["channels"]):
+                if fohConfig is not None and "channels" in fohConfig:
+                    for idx, channel in enumerate(fohConfig["channels"]):
                         key = "<ch" + str(idx) + ">"
                         value = "/ch/" + channel
                         tags[key] = value
-                if "iem_bus" in config["personal"][chName]:
+                if iemConfig is not None and "iem_bus" in iemConfig:
                     key = "<iem_bus>"
-                    value = "mix/" + config["personal"][chName]["iem_bus"]
+                    value = "mix/" + formatBus(iemConfig["iem_bus"], osc["iemClient"].mixerType)
                     tags[key] = value
 
                 for pair in headerLine.split()[1:]:

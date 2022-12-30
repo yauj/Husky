@@ -97,6 +97,31 @@ def getOddBuses(mixerType):
     else:
         raise LookupError("Invalid Mixer Type")
 
+def getConfig(dict, mixerType):
+    if mixerType in dict:
+        return dict[mixerType]
+    elif "DEFAULT" in dict:
+        return dict["DEFAULT"]
+    else:
+        return None
+
+def formatBus(bus, mixerType):
+    if mixerType in ["X32"]:
+        return "{:02d}".format(int(bus))
+    elif mixerType in ["XR18", "XR16", "XR12"]:
+        return "{:01d}".format(int(bus))
+    else:
+        raise LookupError("Invalid Mixer Type")
+
+def getMainPrefix(mixerType):
+    if mixerType in ["X32"]:
+        return "/main/st"
+    elif mixerType in ["XR18", "XR16", "XR12"]:
+        return "/lr"
+    else:
+        raise LookupError("Invalid Mixer Type")
+    
+
 # Only Valid for X32
 BANKS_32 = ["1-8", "9-16", "17-24", "25-32"]
 BANKS_48 = ["1-8", "9-16", "17-24", "25-32", "33-40", "41-48"]

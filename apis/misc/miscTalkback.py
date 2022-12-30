@@ -10,6 +10,8 @@ from PyQt6.QtWidgets import (
 )
 import traceback
 
+from util.constants import formatBus, getConfig
+
 class TalkbackButton(QPushButton):
     def __init__(self, config, osc):
         super().__init__("Talkback Settings")
@@ -40,17 +42,18 @@ class TalkbackDialog(QDialog):
 
                 command = "/config/talk/" + config["talkbackDestination"] + "/destmap"
                 self.bitmap = ["0"] * 18
-                val = osc["fohClient"].bulk_send_messages({command: None})
+                val = osc["iemClient"].bulk_send_messages({command: None})
                 binVal = bin(val[command])[2:]
                 for idx, x in enumerate(binVal):
                     self.bitmap[idx + (18 - len(binVal))] = x
 
                 for chName in config["personal"]:
-                    if "iem_bus" in config["personal"][chName]:
+                    iemConfig = getConfig(config["personal"][chName], osc["iemClient"].mixerType)
+                    if iemConfig is not None and "iem_bus" in iemConfig:
                         hlayout = QHBoxLayout()
                         hlayout.addWidget(QLabel(chName + ":"))
                         hlayout.addWidget(TalkbackMeButton(osc, self.talkbacks, chName))
-                        self.talkbacks[chName] = TalkbackOneBox(config, osc, self.bitmap, chName, command)
+                        self.talkbacks[chName] = TalkbackOneBox(iemConfig, osc, self.bitmap, command)
                         spacer = QWidget()
                         spacer.setFixedWidth(30)
                         hlayout.addWidget(spacer)
@@ -62,17 +65,19 @@ class TalkbackDialog(QDialog):
 
                 initSettings = {}
                 for chName in config["personal"]:
-                    if "iem_bus" in config["personal"][chName]:
-                        initSettings[config["talkbackChannel"] + "/mix/" + config["personal"][chName]["iem_bus"] + "/on"] = None
+                    iemConfig = getConfig(config["personal"][chName], osc["iemClient"].mixerType)
+                    if iemConfig is not None and "iem_bus" in iemConfig:
+                        initSettings[config["talkbackChannel"] + "/mix/" + formatBus(iemConfig["iem_bus"], osc["iemClient"].mixerType) + "/on"] = None
                 
-                    initValues = osc["iemClient"].bulk_send_messages(initSettings)
+                initValues = osc["iemClient"].bulk_send_messages(initSettings)
 
                 for chName in config["personal"]:
-                    if "iem_bus" in config["personal"][chName]:
+                    iemConfig = getConfig(config["personal"][chName], osc["iemClient"].mixerType)
+                    if iemConfig is not None and "iem_bus" in iemConfig:
                         hlayout = QHBoxLayout()
                         hlayout.addWidget(QLabel(chName + ":"))
                         hlayout.addWidget(TalkbackMeButton(osc, self.talkbacks, chName))
-                        self.talkbacks[chName] = TalkbackTwoBox(config, osc, initValues, chName)
+                        self.talkbacks[chName] = TalkbackTwoBox(iemConfig, osc, initValues)
                         spacer = QWidget()
                         spacer.setFixedWidth(30)
                         hlayout.addWidget(spacer)
@@ -90,11 +95,11 @@ class TalkbackDialog(QDialog):
 
 # 1 Mixer
 class TalkbackOneBox(QCheckBox):
-    def __init__(self, config, osc, bitmap, chName, command):
+    def __init__(self, config, osc, bitmap, command):
         super().__init__()
         self.osc = osc
         self.bitmap = bitmap
-        self.index = 18 - int(config["personal"][chName]["iem_bus"])
+        self.index = 18 - int(config["iem_bus"])
         self.command = command
         self.setFixedWidth(20)
         self.setChecked(self.bitmap[self.index] == "1")
@@ -113,10 +118,10 @@ class TalkbackOneBox(QCheckBox):
 
 # 2 Mixers
 class TalkbackTwoBox(QCheckBox):
-    def __init__(self, config, osc, initValues, chName):
+    def __init__(self, config, osc, initValues):
         super().__init__()
         self.osc = osc
-        self.command = config["talkbackChannel"] + "/mix/" + config["personal"][chName]["iem_bus"] + "/on"
+        self.command = config["talkbackChannel"] + "/mix/" + formatBus(config["iem_bus"], osc["iemClient"].mixerType) + "/on"
         self.setFixedWidth(20)
         self.setChecked(initValues[self.command] == 1 if initValues[self.command] is not None else 1)
         self.stateChanged.connect(self.clicked)
