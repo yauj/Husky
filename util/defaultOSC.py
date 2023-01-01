@@ -472,7 +472,7 @@ class MIDIServer(mido.Backend):
     def callbackFunction(self, message):
         for id in self.subscriptions:
             if message.type == "control_change" and self.subscriptions[id]["midi"]["type"] == "Control Change":
-                if message.channel == self.subscriptions[id]["midi"]["channel"] and message.control == self.subscriptions[id]["midi"]["control"]:
+                if message.channel + 1 == self.subscriptions[id]["midi"]["channel"] and message.control == self.subscriptions[id]["midi"]["control"]:
                     if self.subscriptions[id]["command"]["type"] == "Cue":
                         if message.value > 0:
                             page = self.getPageIdx(self.widgets["tabs"]["Cue"], self.subscriptions[id]["command"]["page"])
@@ -502,7 +502,7 @@ class MIDIServer(mido.Backend):
                                     fader.setValue(message.value)
             elif message.type == "note_on" and self.subscriptions[id]["midi"]["type"] == "Note":
                 # Only support cues
-                if message.channel == self.subscriptions[id]["midi"]["channel"] \
+                if message.channel + 1 == self.subscriptions[id]["midi"]["channel"] \
                     and message.note == self.subscriptions[id]["midi"]["control"] \
                     and self.subscriptions[id]["command"]["type"] == "Cue":
                         page = self.getPageIdx(self.widgets["tabs"]["Cue"], self.subscriptions[id]["command"]["page"])
@@ -526,7 +526,7 @@ class MIDIServer(mido.Backend):
                     and self.subscriptions[id]["command"]["index"] == index:
                         if self.subscriptions[id]["command"]["page"] == page \
                             or (self.subscriptions[id]["command"]["page"] == "CURRENT" and self.widgets["tabs"]["Fader"].currentIndex() == page):
-                            channel = self.subscriptions[id]["midi"]["channel"]
+                            channel = self.subscriptions[id]["midi"]["channel"] - 1
                             control = self.subscriptions[id]["midi"]["control"]
                             if self.subscriptions[id]["midi"]["type"] == "Control Change":
                                 type = "control_change"

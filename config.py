@@ -73,35 +73,237 @@ config = {
             },
             {
                 "midi": {"type": "Control Change", "channel": 1, "control": 12},
-                "command": {"type": "Cue", "page": "a", "index": "1"}
+                "command": {"type": "Fader", "page": "a", "index": "1"}
             },
             {
                 "midi": {"type": "Control Change", "channel": 1, "control": 13},
-                "command": {"type": "Cue", "page": "a", "index": "2"}
+                "command": {"type": "Fader", "page": "a", "index": "2"}
             },
             {
                 "midi": {"type": "Control Change", "channel": 1, "control": 14},
-                "command": {"type": "Cue", "page": "a", "index": "3"}
+                "command": {"type": "Fader", "page": "a", "index": "3"}
             },
             {
                 "midi": {"type": "Control Change", "channel": 1, "control": 15},
-                "command": {"type": "Cue", "page": "a", "index": "4"}
+                "command": {"type": "Fader", "page": "a", "index": "4"}
             },
             {
                 "midi": {"type": "Control Change", "channel": 1, "control": 16},
-                "command": {"type": "Cue", "page": "b", "index": "1"}
+                "command": {"type": "Fader", "page": "b", "index": "1"}
             },
             {
                 "midi": {"type": "Control Change", "channel": 1, "control": 17},
-                "command": {"type": "Cue", "page": "b", "index": "2"}
+                "command": {"type": "Fader", "page": "b", "index": "2"}
             },
             {
                 "midi": {"type": "Control Change", "channel": 1, "control": 18},
-                "command": {"type": "Cue", "page": "b", "index": "3"}
+                "command": {"type": "Fader", "page": "b", "index": "3"}
             },
             {
                 "midi": {"type": "Control Change", "channel": 1, "control": 19},
+                "command": {"type": "Fader", "page": "b", "index": "4"}
+            }
+        ],
+        "X-TOUCH MINI": [
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 1},
+                "command": {"type": "Fader", "page": "a", "index": "1"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 2},
+                "command": {"type": "Fader", "page": "a", "index": "2"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 3},
+                "command": {"type": "Fader", "page": "a", "index": "3"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 4},
+                "command": {"type": "Fader", "page": "a", "index": "4"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 5},
+                "command": {"type": "Fader", "page": "b", "index": "1"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 6},
+                "command": {"type": "Fader", "page": "b", "index": "2"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 7},
+                "command": {"type": "Fader", "page": "b", "index": "3"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 8},
+                "command": {"type": "Fader", "page": "b", "index": "4"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 11},
+                "command": {"type": "Fader", "page": "c", "index": "1"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 12},
+                "command": {"type": "Fader", "page": "c", "index": "2"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 13},
+                "command": {"type": "Fader", "page": "c", "index": "3"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 14},
+                "command": {"type": "Fader", "page": "c", "index": "4"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 15},
+                "command": {"type": "Fader", "page": "d", "index": "1"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 16},
+                "command": {"type": "Fader", "page": "d", "index": "2"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 17},
+                "command": {"type": "Fader", "page": "d", "index": "3"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 18},
+                "command": {"type": "Fader", "page": "d", "index": "4"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 9},
+                "command": {"type": "Fader", "page": "e", "index": "4"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 11, "control": 10},
+                "command": {"type": "Fader", "page": "e", "index": "4"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 8},
+                "command": {"type": "Cue", "page": "a", "index": "1"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 9},
+                "command": {"type": "Cue", "page": "a", "index": "2"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 10},
+                "command": {"type": "Cue", "page": "a", "index": "3"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 11},
+                "command": {"type": "Cue", "page": "a", "index": "4"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 16},
+                "command": {"type": "Cue", "page": "a", "index": "5"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 17},
+                "command": {"type": "Cue", "page": "a", "index": "6"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 18},
+                "command": {"type": "Cue", "page": "a", "index": "7"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 19},
+                "command": {"type": "Cue", "page": "a", "index": "8"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 12},
+                "command": {"type": "Cue", "page": "b", "index": "1"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 13},
+                "command": {"type": "Cue", "page": "b", "index": "2"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 14},
+                "command": {"type": "Cue", "page": "b", "index": "3"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 15},
                 "command": {"type": "Cue", "page": "b", "index": "4"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 20},
+                "command": {"type": "Cue", "page": "b", "index": "5"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 21},
+                "command": {"type": "Cue", "page": "b", "index": "6"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 22},
+                "command": {"type": "Cue", "page": "b", "index": "7"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 23},
+                "command": {"type": "Cue", "page": "b", "index": "8"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 32},
+                "command": {"type": "Cue", "page": "c", "index": "1"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 33},
+                "command": {"type": "Cue", "page": "c", "index": "2"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 34},
+                "command": {"type": "Cue", "page": "c", "index": "3"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 35},
+                "command": {"type": "Cue", "page": "c", "index": "4"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 36},
+                "command": {"type": "Cue", "page": "c", "index": "5"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 37},
+                "command": {"type": "Cue", "page": "c", "index": "6"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 38},
+                "command": {"type": "Cue", "page": "c", "index": "7"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 39},
+                "command": {"type": "Cue", "page": "c", "index": "8"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 40},
+                "command": {"type": "Cue", "page": "d", "index": "1"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 41},
+                "command": {"type": "Cue", "page": "d", "index": "2"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 42},
+                "command": {"type": "Cue", "page": "d", "index": "3"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 43},
+                "command": {"type": "Cue", "page": "d", "index": "4"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 44},
+                "command": {"type": "Cue", "page": "d", "index": "5"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 45},
+                "command": {"type": "Cue", "page": "d", "index": "6"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 46},
+                "command": {"type": "Cue", "page": "d", "index": "7"}
+            },
+            {
+                "midi": {"type": "Note", "channel": 11, "control": 47},
+                "command": {"type": "Cue", "page": "d", "index": "8"}
             }
         ]
     },
