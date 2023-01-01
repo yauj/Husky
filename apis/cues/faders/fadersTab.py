@@ -11,6 +11,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from util.constants import getConfig
+
 class FaderTab(QTabWidget):
     def __init__(self, config, widgets, osc):
         super().__init__()
@@ -52,12 +54,17 @@ class FaderObject(QWidget):
             oscFeedback = None
             try:
                 _, name = itr.__next__()
-                fader["commands"] = config["cues"]["faders"][name]["commands"]
-                fader["name"] = QLineEdit(name)
-                if ("defaultValue" in config["cues"]["faders"][name]):
-                    defaultValue = config["cues"]["faders"][name]["defaultValue"]
-                if ("oscFeedback" in config["cues"]["faders"][name]):
-                    oscFeedback = config["cues"]["faders"][name]["oscFeedback"]
+                fohConfig = getConfig(config["cues"]["faders"][name], osc["fohClient"].mixerType) # Hardcoded. Might be liability in the future.
+                if fohConfig is None:
+                    fader["commands"] = []
+                    fader["name"] = QLineEdit(name)
+                else:
+                    fader["commands"] = fohConfig["commands"]
+                    fader["name"] = QLineEdit(name)
+                    if "defaultValue" in fohConfig:
+                        defaultValue = fohConfig["defaultValue"]
+                    if "oscFeedback" in fohConfig:
+                        oscFeedback = fohConfig["oscFeedback"]
             except StopIteration:
                 fader["commands"] = []
                 fader["name"] = QLineEdit()

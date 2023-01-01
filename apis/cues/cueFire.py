@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
+from util.constants import getConfig
 
 class CueFireButton(QPushButton):
     def __init__(self, config, osc, prevIndex, index, printIndex, cues):
@@ -47,8 +48,10 @@ def main(config, osc, prevIndex, index, cues):
     try:
         for category in config["cues"]["cueOptions"]:
             if cues[index][category].currentText() != "":
-                fireLines(config, osc, config["cues"]["cueOptions"][category][cues[index][category].currentText()])
-        
+                commands = getConfig(config["cues"]["cueOptions"][category][cues[index][category].currentText()], osc["fohClient"].mixerType) # Hardcoded. Might be liability in the future.
+                if commands is not None:
+                    fireLines(config, osc, commands)
+
         if cues[index]["snippet"].filename != "":
             if os.path.exists(cues[index]["snippet"].filename):
                 runSingle(config, osc, cues[index]["snippet"].filename)

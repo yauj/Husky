@@ -2,6 +2,8 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 
+from util.constants import getConfig
+
 class FadersResetButton(QPushButton):
     def __init__(self, config, widgets):
         super().__init__("Reset")
@@ -24,10 +26,15 @@ class FadersResetButton(QPushButton):
             fader["slider"].setValue(0)
             try:
                 _, name = itr.__next__()
-                fader["commands"] = self.config["cues"]["faders"][name]["commands"]
-                fader["name"].setText(name)
-                if ("defaultValue" in self.config["cues"]["faders"][name]):
-                    fader["slider"].setValue(self.config["cues"]["faders"][name]["defaultValue"])
+                fohConfig = getConfig(self.config["cues"]["faders"][name], self.osc["fohClient"].mixerType) # Hardcoded. Might be liability in the future.
+                if fohConfig is None:
+                    fader["commands"] = []
+                    fader["name"].setText("")
+                else:
+                    fader["commands"] = fohConfig["commands"]
+                    fader["name"].setText(name)
+                    if "defaultValue" in fohConfig:
+                        fader["slider"].setValue(fohConfig["defaultValue"])
             except StopIteration:
                 fader["commands"] = []
                 fader["name"].setText("")

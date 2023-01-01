@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
+from util.constants import getConfig
 from util.customWidgets import ProgressDialog
 
 class ResetButton(QPushButton):
@@ -27,7 +28,9 @@ class ResetButton(QPushButton):
             lines = []
             for category in self.config["cues"]["cueOptions"]:
                 if "RESET" in self.config["cues"]["cueOptions"][category]:
-                    lines.extend(self.config["cues"]["cueOptions"][category]["RESET"])
+                    commands = getConfig(self.config["cues"]["cueOptions"][category]["RESET"], self.osc["fohClient"].mixerType) # Hardcoded. Might be liability in the future.
+                    if commands is not None:
+                        lines.extend(commands)
 
             fireLines(self.config, self.osc, lines)
 

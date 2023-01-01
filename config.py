@@ -212,76 +212,160 @@ config = {
         "faderPages": 5,
         "cueOptions": {
             "Key of Song": {
-                "RESET": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 0"],
-                "Off": ["midi audio 2 100 0", "midi audio 2 101 0", "midi audio 2 102 0"],
-                "Chromatic": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 0"],
-                "C": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 127"],
-                "Db": ["midi audio 2 100 127", "midi audio 2 101 12", "midi audio 2 102 127"],
-                "D": ["midi audio 2 100 127", "midi audio 2 101 23", "midi audio 2 102 127"],
-                "Eb": ["midi audio 2 100 127", "midi audio 2 101 35", "midi audio 2 102 127"],
-                "E": ["midi audio 2 100 127", "midi audio 2 101 46", "midi audio 2 102 127"],
-                "F": ["midi audio 2 100 127", "midi audio 2 101 58", "midi audio 2 102 127"],
-                "Gb": ["midi audio 2 100 127", "midi audio 2 101 69", "midi audio 2 102 127"],
-                "G": ["midi audio 2 100 127", "midi audio 2 101 81", "midi audio 2 102 127"],
-                "Ab": ["midi audio 2 100 127", "midi audio 2 101 92", "midi audio 2 102 127"],
-                "A": ["midi audio 2 100 127", "midi audio 2 101 104", "midi audio 2 102 127"],
-                "Bb": ["midi audio 2 100 127", "midi audio 2 101 115", "midi audio 2 102 127"],
-                "B": ["midi audio 2 100 127", "midi audio 2 101 127", "midi audio 2 102 127"],
+                "RESET": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 0"]
+                },
+                "C": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 127"]
+                },
+                "Db": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 12", "midi audio 2 102 127"]
+                },
+                "D": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 23", "midi audio 2 102 127"]
+                },
+                "Eb": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 35", "midi audio 2 102 127"]
+                },
+                "E": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 46", "midi audio 2 102 127"]
+                },
+                "F": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 58", "midi audio 2 102 127"]
+                },
+                "Gb": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 69", "midi audio 2 102 127"]
+                },
+                "G": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 81", "midi audio 2 102 127"]
+                },
+                "Ab": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 92", "midi audio 2 102 127"]
+                },
+                "A": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 104", "midi audio 2 102 127"]
+                },
+                "Bb": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 115", "midi audio 2 102 127"]
+                },
+                "B": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 127", "midi audio 2 102 127"]
+                },
+                "Off": {
+                    "DEFAULT": ["midi audio 2 100 0", "midi audio 2 101 0", "midi audio 2 102 0"]
+                },
+                "Chromatic": {
+                    "DEFAULT": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 0"]
+                },
             },
             "Vocal Lead": {
-                "RESET": [
+                "RESET": {
+                    "X32": [
+                        "foh /ch/05/mix/01/on int 1", "/ch/05/mix/02/on int 1", "/ch/05/mix/03/on int 0",
+                        "foh /ch/06/mix/01/on int 0", "/ch/06/mix/02/on int 0", "/ch/06/mix/03/on int 1",
+                        "foh /ch/07/mix/01/on int 0", "/ch/07/mix/02/on int 0", "/ch/07/mix/03/on int 1",
+                        "foh /ch/08/mix/01/on int 0", "/ch/08/mix/02/on int 0", "/ch/08/mix/03/on int 1",
+                    ]
+                },
+                "1": {
+                    "X32": [
                     "foh /ch/05/mix/01/on int 1", "/ch/05/mix/02/on int 1", "/ch/05/mix/03/on int 0",
                     "foh /ch/06/mix/01/on int 0", "/ch/06/mix/02/on int 0", "/ch/06/mix/03/on int 1",
                     "foh /ch/07/mix/01/on int 0", "/ch/07/mix/02/on int 0", "/ch/07/mix/03/on int 1",
                     "foh /ch/08/mix/01/on int 0", "/ch/08/mix/02/on int 0", "/ch/08/mix/03/on int 1",
-                ],
-                "1": [
-                    "foh /ch/05/mix/01/on int 1", "/ch/05/mix/02/on int 1", "/ch/05/mix/03/on int 0",
-                    "foh /ch/06/mix/01/on int 0", "/ch/06/mix/02/on int 0", "/ch/06/mix/03/on int 1",
-                    "foh /ch/07/mix/01/on int 0", "/ch/07/mix/02/on int 0", "/ch/07/mix/03/on int 1",
-                    "foh /ch/08/mix/01/on int 0", "/ch/08/mix/02/on int 0", "/ch/08/mix/03/on int 1",
-                ],
-                "2": [
-                    "foh /ch/05/mix/01/on int 0", "/ch/05/mix/02/on int 0", "/ch/05/mix/03/on int 1",
-                    "foh /ch/06/mix/01/on int 1", "/ch/06/mix/02/on int 1", "/ch/06/mix/03/on int 0",
-                    "foh /ch/07/mix/01/on int 0", "/ch/07/mix/02/on int 0", "/ch/07/mix/03/on int 1",
-                    "foh /ch/08/mix/01/on int 0", "/ch/08/mix/02/on int 0", "/ch/08/mix/03/on int 1",
-                ],
-                "3": [
-                    "foh /ch/05/mix/01/on int 0", "/ch/05/mix/02/on int 0", "/ch/05/mix/03/on int 1",
-                    "foh /ch/06/mix/01/on int 0", "/ch/06/mix/02/on int 0", "/ch/06/mix/03/on int 1",
-                    "foh /ch/07/mix/01/on int 1", "/ch/07/mix/02/on int 1", "/ch/07/mix/03/on int 0",
-                    "foh /ch/08/mix/01/on int 0", "/ch/08/mix/02/on int 0", "/ch/08/mix/03/on int 1",
-                ],
-                "4": [
-                    "foh /ch/05/mix/01/on int 0", "/ch/05/mix/02/on int 0", "/ch/05/mix/03/on int 1",
-                    "foh /ch/06/mix/01/on int 0", "/ch/06/mix/02/on int 0", "/ch/06/mix/03/on int 1",
-                    "foh /ch/07/mix/01/on int 0", "/ch/07/mix/02/on int 0", "/ch/07/mix/03/on int 1",
-                    "foh /ch/08/mix/01/on int 1", "/ch/08/mix/02/on int 1", "/ch/08/mix/03/on int 0",
-                ],
+                    ]
+                },
+                "2": {
+                    "X32": [
+                        "foh /ch/05/mix/01/on int 0", "/ch/05/mix/02/on int 0", "/ch/05/mix/03/on int 1",
+                        "foh /ch/06/mix/01/on int 1", "/ch/06/mix/02/on int 1", "/ch/06/mix/03/on int 0",
+                        "foh /ch/07/mix/01/on int 0", "/ch/07/mix/02/on int 0", "/ch/07/mix/03/on int 1",
+                        "foh /ch/08/mix/01/on int 0", "/ch/08/mix/02/on int 0", "/ch/08/mix/03/on int 1",
+                    ]
+                },
+                "3": {
+                    "X32": [
+                        "foh /ch/05/mix/01/on int 0", "/ch/05/mix/02/on int 0", "/ch/05/mix/03/on int 1",
+                        "foh /ch/06/mix/01/on int 0", "/ch/06/mix/02/on int 0", "/ch/06/mix/03/on int 1",
+                        "foh /ch/07/mix/01/on int 1", "/ch/07/mix/02/on int 1", "/ch/07/mix/03/on int 0",
+                        "foh /ch/08/mix/01/on int 0", "/ch/08/mix/02/on int 0", "/ch/08/mix/03/on int 1",
+                    ]
+                },
+                "4": {
+                    "X32": [
+                        "foh /ch/05/mix/01/on int 0", "/ch/05/mix/02/on int 0", "/ch/05/mix/03/on int 1",
+                        "foh /ch/06/mix/01/on int 0", "/ch/06/mix/02/on int 0", "/ch/06/mix/03/on int 1",
+                        "foh /ch/07/mix/01/on int 0", "/ch/07/mix/02/on int 0", "/ch/07/mix/03/on int 1",
+                        "foh /ch/08/mix/01/on int 1", "/ch/08/mix/02/on int 1", "/ch/08/mix/03/on int 0",
+                    ]
+                },
             }
         },
         "faders": {
-            "VOX EQ": {"oscFeedback": "/-stat/userpar/29/value", "commands": ["foh /ch/05/eq/1/g 0.2 0.5"]},
-            "VOX Pan": {"oscFeedback": "/-stat/userpar/30/value", "commands": ["foh /ch/06/mix/pan 0.5 0.2", "foh /ch/07/mix/pan 0.5 0.8"]},
-            "EG/Keys Pan": {"oscFeedback": "/-stat/userpar/31/value", "commands": ["foh /ch/13/mix/pan 0.5 0.2", "foh /ch/11/mix/pan 0.5 0.8"]},
-            "Bass/Drums HPF": {"oscFeedback": "/-stat/userpar/32/value", "commands": ["foh /ch/20/preamp/hpf 0.3 0.0"]},
-            "VOX Tracks": {"defaultValue": 63, "commands": ["midi audio 2 50"]},
-            "EG/Keys Tracks": {"defaultValue": 63, "commands": ["midi audio 2 51"]},
-            "Bass Tracks": {"defaultValue": 63, "commands": ["midi audio 2 52"]},
-            "Drum Tracks": {"defaultValue": 63, "commands": ["midi audio 2 53"]},
-            "Stream Lead VOX": {"commands": ["foh /bus/01/mix/03/level 0.5 1.0"]},
-            "Stream Para Xpres": {"commands": ["foh /bus/02/mix/03/level 0.5 1.0"]},
-            "Stream Bkgd VOX": {"commands": ["foh /bus/03/mix/03/level 0.5 1.0"]},
-            "Stream Crowd Mics": {"commands": ["foh /ch/31/mix/13/level 0.5 1.0"]},
-            "Stream Instruments": {"commands": ["foh /bus/05/mix/03/level 0.5 1.0"]},
-            "Stream Drums": {"commands": ["foh /bus/07/mix/03/level 0.5 1.0"]},
-            "Stream Wireless": {"commands": ["foh /bus/08/mix/03/level 0.5 1.0"]},
-            "Stream FX": {"commands": ["foh /bus/09/mix/03/level 0.5 1.0"]},
-            "Stream Podium": {"commands": ["atem /atem/audio/input/9/gain -10 10"]},
-            "Stream ProPre": {"commands": ["atem /atem/audio/input/10/gain -10 10"]},
-            "Stream MP3": {"commands": ["foh /auxin/05/mix/13/level 0.5 1.0"]},
-            "Stream Overall": {"commands": ["atem /atem/audio/output/gain -60 10"]}
+            "VOX EQ": {
+                "X32": {"oscFeedback": "/-stat/userpar/29/value", "commands": ["foh /ch/05/eq/1/g 0.2 0.5"]},
+                "XR18": {"commands": ["foh /ch/01/eq/1/g 0.2 0.5"]}
+            },
+            "VOX Pan": {
+                "X32": {"oscFeedback": "/-stat/userpar/30/value", "commands": ["foh /ch/06/mix/pan 0.5 0.2", "foh /ch/07/mix/pan 0.5 0.8"]},
+                "XR18": {"commands": ["foh /ch/02/mix/pan 0.5 0.2", "foh /ch/03/mix/pan 0.5 0.8"]},
+            },
+            "EG/Keys Pan": {
+                "X32": {"oscFeedback": "/-stat/userpar/31/value", "commands": ["foh /ch/13/mix/pan 0.5 0.2", "foh /ch/11/mix/pan 0.5 0.8"]},
+                "XR18": {"commands": ["foh /ch/07/mix/pan 0.5 0.2", "foh /ch/08/mix/pan 0.5 0.8"]}
+            },
+            "Bass/Drums HPF": {
+                "X32": {"oscFeedback": "/-stat/userpar/32/value", "commands": ["foh /ch/20/preamp/hpf 0.3 0.0"]},
+                "XR18": {"commands": ["foh /ch/14/preamp/hpf 0.3 0.0"]}
+            },
+            "VOX Tracks": {
+                "DEFAULT": {"defaultValue": 63, "commands": ["midi audio 2 50"]}
+            },
+            "EG/Keys Tracks": {
+                "DEFAULT": {"defaultValue": 63, "commands": ["midi audio 2 51"]}
+            },
+            "Bass Tracks": {
+                "DEFAULT": {"defaultValue": 63, "commands": ["midi audio 2 52"]}
+            },
+            "Drum Tracks": {
+                "DEFAULT": {"defaultValue": 63, "commands": ["midi audio 2 53"]}
+            },
+            "Stream Lead VOX": {
+                "X32": {"commands": ["foh /bus/01/mix/03/level 0.5 1.0"]}
+            },
+            "Stream Para Xpres": {
+                "X32": {"commands": ["foh /bus/02/mix/03/level 0.5 1.0"]}
+            },
+            "Stream Bkgd VOX": {
+                "X32": {"commands": ["foh /bus/03/mix/03/level 0.5 1.0"]}
+            },
+            "Stream Crowd Mics": {
+                "X32": {"commands": ["foh /ch/31/mix/13/level 0.5 1.0"]}
+            },
+            "Stream Instruments": {
+                "X32": {"commands": ["foh /bus/05/mix/03/level 0.5 1.0"]}
+            },
+            "Stream Drums": {
+                "X32": {"commands": ["foh /bus/07/mix/03/level 0.5 1.0"]}
+            },
+            "Stream Wireless": {
+                "X32": {"commands": ["foh /bus/08/mix/03/level 0.5 1.0"]}
+            },
+            "Stream FX": {
+                "X32": {"commands": ["foh /bus/09/mix/03/level 0.5 1.0"]}
+            },
+            "Stream Podium": {
+                "X32": {"commands": ["atem /atem/audio/input/9/gain -10 10"]}
+            },
+            "Stream ProPre": {
+                "X32": {"commands": ["atem /atem/audio/input/10/gain -10 10"]}
+            },
+            "Stream MP3": {
+                "X32": {"commands": ["foh /auxin/05/mix/13/level 0.5 1.0"]}
+            },
+            "Stream Overall": {
+                "X32": {"commands": ["atem /atem/audio/output/gain -60 10"]}
+            }
         },
     },
     "talkbackChannel": "/ch/30",
