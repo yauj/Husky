@@ -127,8 +127,10 @@ class FadersSlider(QSlider):
                 self.osc["serverMidi"][portName].processFeedback(self.page, str(self.pageIdx + 1), value, ogId)
 
             # Change X32 User Encoder MIDI Knob
-            if len(components) >= 3:
-                if components[0] != "midi" or components[2] != "X-USB" and self.oscFeedback is not None:
+            if self.oscFeedback is not None:
+                if len(components) >= 3 and (components[0] == "midi" and components[2] == "X-USB"):
+                    return
+                else:
                     self.osc["fohClient"].send_message(self.oscFeedback, value)
         except Exception:
             # Fail Quietly

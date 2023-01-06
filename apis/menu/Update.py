@@ -45,24 +45,9 @@ class UpdateDialog(QDialog):
         if exStr is None:
             vlayout = QVBoxLayout()
 
-            vlayout.addWidget(QLabel("Update App to Latest Version"))
+            vlayout.addWidget(QLabel("Update App to Latest Version\n(Expect this to take approx 1 minute)"))
 
-            hlayout = QHBoxLayout()
-            hlayout.addWidget(QLabel("Version:"))
-            branchName = QComboBox()
-            os.system("git branch -r > update.log")
-            with open("update.log") as file:
-                while (line := file.readline().strip()):
-                    if " -> " not in line:
-                        branchName.addItem(line.replace("origin/", ""))
-            os.system("git rev-parse --abbrev-ref HEAD > update.log")
-            with open("update.log") as file:
-                branchName.setCurrentText(file.readline().strip())
-            os.system("rm update.log")
-            hlayout.addWidget(branchName)
-            vlayout.addLayout(hlayout)
-
-            vlayout.addWidget(UpdateButton(parent, branchName, isApp))
+            vlayout.addWidget(UpdateButton(parent, isApp))
 
             self.setLayout(vlayout)
         else:
@@ -73,18 +58,26 @@ class UpdateDialog(QDialog):
             self.setLayout(vlayout)
 
 class UpdateButton(QPushButton):
-    def __init__(self, parent, branchName, isApp):
-        super().__init__("Update (Expect this to take approx 1 minute)", parent)
+    def __init__(self, parent, isApp):
+        super().__init__("Update", parent)
         self.parent = parent
-        self.branchName = branchName
         self.isApp = isApp
 
         self.pressed.connect(self.onPressed)
     
     def onPressed(self):
-        statusCode = os.system("git switch " + self.branchName.currentText())
-        
-        if statusCode == 0:
+        statusCode = os.system("git pull > update.log")
+        statusLine = ""
+        with open("update.log") as file:
+            statusLine = file.readline().strip()
+        os.system("rm update.log")
+
+        if statusLine == "Already up to date.":
+            dlg = QMessageBox(self.parent)
+            dlg.setWindowTitle("Update App")
+            dlg.setText("Already up to date.")
+            dlg.exec()
+        elif statusCode == 0:
             if self.isApp:
                 os.system("../../../../pyinstaller.sh")
             else:
