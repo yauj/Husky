@@ -69,7 +69,7 @@ class UpdateButton(QPushButton):
         statusCode = os.system("git pull > update.log")
         statusLine = ""
         with open("update.log") as file:
-            statusLine = file.readline()
+            statusLine = file.readline().strip()
         os.system("rm update.log")
 
         if statusLine == "Already up to date.":
