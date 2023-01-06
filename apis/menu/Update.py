@@ -67,8 +67,17 @@ class UpdateButton(QPushButton):
     
     def onPressed(self):
         statusCode = os.system("git pull > update.log")
-        
-        if statusCode == 0:
+        statusLine = ""
+        with open("update.log") as file:
+            statusLine = file.readline()
+        os.system("rm update.log")
+
+        if statusLine == "Already up to date.":
+            dlg = QMessageBox(self.parent)
+            dlg.setWindowTitle("Update App")
+            dlg.setText("Already up to date.")
+            dlg.exec()
+        elif statusCode == 0:
             if self.isApp:
                 os.system("../../../../pyinstaller.sh")
             else:
