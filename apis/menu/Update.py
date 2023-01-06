@@ -45,7 +45,7 @@ class UpdateDialog(QDialog):
         if exStr is None:
             vlayout = QVBoxLayout()
 
-            vlayout.addWidget(QLabel("Update App to Latest Version"))
+            vlayout.addWidget(QLabel("Update App to Latest Version\n(Expect this to take approx 1 minute)"))
 
             vlayout.addWidget(UpdateButton(parent, isApp))
 
@@ -59,14 +59,14 @@ class UpdateDialog(QDialog):
 
 class UpdateButton(QPushButton):
     def __init__(self, parent, isApp):
-        super().__init__("Update (Expect this to take approx 1 minute)", parent)
+        super().__init__("Update", parent)
         self.parent = parent
         self.isApp = isApp
 
         self.pressed.connect(self.onPressed)
     
     def onPressed(self):
-        statusCode = os.system("git pull origin $(git rev-parse --abbrev-ref HEAD) > update.log")
+        statusCode = os.system("git pull > update.log")
         
         if statusCode == 0:
             if self.isApp:
