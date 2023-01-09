@@ -121,7 +121,18 @@ class SimpleClient(SimpleUDPClient):
             for address in addresses:
                 client.send_message(address, addresses[address])
                 if addresses[address] is None:
-                    server.handle_request()
+                    try:
+                        server.handle_request()
+                    except TimeoutError:
+                        print("Timed out listening to response to " + address + ". Retrying Once.")
+                        client.send_message(address, addresses[address])
+                        try:
+                            server.handle_request()
+                        except TimeoutError:
+                            raise TimeoutError("Timed out listening to response to " + address)
+                        
+                        server.flush()
+
                     results[address] = server.lastVal
                 else:
                     sleep(0.1) # Max 100 commands per second to ensure that no requests are dropped
@@ -191,6 +202,13 @@ class RetryingServer(BlockingOSCUDPServer):
         if self.retry:
             raise TimeoutError("Timed out waiting for response. Please check if command is valid.")
     
+    # Flush all incoming requests for the next second
+    def flush(self):
+        startTime = time()
+        self.retry = True
+        while (time() - startTime < self.timeout):
+            super().handle_request()
+
     def shutdown(self):
         if self.subscription is not None:
             self.subscription.shutdown()

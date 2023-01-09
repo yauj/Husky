@@ -140,11 +140,11 @@ class GainSlider(QWidget):
 
         self.slider = QSlider()
 
-        self.slider.setRange(0, (self.MAX - self.MIN) / self.STEP)
+        self.slider.setRange(0, round((self.MAX - self.MIN) / self.STEP))
         self.slider.setSingleStep(1)
         self.slider.setTickInterval(24)
         self.slider.setTickPosition(QSlider.TickPosition.TicksLeft)
-        self.slider.setValue(round(initValues[self.command] * (self.MAX - self.MIN) * self.STEP))
+        self.slider.setValue(round(initValues[self.command] * ((self.MAX - self.MIN) / self.STEP)))
         self.slider.valueChanged.connect(self.onSliderValueChange)
         self.slider.setMinimumWidth(20)
 
