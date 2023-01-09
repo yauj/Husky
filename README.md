@@ -9,17 +9,13 @@ For Macs, run `./pyinstller.sh` to create `Husky.app` within the `dist` director
 
 This is the file that contains the config for your particular setup. These are the particular settings in the file:
 
-### personal
-
-This is a list of the typical personal that you want to save settings for. For each personal, you can specify `channels` and `iem_bus`. These are the target channel and in ear bus for the particular person. If you leave one blank, then it will not save down the particular settings for that person.
-
 ### osc
 
 These are the default IP Addresses for `foh` and `iem` mixers. Note that the port is fixed to connect to 10023, which is the X32 default OSC port.
 
-### serverMidi
+### atemPort
 
-This contains the name of the name of the default port to listen to, for incoming MIDI commands to this program.
+This is the incoming port to [AtemOSC](http://www.atemosc.com). Currently, this only supports a local instance of AtemOSC.
 
 ### midi
 
@@ -36,6 +32,46 @@ This is the type of midi call to make. Valid options currently are: `cc` and `no
 #### defaultChannel
 
 This is the default channel to send midi commands on. Should be a number between 1-16.
+
+### serverMidi
+
+These are the MIDI ports to listen to. MIDI commands sent from these sources are able to trigger cue and fader commands. Under `serverMidi` is a dictionary, where the keys are the default souces to listen to and the value of each key is a array of default commands to listen to. The options for each command is:
+
+#### midi
+
+Incoming midi to listen to.
+
+##### type
+
+`Control Change` or `Note`.
+
+##### channel
+
+Channel number between 1 and 16.
+
+##### control
+
+Control number between 0 and 127.
+
+#### command
+
+Command to trigger.
+
+##### type
+
+`Cue` or `Fader`.
+
+##### page
+
+`CURRENT` or page number. The number of page numbers is dependent on `cuePages` and `faderPages` in `cue` section of the config.
+
+##### index
+
+Between 1-10 for cues and 1-4 for faders. Also if `CURRENT` is selected for `page`, there are additional triggers of `Next Page` and `Prev Page` to trigger.
+
+### personal
+
+This is a list of the typical personal that you want to save settings for. For each personal, you can specify `channels` and `iem_bus`. These are the target channel and in ear bus for the particular person. If you leave one blank, then it will not save down the particular settings for that person.
 
 ### faders
 
@@ -105,6 +141,7 @@ There are 3 different options to fire cues:
 
 - [python](https://www.python.org/downloads/)
 - [pip](https://pip.pypa.io/en/stable/installation/)
+- [pyinstaller](https://pypi.org/project/pyinstaller/)
 - [python-osc](https://pypi.org/project/python-osc/)
 - [mido](https://mido.readthedocs.io/en/latest/installing.html)
 - [PyQt6](https://pypi.org/project/PyQt6/)
