@@ -39,39 +39,27 @@ These are the MIDI ports to listen to. MIDI commands sent from these sources are
 
 #### midi
 
-Incoming midi to listen to.
-
-##### type
-
-`Control Change` or `Note`.
-
-##### channel
-
-Channel number between 1 and 16.
-
-##### control
-
-Control number between 0 and 127.
+Incoming midi to listen to. Specify `type` (either `Control Change` or `Note`),  the `channel` (number between 1 and 16) and `control` (number between 0 and 127) to listen to.
 
 #### command
 
-Command to trigger.
-
-##### type
-
-`Cue` or `Fader`.
-
-##### page
-
-`CURRENT` or page number. The number of page numbers is dependent on `cuePages` and `faderPages` in `cue` section of the config.
-
-##### index
-
-Between 1-10 for cues and 1-4 for faders. Also if `CURRENT` is selected for `page`, there are additional triggers of `Next Page` and `Prev Page` to trigger.
+Command to trigger if the conditions for a incoming midi is met. Specify `type` (either `Cue` or `Fader`), `page` (page letter or `CURRENT`) and `index` (number between 1-10 for `Cue` and 1-4 for `Fader`). Additionally if `CURRENT` is selected for `page`, there are additional triggers of `Next Page` and `Prev Page` that can be specified in `index`.
 
 ### personal
 
 This is a list of the typical personal that you want to save settings for. For each personal, you can specify `channels` and `iem_bus`. These are the target channel and in ear bus for the particular person. If you leave one blank, then it will not save down the particular settings for that person.
+
+### cues
+
+These are the fields related to the cue tab.
+
+Specify `cuePages` to indicate how many pages of cues to have.
+
+Specify `faderPages` to indicate how many pages of faders to have.
+
+#### cueOptions
+
+This contains a dictionary, where the keys are the default columns for the cue page. Under each key, is another dictionary, where the keys are the options for the column and the key is a array of `osc` or `midi` commands in the format specified below in the `osc` file format. A `RESET` option can be specified, which will be triggered when the reset button is clicked.
 
 ### faders
 
@@ -89,19 +77,23 @@ midi [audio] [channel] [control]
 
 On fader change, a corrosponding command will be fired. For OSC commands, this would send a float value between min and max arguement. For MIDI commands, this would send MIDI value equal to the slider position.
 
+Additionally, the field `oscFeedback` can be specified, to specify certain feedback back to the X32 mixer user specified knobs. This is something that you want to explicitly specify if you configure your FOH X32 mixer to send midi commands to this app.
+
+Additionally, specify the `defaultValue` of a fader, to force the fader to start at a certain position. This value should be a number between 0 and 127.
+
 ### talkbackChannel
 
-This is the channel that FOH talkback is being sent through. Applicable because FOH Talkback Channel is sent to IEM Mixer.
+This is the channel that FOH talkback is being sent through. Applicable because FOH Talkback Channel is sent to IEM Mixer. If only a single mixer is specified, then `talkbackDestination` is expected, which should be either `A` or `B`.
 
-## resetCommands
+### resetCommands
 
-Commands to be fired on reset call.
+This is a dictionary containing commands to be fired on reset call, where the key is the osc address and the value is the argument to be fired. The argument should be in the correct data format.
 
 ## Data Directory
 
 Data directory contains files that are created and used by this program. The directory has the following types of files:
 
-*Note that for both file formats, the first line is not read by the program.*
+*Note that for both file formats, the first line is a header line used by the program.*
 
 ### osc
 
@@ -156,6 +148,7 @@ Then after completing the post completion steps of homebrew:
 brew install git
 brew install python
 python3 -m ensurepip --upgrade
+sudo -H pip3 install --prefix=/usr/local pyinstaller
 pip3 install -r requirements.txt
 ```
 
