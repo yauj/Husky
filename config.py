@@ -355,6 +355,8 @@ config = {
         "cueOptions": {
             "Key of Song": {
                 "RESET": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 0"],
+                "Off": ["midi audio 2 100 0", "midi audio 2 101 0", "midi audio 2 102 0"],
+                "Chromatic": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 0"],
                 "C": ["midi audio 2 100 127", "midi audio 2 101 0", "midi audio 2 102 127"],
                 "Db": ["midi audio 2 100 127", "midi audio 2 101 12", "midi audio 2 102 127"],
                 "D": ["midi audio 2 100 127", "midi audio 2 101 23", "midi audio 2 102 127"],

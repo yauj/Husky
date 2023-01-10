@@ -1,3 +1,4 @@
+pyinstaller
 python-osc
 mido
 python-rtmidi
