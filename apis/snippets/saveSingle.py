@@ -1,4 +1,5 @@
 from datetime import date
+import logging
 import os
 from PyQt6.QtWidgets import (
     QMessageBox,
@@ -8,6 +9,7 @@ import traceback
 from util.constants import ODD_BUSES, ALL_CHANNELS, SETTINGS, SETTINGS_MAIN
 from util.customWidgets import ProgressDialog
 
+logger = logging.getLogger(__name__)
 
 class SaveButton(QPushButton):
     def __init__(self, osc, chName, personName, config):
@@ -40,7 +42,7 @@ class SaveButton(QPushButton):
             runSingle(self.osc, self.chName, self.personName.currentText(), self.config, dlg)
             dlg.complete.emit()
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg.raiseException.emit(ex)
 
 def runSingle(osc, chName, personName, config, dlg = None):
@@ -72,7 +74,7 @@ def runSingle(osc, chName, personName, config, dlg = None):
                 if "iem_bus" in config["personal"][chName]:
                     saveIEMBus(osc, file, tags, config["personal"][chName]["iem_bus"], dlg)
         
-        print("Created " + filename)
+        logger.info("Created " + filename)
     except Exception as ex:
         os.remove("data/" + filename)
         raise ex

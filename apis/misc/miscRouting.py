@@ -1,3 +1,4 @@
+import logging
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
     QComboBox,
@@ -17,6 +18,8 @@ from util.constants import (
     ROUTING_IN, ROUTING_IN_AUX, ROUTING_IN_USER,
     ROUTING_OUT, ROUTING_OUT_DIGITAL, ROUTING_OUT_LOCAL_A, ROUTING_OUT_LOCAL_B, ROUTING_OUT_USER
 )
+
+logger = logging.getLogger(__name__)
 
 class RoutingButton(QPushButton):
     def __init__(self, config, widgets, osc):
@@ -62,7 +65,7 @@ class RoutingDialog(QDialog):
 
             return tabs
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             vlayout = QVBoxLayout()
             label = QLabel("Error: " + str(ex))
             label.setStyleSheet("color:red")
@@ -325,7 +328,7 @@ class RoutingBox(QComboBox):
             if index >= 0:
                 self.osc[self.mixerName + "Client"].send_message(self.command, index)
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Routing")
             dlg.setText("Error: " + str(ex))
@@ -352,7 +355,7 @@ class RoutingSwitchButton(QPushButton):
             dlg.setText(self.mixerName.upper() + " Routing Swapped")
             dlg.exec()
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Routing")
             dlg.setText("Error: " + str(ex))
@@ -393,7 +396,7 @@ class RoutingPresetButton(QPushButton):
             dlg.setText(self.mixerName.upper() + " " + self.name + " Preset Loaded")
             dlg.exec()
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Routing")
             dlg.setText("Error: " + str(ex))

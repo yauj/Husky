@@ -1,8 +1,11 @@
+import logging
 from PyQt6.QtGui import (
     QAction,
 )
 import traceback
 from util.customWidgets import ProgressDialog
+
+logger = logging.getLogger(__name__)
 
 class UndoCommands(QAction):
     def __init__(self, s, osc, mixerName):
@@ -24,5 +27,5 @@ class UndoCommands(QAction):
                 message = "No previous commands to undo."
             dlg.completeWithMessage.emit(message)
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg.raiseException.emit(ex)

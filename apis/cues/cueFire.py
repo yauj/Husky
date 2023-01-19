@@ -1,10 +1,13 @@
 from apis.snippets.loadSingle import fireLines, runSingle
+import logging
 import os.path
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
 import traceback
+
+logger = logging.getLogger(__name__)
 
 class CueFireButton(QPushButton):
     def __init__(self, config, osc, prevIndex, index, printIndex, cues):
@@ -32,7 +35,7 @@ class CueFireButton(QPushButton):
                 self.cues
             )
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Cue")
             dlg.setText("Error: " + str(ex))

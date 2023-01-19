@@ -1,9 +1,12 @@
 from apis.snippets.loadSingle import fireLines
+import logging
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
 import traceback
+
+logger = logging.getLogger(__name__)
 
 class SnippetFireButton(QPushButton):
     def __init__(self, config, osc, textbox):
@@ -26,7 +29,7 @@ class SnippetFireButton(QPushButton):
             dlg.setText("Fired all Commands in textbox")
             dlg.exec()
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Fire Snippet")
             dlg.setText("Error: " + str(ex))

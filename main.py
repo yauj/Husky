@@ -10,7 +10,9 @@ from apis.menu.Update import UpdateApp
 from apis.misc.miscLayer import MiscLayer
 from apis.snippets.snippetsLayer import SnippetsLayer
 from config import config
+from datetime import datetime
 import faulthandler
+import logging
 import os
 from PyQt6.QtWidgets import (
     QApplication,
@@ -18,6 +20,8 @@ from PyQt6.QtWidgets import (
     QTabWidget,
 )
 import sys
+import traceback
+from util.constants import APP_NAME
 from util.defaultOSC import MIDIServer, MIDIVirtualPort
 
 class MainWindow(QMainWindow):
@@ -30,7 +34,7 @@ class MainWindow(QMainWindow):
         self.saveCache = True
         self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
 
-        self.setWindowTitle("Husky")
+        self.setWindowTitle(APP_NAME)
 
         self.loadConnectionCache()
 
@@ -109,12 +113,25 @@ class MainWindow(QMainWindow):
 
         return super().closeEvent(a0)
 
-faulthandler.enable()
+def excepthook(exc_type, exc_value, exc_tb):
+    tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+    logging.getLogger("SYSERRR").critical(tb)
+    QApplication.quit()
+    logFile.close()
+    # Copy Log file to tmp directory (Might be too Mac dependent)
+    os.system("cp data/app.log ~/Library/Logs/" + APP_NAME + "-crash-" + datetime.now().strftime('%Y%m%d%H%M%S') + ".log")
+
 os.chdir(os.path.dirname(__file__))
 if not os.path.exists("pyinstaller.sh"): # Not in Main Directory
     os.chdir("../Resources")
+logFile = open("data/app.log", "w")
+sys.excepthook = excepthook
+faulthandler.enable(logFile)
+logging.basicConfig(stream = logFile, level = logging.INFO, format = "%(asctime)s\t|%(levelname)s\t|%(name)s\t|%(message)s")
+logger = logging.getLogger(__name__)
 app = QApplication(sys.argv)
 window = MainWindow()
 window.resize(599, 599)
 window.show()
 app.exec()
+logFile.close()

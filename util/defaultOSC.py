@@ -1,6 +1,6 @@
 from itertools import islice
+import logging
 from math import ceil
-from uuid import uuid4
 import mido
 import mido.backends.rtmidi # For PyInstaller
 from pythonosc.udp_client import SimpleUDPClient
@@ -9,7 +9,10 @@ from pythonosc.osc_server import BlockingOSCUDPServer, ThreadingOSCUDPServer
 import socket
 import threading
 from time import time, sleep
-from util.constants import MIDI_SERVER_NAME, NUM_THREADS, PORT, START_PORT
+from util.constants import APP_NAME, NUM_THREADS, PORT, START_PORT
+from uuid import uuid4
+
+logger = logging.getLogger(__name__)
 
 # Simple Client that has logic, since testing client has logic
 class SimpleClient(SimpleUDPClient):
@@ -29,14 +32,14 @@ class SimpleClient(SimpleUDPClient):
             self.send_message("/info", None)
             self.connected = server.handle_request_with_timeout()
         except Exception as ex:
-            print(ex)
+            logger.warning(ex)
             self.connected = False
 
         if self.parent:
             if self.connected:
-                print("Connected to " + self.name.upper() + " at " + self.ipAddress)
+                logger.info("Connected to " + self.name.upper() + " at " + self.ipAddress)
             else:
-                print("Failed to connect to " + self.name.upper() + " at " + self.ipAddress)
+                logger.warning("Failed to connect to " + self.name.upper() + " at " + self.ipAddress)
         
         if server.subscription is not None:
             if self.connected:
@@ -124,7 +127,7 @@ class SimpleClient(SimpleUDPClient):
                     try:
                         server.handle_request()
                     except TimeoutError:
-                        print("Timed out listening to response to " + address + ". Retrying Once.")
+                        logger.debug("Timed out listening to response to " + address + ". Retrying Once.")
                         client.send_message(address, addresses[address])
                         try:
                             server.handle_request()
@@ -182,7 +185,7 @@ class RetryingServer(BlockingOSCUDPServer):
         self.subscription = SubscriptionServer(mixerName, self.port + 1) if mixerName is not None else None
 
     def printHandler(self, address, *args):
-        print(f"{address}: {args}")
+        logger.debug(f"{address}: {args}")
         self.retry = False
 
     def singleArgHandler(self, address, *args):
@@ -323,7 +326,7 @@ class AvailableIPs:
                 return self.validIPs
             except OSError as ex:
                 if str(ex) == "[Errno 51] Network is unreachable":
-                    print("Not Connected to Internet. Just checking 0.0.0.0")
+                    logger.debug("Not Connected to Internet. Just checking 0.0.0.0")
                     with RetryingServer(START_PORT + 1) as server:
                         server.timeout = 0.1
                         ip = "0.0.0.0"
@@ -430,10 +433,10 @@ class MIDIClient(mido.Backend):
     def open_output(self):
         try:
             self.output = super().open_output(self.port)
-            print("Connected to MIDI at " + self.port)
+            logger.info("Connected to MIDI at " + self.port)
         except Exception as ex:
-            print(ex)
-            print("Failed to connect to MIDI at " + self.port)
+            logger.warning(ex)
+            logger.warning("Failed to connect to MIDI at " + self.port)
             self.output = None
 
         return self.output is not None
@@ -462,10 +465,10 @@ class MIDIServer(mido.Backend):
         try:
             self.ioPort = super().open_ioport(self.port)
             self.ioPort.input.callback = self.callbackFunction
-            print("Listening to MIDI Port " + self.port)
+            logger.info("Listening to MIDI Port " + self.port)
         except Exception as ex:
-            print(ex)
-            print("Failed to listen to MIDI at " + self.port)
+            logger.warning(ex)
+            logger.warning("Failed to listen to MIDI at " + self.port)
             self.ioPort = None
 
         return self.ioPort is not None
@@ -568,7 +571,7 @@ class MIDIServer(mido.Backend):
     def close(self):
         if self.ioPort is not None:
             self.ioPort.close()
-            print("Stopped listening to MIDI Port " + self.port)
+            logger.info("Stopped listening to MIDI Port " + self.port)
             self.ioPort = None
 
     def get_ioport_names(self):
@@ -578,6 +581,6 @@ class MIDIServer(mido.Backend):
 class MIDIVirtualPort(mido.Backend):
     def __init__(self):
         super().__init__("mido.backends.rtmidi")
-        self.ioPort = super().open_ioport(MIDI_SERVER_NAME, True)
+        self.ioPort = super().open_ioport(APP_NAME, True)
         self.ioPort.input.callback = self.ioPort.output.send
-        print("Created MIDI IO Port " + MIDI_SERVER_NAME)
+        logger.info("Created MIDI IO Port " + APP_NAME)

@@ -1,9 +1,12 @@
+import logging
 from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
 from util.constants import ALL_CHANNELS, AUX_CHANNELS, LINK_CHANNELS, SETTINGS
 from util.customWidgets import ProgressDialog
+
+logger = logging.getLogger(__name__)
 
 class TransferButton(QPushButton):
     def __init__(self, config, osc):
@@ -40,8 +43,8 @@ class TransferButton(QPushButton):
             values = self.osc["fohClient"].bulk_send_messages(settings, dlg)
             self.osc["iemClient"].bulk_send_messages(values, dlg)
             
-            print("Settings Transferred")
+            logger.info("Settings Transferred")
             dlg.complete.emit()
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg.raiseException.emit(ex)

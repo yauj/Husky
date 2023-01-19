@@ -1,9 +1,12 @@
 from apis.snippets.loadSingle import fireLines
+import logging
 from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
 from util.customWidgets import ProgressDialog
+
+logger = logging.getLogger(__name__)
 
 class ResetButton(QPushButton):
     def __init__(self, config, osc):
@@ -31,8 +34,8 @@ class ResetButton(QPushButton):
 
             fireLines(self.config, self.osc, lines)
 
-            print("Settings Reset")
+            logger.info("Settings Reset")
             dlg.complete.emit()
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.exception(traceback.format_exc())
             dlg.raiseException.emit(ex)

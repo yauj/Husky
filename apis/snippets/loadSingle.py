@@ -1,3 +1,4 @@
+import logging
 import mido
 import os.path
 from PyQt6.QtWidgets import (
@@ -6,6 +7,8 @@ from PyQt6.QtWidgets import (
 )
 import traceback
 from util.customWidgets import ProgressDialog
+
+logger = logging.getLogger(__name__)
 
 class LoadButton(QPushButton):
     def __init__(self, config, osc, chName, filename, person):
@@ -37,7 +40,7 @@ class LoadButton(QPushButton):
             self.person.setCurrentText(self.filename.currentText().split(".")[0].split("_")[2])
             dlg.complete.emit()
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg.raiseException.emit(ex)
 
 def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None):
@@ -92,7 +95,7 @@ def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None)
 
     fireLines(config, osc, lines, iemCopy, dlg)
 
-    print("Loaded " + filename)
+    logger.info("Loaded " + filename)
 
 def fireLines(config, osc, lines, iemCopy = False, dlg = None):
     settings = {"foh": {}, "iem": {}, "atem": {}}

@@ -1,9 +1,12 @@
+import logging
 import mido
 from PyQt6.QtWidgets import (
     QSlider,
 )
 import traceback
 from util.lock import OwnerLock
+
+logger = logging.getLogger(__name__)
 
 class FadersSlider(QSlider):
     def __init__(self, config, osc, fader, page, pageIdx, index, defaultValue, oscFeedback):
@@ -134,4 +137,4 @@ class FadersSlider(QSlider):
                     self.osc["fohClient"].send_message(self.oscFeedback, value)
         except Exception:
             # Fail Quietly
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())

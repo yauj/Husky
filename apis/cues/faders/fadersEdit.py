@@ -1,3 +1,4 @@
+import logging
 from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -7,6 +8,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 import traceback
+
+logger = logging.getLogger(__name__)
 
 class FadersEditButton(QPushButton):
     def __init__(self, config, osc, fader):
@@ -78,7 +81,7 @@ class UpdateButton(QPushButton):
         try:
             self.main()
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Update")
             dlg.setText("Error: " + str(ex))

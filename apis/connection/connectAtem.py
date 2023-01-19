@@ -1,9 +1,12 @@
+import logging
 import traceback
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
 from util.defaultOSC import AtemClient, AtemSubscriptionServer
+
+logger = logging.getLogger(__name__)
 
 class ConnectAtemButton(QPushButton):
     def __init__(self, osc, port):
@@ -16,7 +19,7 @@ class ConnectAtemButton(QPushButton):
         try:
             self.init()
         except Exception:
-            print(traceback.format_exc())
+            logger.warning(traceback.format_exc())
         self.pressed.connect(self.connect)
         self.setFixedWidth(80)
     
@@ -28,7 +31,7 @@ class ConnectAtemButton(QPushButton):
             dlg.setText("Sending Atem OSC commands to local port " + self.port.currentText())
             dlg.exec()
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.warning(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Atem Connection")
             dlg.setText("Error: " + str(ex))

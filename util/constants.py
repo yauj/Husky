@@ -1,10 +1,10 @@
+APP_NAME = "Husky"
 VERSION = "v1.0.0" # Version of the app. Should be itereated on each major update.
 
 MIXER_TYPE = "X32" # Options: X32, XR18
 PORT = 10023 if MIXER_TYPE == "X32" else 10024
 START_PORT = 10000 # Ports: 10000 - AtemServer; 10001 - 10010 - bulk_send_message; 10011 - fohServer; 10012 - fohServer.subscription; 10013 - iemServer; 10014 - iemServer.subscription
 NUM_THREADS = 10
-MIDI_SERVER_NAME = "Husky"
 
 ALL_CHANNELS = [
     "/ch/01", "/ch/02", "/ch/03", "/ch/04", "/ch/05", "/ch/06", "/ch/07", "/ch/08",

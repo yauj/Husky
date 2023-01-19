@@ -1,4 +1,5 @@
 from apis.snippets.saveSingle import appendSettingsToTextbox
+import logging
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -14,6 +15,8 @@ from PyQt6.QtWidgets import (
 )
 import traceback
 from util.constants import ALL_BUSES, ALL_CHANNELS, AUX_CHANNELS, ODD_BUSES, SETTINGS
+
+logger = logging.getLogger(__name__)
 
 class SnippetAddButton(QPushButton):
     def __init__(self, config, osc, textbox):
@@ -159,7 +162,7 @@ class AddFOHButton(QPushButton):
             dlg.setText("Settings Added")
             dlg.exec()
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Add")
             dlg.setText("Error: " + str(ex))
@@ -197,7 +200,7 @@ class AddIEMButton(QPushButton):
             dlg.setText("Settings Added")
             dlg.exec()
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Add")
             dlg.setText("Error: " + str(ex))
@@ -237,7 +240,7 @@ class AddMIDIButton(QPushButton):
             dlg.setText("Settings Added")
             dlg.exec()
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Add")
             dlg.setText("Error: " + str(ex))

@@ -1,3 +1,4 @@
+import logging
 from PyQt6.QtWidgets import (
     QCheckBox,
     QDialog,
@@ -9,6 +10,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 import traceback
+
+logger = logging.getLogger(__name__)
 
 class TalkbackButton(QPushButton):
     def __init__(self, config, osc):
@@ -81,7 +84,7 @@ class TalkbackDialog(QDialog):
 
             self.setLayout(vlayout)
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             vlayout = QVBoxLayout()
             label = QLabel("Error: " + str(ex))
             label.setStyleSheet("color:red")
@@ -105,7 +108,7 @@ class TalkbackOneBox(QCheckBox):
             self.bitmap[self.index] = "1" if value == 2 else "0"
             self.osc["fohClient"].send_message(self.command, int("".join(self.bitmap), 2))
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Talkback")
             dlg.setText("Error: " + str(ex))
@@ -126,7 +129,7 @@ class TalkbackTwoBox(QCheckBox):
             arg = 1 if value == 2 else 0
             self.osc["iemClient"].send_message(self.command, arg)
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Talkback")
             dlg.setText("Error: " + str(ex))

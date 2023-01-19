@@ -1,8 +1,11 @@
+import logging
 import os
 from PyQt6.QtWidgets import (
     QFileDialog,
     QPushButton,
 )
+
+logger = logging.getLogger(__name__)
 
 class CueLoadButton(QPushButton):
     def __init__(self, widgets):
@@ -50,7 +53,7 @@ def loadCue(file, widgets):
                             if os.path.exists(filename):
                                 widgets["cues"][cueIdx]["snippet"].setFilename(filename)
                             else:
-                                print("Cue Snippet File not found: " + filename)
+                                logger.warning("Cue Snippet File not found: " + filename)
                                 widgets["cues"][cueIdx]["snippet"].setFilename("")
                     elif categories[idx] in widgets["cues"][cueIdx]:
                         if component == "N":

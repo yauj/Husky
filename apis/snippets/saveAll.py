@@ -1,9 +1,12 @@
 from apis.snippets.saveSingle import runSingle, saveSingleNumSettings
+import logging
 from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
 from util.customWidgets import ProgressDialog
+
+logger = logging.getLogger(__name__)
 
 class SaveAllButton(QPushButton):
     def __init__(self, osc, personNames, config):
@@ -27,7 +30,7 @@ class SaveAllButton(QPushButton):
                     runSingle(self.osc, chName, self.personNames[chName].currentText(), self.config, dlg)
             dlg.complete.emit()
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg.raiseException.emit(ex)
 
 def saveAllNumSettings(personNames, config):

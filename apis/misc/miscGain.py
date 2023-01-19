@@ -1,3 +1,4 @@
+import logging
 from PyQt6.QtWidgets import (
     QCheckBox,
     QDialog,
@@ -15,6 +16,8 @@ from PyQt6.QtWidgets import (
 )
 import traceback
 from util.constants import HEADAMP_CHANNELS
+
+logger = logging.getLogger(__name__)
 
 class GainButton(QPushButton):
     def __init__(self, config, widgets, osc):
@@ -67,7 +70,7 @@ class GainDialog(QDialog):
             widget.setLayout(vlayout)
             return widget
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             vlayout = QVBoxLayout()
             label = QLabel("Error: " + str(ex))
             label.setStyleSheet("color:red")
@@ -119,7 +122,7 @@ class PhantomBox(QWidget):
         try:
             self.osc[self.mixerName + "Client"].send_message(self.command, 1 if checked else 0)
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Preamp Gain")
             dlg.setText("Error: " + str(ex))
@@ -175,7 +178,7 @@ class GainSlider(QWidget):
             self.osc[self.mixerName + "Client"].send_message(self.command, (value - self.MIN) / (self.MAX - self.MIN))
             self.slider.setValue(round((value - self.MIN) / self.STEP))
         except Exception as ex:
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Preamp Gain")
             dlg.setText("Error: " + str(ex))

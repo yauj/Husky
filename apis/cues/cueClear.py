@@ -14,6 +14,8 @@ class CueClearButton(QPushButton):
             for category in cue:
                 if category == "snippet":
                     cue["snippet"].setFilename("")
+                elif category == "label":
+                    cue["label"].setStyleSheet("")
                 else:
                     cue[category].setCurrentIndex(-1)
         

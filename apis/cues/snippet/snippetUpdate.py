@@ -1,9 +1,12 @@
 from apis.snippets.saveSingle import appendSettingsToTextbox
+import logging
 from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
 )
 import traceback
+
+logger = logging.getLogger(__name__)
 
 class SnippetUpdateButton(QPushButton):
     def __init__(self, osc, textbox):
@@ -31,7 +34,7 @@ class SnippetUpdateButton(QPushButton):
             for line in curSettings:
                 self.textbox.append(line)
 
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Update Snippet")
             dlg.setText("Error: " + str(ex))
