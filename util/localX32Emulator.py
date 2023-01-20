@@ -9,7 +9,7 @@ class X32Emulator():
     def __init__(self):
         dispatcher = Dispatcher()
         dispatcher.set_default_handler(self.loopbackHandler, True)
-        self.server = ThreadingOSCUDPServer(("0.0.0.0", PORT), dispatcher)
+        self.server = ThreadingOSCUDPServer(("127.0.0.1", PORT), dispatcher)
         print("Server Started for port " + str(self.server.server_address))
 
     def start(self):
