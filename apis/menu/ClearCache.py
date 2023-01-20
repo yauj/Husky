@@ -1,10 +1,10 @@
-import os
 from PyQt6.QtGui import (
     QAction,
 )
 from PyQt6.QtWidgets import (
     QMessageBox,
 )
+import subprocess
 
 class ClearCache(QAction):
     def __init__(self, s):
@@ -13,7 +13,7 @@ class ClearCache(QAction):
         self.triggered.connect(self.main)
 
     def main(self):
-        statusCode = os.system("rm ./data/*.cache")
+        statusCode = subprocess.Popen("rm ./data/*.cache", shell = True).wait()
         
         if statusCode == 0:
             self.s.saveCache = False

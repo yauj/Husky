@@ -372,7 +372,7 @@ class RoutingSwitchButton(QPushButton):
             else:
                 self.tabs.tabBar().setTabTextColor(0, QColor())
                 self.tabs.tabBar().setTabTextColor(1, QColor(0, 255, 0))
-        except:
+        except Exception:
             self.tabs.tabBar().setTabTextColor(0, QColor())
             self.tabs.tabBar().setTabTextColor(1, QColor())
 
