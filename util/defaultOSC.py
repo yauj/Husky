@@ -496,47 +496,43 @@ class MIDIServer(mido.Backend):
                 if message.channel + 1 == self.subscriptions[id]["midi"]["channel"] and message.control == self.subscriptions[id]["midi"]["control"]:
                     if self.subscriptions[id]["command"]["type"] == "Cue":
                         if message.value > 0:
-                            page = self.getPageIdx(self.widgets["tabs"]["Cue"], self.subscriptions[id]["command"]["page"])
-                            if self.subscriptions[id]["command"]["index"] == "Prev Page":
-                                if page > 0:
-                                    self.widgets["tabs"]["Cue"].setCurrentIndex(page - 1)
-                            elif self.subscriptions[id]["command"]["index"] == "Next Page":
-                                if page < self.widgets["tabs"]["Cue"].count() - 1:
-                                    self.widgets["tabs"]["Cue"].setCurrentIndex(page + 1)
-                            else:
-                                idx = int(self.subscriptions[id]["command"]["index"]) - 1
-                                if idx < len(self.widgets["tabs"]["Cue"].widget(page).buttons):
-                                    self.widgets["tabs"]["Cue"].widget(page).buttons[idx].clicked()
+                            self.processCue(id)
                     elif self.subscriptions[id]["command"]["type"] == "Fader":
-                        page = self.getPageIdx(self.widgets["tabs"]["Fader"], self.subscriptions[id]["command"]["page"])
-                        if self.subscriptions[id]["command"]["index"] == "Prev Page":
-                            if message.value > 0 and page > 0:
-                                self.widgets["tabs"]["Fader"].setCurrentIndex(page - 1)
-                        elif self.subscriptions[id]["command"]["index"] == "Next Page":
-                            if message.value > 0 and page < self.widgets["tabs"]["Fader"].count() - 1:
-                                self.widgets["tabs"]["Fader"].setCurrentIndex(page + 1)
-                        else:
-                            idx = int(self.subscriptions[id]["command"]["index"]) - 1
-                            if idx < len(self.widgets["tabs"]["Fader"].widget(page).faders):
-                                fader = self.widgets["tabs"]["Fader"].widget(page).faders[idx]
-                                if fader.lock.acquire("midi " + id + " " + self.port):
-                                    fader.setValue(message.value)
+                        self.processFader(id, message)
             elif message.type == "note_on" and self.subscriptions[id]["midi"]["type"] == "Note":
                 # Only support cues
                 if message.channel + 1 == self.subscriptions[id]["midi"]["channel"] \
                     and message.note == self.subscriptions[id]["midi"]["control"] \
                     and self.subscriptions[id]["command"]["type"] == "Cue":
-                        page = self.getPageIdx(self.widgets["tabs"]["Cue"], self.subscriptions[id]["command"]["page"])
-                        if self.subscriptions[id]["command"]["index"] == "Prev Page":
-                            if page > 0:
-                                self.widgets["tabs"]["Cue"].setCurrentIndex(page - 1)
-                        elif self.subscriptions[id]["command"]["index"] == "Next Page":
-                            if page < self.widgets["tabs"]["Cue"].count() - 1:
-                                self.widgets["tabs"]["Cue"].setCurrentIndex(page + 1)
-                        else:
-                            idx = int(self.subscriptions[id]["command"]["index"]) - 1
-                            if idx < len(self.widgets["tabs"]["Cue"].widget(page).buttons):
-                                self.widgets["tabs"]["Cue"].widget(page).buttons[idx].clicked()
+                        self.processCue()
+    
+    def processCue(self, id):
+        page = self.getPageIdx(self.widgets["tabs"]["Cue"], self.subscriptions[id]["command"]["page"])
+        if self.subscriptions[id]["command"]["index"] == "Prev Page":
+            if page > 0:
+                self.widgets["tabs"]["Cue"].setCurrentIndex(page - 1)
+        elif self.subscriptions[id]["command"]["index"] == "Next Page":
+            if page < self.widgets["tabs"]["Cue"].count() - 1:
+                self.widgets["tabs"]["Cue"].setCurrentIndex(page + 1)
+        else:
+            idx = int(self.subscriptions[id]["command"]["index"]) - 1
+            if idx < len(self.widgets["tabs"]["Cue"].widget(page).buttons):
+                self.widgets["tabs"]["Cue"].widget(page).buttons[idx].clicked()
+    
+    def processFader(self, id, message):
+        page = self.getPageIdx(self.widgets["tabs"]["Fader"], self.subscriptions[id]["command"]["page"])
+        if self.subscriptions[id]["command"]["index"] == "Prev Page":
+            if message.value > 0 and page > 0:
+                self.widgets["tabs"]["Fader"].setCurrentIndex(page - 1)
+        elif self.subscriptions[id]["command"]["index"] == "Next Page":
+            if message.value > 0 and page < self.widgets["tabs"]["Fader"].count() - 1:
+                self.widgets["tabs"]["Fader"].setCurrentIndex(page + 1)
+        else:
+            idx = int(self.subscriptions[id]["command"]["index"]) - 1
+            if idx < len(self.widgets["tabs"]["Fader"].widget(page).faders):
+                fader = self.widgets["tabs"]["Fader"].widget(page).faders[idx]
+                if fader.lock.acquire("midi " + id + " " + self.port):
+                    fader.setValue(message.value)
 
     # Only support feedback for fader
     def processFeedback(self, page, index, value, ogId = None):
