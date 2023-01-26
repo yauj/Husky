@@ -19,6 +19,7 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QTabWidget,
 )
+import subprocess
 import sys
 import traceback
 from util.constants import APP_NAME
@@ -119,7 +120,7 @@ def excepthook(exc_type, exc_value, exc_tb):
     QApplication.quit()
     logFile.close()
     # Copy Log file to tmp directory (Might be too Mac dependent)
-    os.system("cp data/app.log ~/Library/Logs/" + APP_NAME + "-crash-" + datetime.now().strftime('%Y%m%d%H%M%S') + ".log")
+    subprocess.Popen("cp ./data/app.log ~/Library/Logs/" + APP_NAME + "-crash-" + datetime.now().strftime('%Y%m%d%H%M%S') + ".log", shell = True).wait()
 
 os.chdir(os.path.dirname(__file__))
 if not os.path.exists("pyinstaller.sh"): # Not in Main Directory

@@ -3,9 +3,7 @@ from PyQt6.QtGui import (
     QAction,
 )
 from PyQt6.QtWidgets import (
-    QComboBox,
     QDialog,
-    QHBoxLayout,
     QLabel,
     QMessageBox,
     QPushButton,
@@ -66,11 +64,11 @@ class UpdateButton(QPushButton):
         self.pressed.connect(self.onPressed)
     
     def onPressed(self):
-        statusCode = os.system("git pull > update.log")
+        statusCode = subprocess.Popen("git pull > update.log", shell = True).wait()
         statusLine = ""
         with open("update.log") as file:
             statusLine = file.readline().strip()
-        os.system("rm update.log")
+        subprocess.Popen("rm update.log", shell = True).wait()
 
         if statusLine == "Already up to date.":
             dlg = QMessageBox(self.parent)
@@ -79,9 +77,9 @@ class UpdateButton(QPushButton):
             dlg.exec()
         elif statusCode == 0:
             if self.isApp:
-                os.system("../../../../pyinstaller.sh")
+                subprocess.Popen("../../../../pyinstaller.sh", shell = True).wait()
             else:
-                os.system("./pyinstaller.sh")
+                subprocess.Popen("./pyinstaller.sh", shell = True).wait()
 
             dlg = QMessageBox(self.parent)
             dlg.setWindowTitle("Update App")

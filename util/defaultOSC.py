@@ -178,7 +178,7 @@ class RetryingServer(BlockingOSCUDPServer):
         dispatcher.map("/xinfo", self.retryHandler)
         dispatcher.set_default_handler(self.singleArgHandler)
 
-        super().__init__(("0.0.0.0", port), dispatcher)
+        super().__init__(("127.0.0.1", port), dispatcher)
         
         self.timeout = 1 # Timeout calls after 1 second
 
@@ -231,7 +231,7 @@ class SubscriptionServer(ThreadingOSCUDPServer):
         dispatcher = Dispatcher()
         dispatcher.set_default_handler(self.functionHandler)
 
-        super().__init__(("0.0.0.0", port), dispatcher)
+        super().__init__(("127.0.0.1", port), dispatcher)
 
         self.mixerName = mixerName
         self.ipAddress = None
@@ -326,10 +326,10 @@ class AvailableIPs:
                 return self.validIPs
             except OSError as ex:
                 if str(ex) == "[Errno 51] Network is unreachable":
-                    logger.debug("Not Connected to Internet. Just checking 0.0.0.0")
+                    logger.debug("Not Connected to Internet. Just checking 127.0.0.1")
                     with RetryingServer(START_PORT + 1) as server:
                         server.timeout = 0.1
-                        ip = "0.0.0.0"
+                        ip = "127.0.0.1"
                         client = SimpleClient("Test", ip, False)
                         if client.connect(server):
                             return [ip]
@@ -344,7 +344,7 @@ class AvailableIPs:
             for i in range(index, 256, NUM_THREADS):
                 ip = self.prefix + str(i)
                 if ip == self.thisIp:
-                    ip = "0.0.0.0"
+                    ip = "127.0.0.1"
                 client = SimpleClient("Test", ip, False)
                 if client.connect(server):
                     self.validIPs.append(ip)
@@ -352,7 +352,7 @@ class AvailableIPs:
 # Atem Client - Creates a single threaded connection to a local AtemOSC application
 class AtemClient(SimpleUDPClient):
     def __init__(self, port):
-        super().__init__("0.0.0.0", port)
+        super().__init__("127.0.0.1", port)
         self.prevSettings = None # Previous settings before last bulk send command was fired.
     
     # Undo previously applied settings
@@ -405,7 +405,7 @@ class AtemServer(ThreadingOSCUDPServer):
         dispatcher = Dispatcher()
         dispatcher.set_default_handler(self.functionHandler)
 
-        super().__init__(("0.0.0.0", START_PORT), dispatcher)
+        super().__init__(("127.0.0.1", START_PORT), dispatcher)
 
         self.subscriptions = {}
         threading.Thread(target = self.serve_forever).start()
@@ -496,47 +496,43 @@ class MIDIServer(mido.Backend):
                 if message.channel + 1 == self.subscriptions[id]["midi"]["channel"] and message.control == self.subscriptions[id]["midi"]["control"]:
                     if self.subscriptions[id]["command"]["type"] == "Cue":
                         if message.value > 0:
-                            page = self.getPageIdx(self.widgets["tabs"]["Cue"], self.subscriptions[id]["command"]["page"])
-                            if self.subscriptions[id]["command"]["index"] == "Prev Page":
-                                if page > 0:
-                                    self.widgets["tabs"]["Cue"].setCurrentIndex(page - 1)
-                            elif self.subscriptions[id]["command"]["index"] == "Next Page":
-                                if page < self.widgets["tabs"]["Cue"].count() - 1:
-                                    self.widgets["tabs"]["Cue"].setCurrentIndex(page + 1)
-                            else:
-                                idx = int(self.subscriptions[id]["command"]["index"]) - 1
-                                if idx < len(self.widgets["tabs"]["Cue"].widget(page).buttons):
-                                    self.widgets["tabs"]["Cue"].widget(page).buttons[idx].clicked()
+                            self.processCue(id)
                     elif self.subscriptions[id]["command"]["type"] == "Fader":
-                        page = self.getPageIdx(self.widgets["tabs"]["Fader"], self.subscriptions[id]["command"]["page"])
-                        if self.subscriptions[id]["command"]["index"] == "Prev Page":
-                            if message.value > 0 and page > 0:
-                                self.widgets["tabs"]["Fader"].setCurrentIndex(page - 1)
-                        elif self.subscriptions[id]["command"]["index"] == "Next Page":
-                            if message.value > 0 and page < self.widgets["tabs"]["Fader"].count() - 1:
-                                self.widgets["tabs"]["Fader"].setCurrentIndex(page + 1)
-                        else:
-                            idx = int(self.subscriptions[id]["command"]["index"]) - 1
-                            if idx < len(self.widgets["tabs"]["Fader"].widget(page).faders):
-                                fader = self.widgets["tabs"]["Fader"].widget(page).faders[idx]
-                                if fader.lock.acquire("midi " + id + " " + self.port):
-                                    fader.setValue(message.value)
+                        self.processFader(id, message)
             elif message.type == "note_on" and self.subscriptions[id]["midi"]["type"] == "Note":
                 # Only support cues
                 if message.channel + 1 == self.subscriptions[id]["midi"]["channel"] \
                     and message.note == self.subscriptions[id]["midi"]["control"] \
                     and self.subscriptions[id]["command"]["type"] == "Cue":
-                        page = self.getPageIdx(self.widgets["tabs"]["Cue"], self.subscriptions[id]["command"]["page"])
-                        if self.subscriptions[id]["command"]["index"] == "Prev Page":
-                            if page > 0:
-                                self.widgets["tabs"]["Cue"].setCurrentIndex(page - 1)
-                        elif self.subscriptions[id]["command"]["index"] == "Next Page":
-                            if page < self.widgets["tabs"]["Cue"].count() - 1:
-                                self.widgets["tabs"]["Cue"].setCurrentIndex(page + 1)
-                        else:
-                            idx = int(self.subscriptions[id]["command"]["index"]) - 1
-                            if idx < len(self.widgets["tabs"]["Cue"].widget(page).buttons):
-                                self.widgets["tabs"]["Cue"].widget(page).buttons[idx].clicked()
+                        self.processCue()
+    
+    def processCue(self, id):
+        page = self.getPageIdx(self.widgets["tabs"]["Cue"], self.subscriptions[id]["command"]["page"])
+        if self.subscriptions[id]["command"]["index"] == "Prev Page":
+            if page > 0:
+                self.widgets["tabs"]["Cue"].setCurrentIndex(page - 1)
+        elif self.subscriptions[id]["command"]["index"] == "Next Page":
+            if page < self.widgets["tabs"]["Cue"].count() - 1:
+                self.widgets["tabs"]["Cue"].setCurrentIndex(page + 1)
+        else:
+            idx = int(self.subscriptions[id]["command"]["index"]) - 1
+            if idx < len(self.widgets["tabs"]["Cue"].widget(page).buttons):
+                self.widgets["tabs"]["Cue"].widget(page).buttons[idx].clicked()
+    
+    def processFader(self, id, message):
+        page = self.getPageIdx(self.widgets["tabs"]["Fader"], self.subscriptions[id]["command"]["page"])
+        if self.subscriptions[id]["command"]["index"] == "Prev Page":
+            if message.value > 0 and page > 0:
+                self.widgets["tabs"]["Fader"].setCurrentIndex(page - 1)
+        elif self.subscriptions[id]["command"]["index"] == "Next Page":
+            if message.value > 0 and page < self.widgets["tabs"]["Fader"].count() - 1:
+                self.widgets["tabs"]["Fader"].setCurrentIndex(page + 1)
+        else:
+            idx = int(self.subscriptions[id]["command"]["index"]) - 1
+            if idx < len(self.widgets["tabs"]["Fader"].widget(page).faders):
+                fader = self.widgets["tabs"]["Fader"].widget(page).faders[idx]
+                if fader.lock.acquire("midi " + id + " " + self.port):
+                    fader.setValue(message.value)
 
     # Only support feedback for fader
     def processFeedback(self, page, index, value, ogId = None):
