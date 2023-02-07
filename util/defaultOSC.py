@@ -178,7 +178,7 @@ class RetryingServer(BlockingOSCUDPServer):
         dispatcher.map("/xinfo", self.retryHandler)
         dispatcher.set_default_handler(self.singleArgHandler)
 
-        super().__init__(("127.0.0.1", port), dispatcher)
+        super().__init__(("", port), dispatcher)
         
         self.timeout = 1 # Timeout calls after 1 second
 
@@ -231,7 +231,7 @@ class SubscriptionServer(ThreadingOSCUDPServer):
         dispatcher = Dispatcher()
         dispatcher.set_default_handler(self.functionHandler)
 
-        super().__init__(("127.0.0.1", port), dispatcher)
+        super().__init__(("", port), dispatcher)
 
         self.mixerName = mixerName
         self.ipAddress = None
@@ -326,10 +326,10 @@ class AvailableIPs:
                 return self.validIPs
             except OSError as ex:
                 if str(ex) == "[Errno 51] Network is unreachable":
-                    logger.debug("Not Connected to Internet. Just checking 127.0.0.1")
+                    logger.debug("Not Connected to Internet. Just checking localhost")
                     with RetryingServer(START_PORT + 1) as server:
                         server.timeout = 0.1
-                        ip = "127.0.0.1"
+                        ip = ""
                         client = SimpleClient("Test", ip, False)
                         if client.connect(server):
                             return [ip]
@@ -344,7 +344,7 @@ class AvailableIPs:
             for i in range(index, 256, NUM_THREADS):
                 ip = self.prefix + str(i)
                 if ip == self.thisIp:
-                    ip = "127.0.0.1"
+                    ip = ""
                 client = SimpleClient("Test", ip, False)
                 if client.connect(server):
                     self.validIPs.append(ip)
@@ -352,7 +352,7 @@ class AvailableIPs:
 # Atem Client - Creates a single threaded connection to a local AtemOSC application
 class AtemClient(SimpleUDPClient):
     def __init__(self, port):
-        super().__init__("127.0.0.1", port)
+        super().__init__("", port)
         self.prevSettings = None # Previous settings before last bulk send command was fired.
     
     # Undo previously applied settings
@@ -405,7 +405,7 @@ class AtemServer(ThreadingOSCUDPServer):
         dispatcher = Dispatcher()
         dispatcher.set_default_handler(self.functionHandler)
 
-        super().__init__(("127.0.0.1", START_PORT), dispatcher)
+        super().__init__(("", START_PORT), dispatcher)
 
         self.subscriptions = {}
         threading.Thread(target = self.serve_forever).start()
