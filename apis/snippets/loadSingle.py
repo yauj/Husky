@@ -35,7 +35,7 @@ class LoadButton(QPushButton):
         
     def main(self, dlg):
         try:
-            dlg.initBar.emit(loadSingleNumSettings(self.config, self.filename.currentText(), self.chName != "Mains"))
+            dlg.initBar.emit(loadSingleNumSettings(self.config, "data/" + self.filename.currentText(), self.chName != "Mains"))
             runSingle(self.config, self.osc, "data/" + self.filename.currentText(), self.chName != "Mains", self.chName, dlg)
             self.person.setCurrentText(self.filename.currentText().split(".")[0].split("_")[2])
             dlg.complete.emit()
@@ -144,10 +144,10 @@ def fireLines(config, osc, lines, iemCopy = False, dlg = None):
         if len(settings[mixerName]) > 0 or len(fadeSettings[mixerName]) > 0:
             osc[mixerName + "Client"].bulk_send_messages(settings[mixerName], dlg, fadeSettings[mixerName])
 
-def loadSingleNumSettings(config, filename, iemCopy):
+def loadSingleNumSettings(config, filename, iemCopy = False):
     num = 0
-    if (os.path.exists("data/" + filename)):
-        with open("data/" + filename) as file:
+    if (os.path.exists(filename)):
+        with open(filename) as file:
             file.readline() # Skip Header Line
             while (line := file.readline().strip()):
                 components = line.split()

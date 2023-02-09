@@ -43,5 +43,5 @@ def loadAllNumSettings(config, filenames):
     num = 0
     for chName in filenames:
         if (filenames[chName].currentText() != "" and os.path.exists("data/" + filenames[chName].currentText())):
-            num = num + loadSingleNumSettings(config, filenames[chName].currentText(), chName != "Mains")
+            num = num + loadSingleNumSettings(config, "data/" + filenames[chName].currentText(), chName != "Mains")
     return num

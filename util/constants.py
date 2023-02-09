@@ -31,6 +31,9 @@ LINK_CHANNELS = [
 ALL_BUSES = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"]
 ODD_BUSES = ["01", "03", "05", "07", "09", "11", "13", "15"]
 
+ALL_MATRICIES = ["01", "02", "03", "04", "05", "06"]
+ODD_MATRICIES = ["01", "03", "05"]
+
 BANKS_32 = ["1-8", "9-16", "17-24", "25-32"]
 BANKS_48 = ["1-8", "9-16", "17-24", "25-32", "33-40", "41-48"]
 BANKS_16 = ["1-4", "5-8", "9-12", "13-16"]
@@ -135,6 +138,20 @@ SETTINGS = {
         "/eq/2/type", "/eq/2/f", "/eq/2/g", "/eq/2/q",
         "/eq/3/type", "/eq/3/f", "/eq/3/g", "/eq/3/q",
         "/eq/4/type", "/eq/4/f", "/eq/4/g", "/eq/4/q"
+    ],
+    "Dynamics": ["/dyn/thr", "/dyn/ratio", "/dyn/knee", "/dyn/mgain", "/dyn/attack", "/dyn/hold", "/dyn/release", "/dyn/mix"],
+    "Pan and Mute": ["/mix/pan", "/mix/on"]
+}
+
+SETTINGS_BUS_MTX = {
+    "Label": ["/config/icon", "/config/color"],
+    "EQ": [
+        "/eq/1/type", "/eq/1/f", "/eq/1/g", "/eq/1/q",
+        "/eq/2/type", "/eq/2/f", "/eq/2/g", "/eq/2/q",
+        "/eq/3/type", "/eq/3/f", "/eq/3/g", "/eq/3/q",
+        "/eq/4/type", "/eq/4/f", "/eq/4/g", "/eq/4/q",
+        "/eq/5/type", "/eq/5/f", "/eq/5/g", "/eq/5/q",
+        "/eq/6/type", "/eq/6/f", "/eq/6/g", "/eq/6/q"
     ],
     "Dynamics": ["/dyn/thr", "/dyn/ratio", "/dyn/knee", "/dyn/mgain", "/dyn/attack", "/dyn/hold", "/dyn/release", "/dyn/mix"],
     "Pan and Mute": ["/mix/pan", "/mix/on"]
