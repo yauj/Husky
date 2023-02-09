@@ -1,4 +1,4 @@
-from apis.snippets.loadSingle import fireLines, runSingle
+from apis.snippets.loadSingle import fireLines, loadSingleNumSettings, runSingle
 import logging
 import os.path
 from PyQt6.QtWidgets import (
@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
+from util.customWidgets import ClosingProgressDialog
 
 logger = logging.getLogger(__name__)
 
@@ -27,13 +28,7 @@ class CueFireButton(QPushButton):
     
     def clicked(self):
         try:
-            main(
-                self.config,
-                self.osc,
-                self.prevIndex,
-                self.index,
-                self.cues
-            )
+            self.main()
         except Exception as ex:
             logger.error(traceback.format_exc())
             dlg = QMessageBox(self)
@@ -43,20 +38,31 @@ class CueFireButton(QPushButton):
 
         self.setDown(False)
 
-def main(config, osc, prevIndex, index, cues):
-    if prevIndex[0] is not None:
-        cues[prevIndex[0]]["label"].setStyleSheet("")
-    prevIndex[0] = index
-    try:
-        for category in config["cues"]["cueOptions"]:
-            if cues[index][category].currentText() != "":
-                fireLines(config, osc, config["cues"]["cueOptions"][category][cues[index][category].currentText()])
-        
-        if cues[index]["snippet"].filename != "":
-            if os.path.exists(cues[index]["snippet"].filename):
-                runSingle(config, osc, cues[index]["snippet"].filename)
+    def main(self):
+        if self.prevIndex[0] is not None:
+            self.cues[self.prevIndex[0]]["label"].setStyleSheet("")
+        self.prevIndex[0] = self.index
+        try:
+            for category in self.config["cues"]["cueOptions"]:
+                if self.cues[self.index][category].currentText() != "":
+                    fireLines(self.config, self.osc, self.config["cues"]["cueOptions"][category][self.cues[self.index][category].currentText()])
+            
+            if self.cues[self.index]["snippet"].filename != "":
+                if os.path.exists(self.cues[self.index]["snippet"].filename):
+                    self.snippetNumSettings = loadSingleNumSettings(self.config, self.cues[self.index]["snippet"].filename)
+                    if self.snippetNumSettings >= 100: # Will take more than 1 second
+                        dlg = ClosingProgressDialog("Snippet Load", self.loadSnippet)
+                        dlg.exec()
+                    else:
+                        self.loadSnippet()
 
-        cues[index]["label"].setStyleSheet("color:green")
-    except Exception as ex:
-        cues[index]["label"].setStyleSheet("color:red")
-        raise ex
+            self.cues[self.index]["label"].setStyleSheet("color:green")
+        except Exception as ex:
+            self.cues[self.index]["label"].setStyleSheet("color:red")
+            raise ex
+
+    def loadSnippet(self, dlg = None):
+        if dlg is not None:
+            dlg.initBar.emit(self.snippetNumSettings)
+        runSingle(self.config, self.osc, self.cues[self.index]["snippet"].filename, dlg = dlg)
+        dlg.complete.emit()

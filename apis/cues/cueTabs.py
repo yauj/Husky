@@ -1,4 +1,4 @@
-from apis.cues.cueFire import CueFireButton, main
+from apis.cues.cueFire import CueFireButton
 from apis.cues.cueSnippet import CueSnippetButton
 from PyQt6.QtGui import (
     QAction,
