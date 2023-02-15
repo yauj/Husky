@@ -5,6 +5,7 @@ from apis.cues.cueLoad import loadCue
 from apis.cues.cueSave import saveCue
 from apis.menu.About import About
 from apis.menu.ClearCache import ClearCache
+from apis.menu.SyncDirectory import BackupDirectory, LoadDirectory
 from apis.menu.UndoCommands import UndoCommands
 from apis.menu.Update import UpdateApp
 from apis.misc.miscLayer import MiscLayer
@@ -55,6 +56,9 @@ class MainWindow(QMainWindow):
         prevCmdMenu = menu.addMenu("Undo Previous Commands")
         for mixerName in self.config["osc"]:
             prevCmdMenu.addAction(UndoCommands(self, self.osc, mixerName))
+        prevCmdMenu = menu.addMenu("Sync App Directory")
+        prevCmdMenu.addAction(BackupDirectory(self))
+        prevCmdMenu.addAction(LoadDirectory(self))
         menu.addAction(ClearCache(self))
         menu.addAction(UpdateApp(self))
     
@@ -120,12 +124,12 @@ def excepthook(exc_type, exc_value, exc_tb):
     QApplication.quit()
     logFile.close()
     # Copy Log file to tmp directory (Might be too Mac dependent)
-    subprocess.Popen("cp ./data/app.log ~/Library/Logs/" + APP_NAME + "-crash-" + datetime.now().strftime('%Y%m%d%H%M%S') + ".log", shell = True).wait()
+    subprocess.Popen("cp ./app.log ~/Library/Logs/" + APP_NAME + "-crash-" + datetime.now().strftime('%Y%m%d%H%M%S') + ".log", shell = True).wait()
 
 os.chdir(os.path.dirname(__file__))
 if not os.path.exists("pyinstaller.sh"): # Not in Main Directory
     os.chdir("../Resources")
-logFile = open("data/app.log", "w")
+logFile = open("app.log", "w")
 sys.excepthook = excepthook
 faulthandler.enable(logFile)
 logging.basicConfig(stream = logFile, level = logging.INFO, format = "%(asctime)s\t|%(levelname)s\t|%(name)s\t|%(message)s")
