@@ -253,7 +253,7 @@ class SubscriptionServer(ThreadingOSCUDPServer):
 
     def functionHandler(self, address, *args):
         if address in self.subscriptions:
-            self.subscriptions[address](self.mixerName, address, args)
+            self.subscriptions[address](self.mixerName, address, args[0])
 
     def add(self, address, command):
         self.subscriptions[address] = command

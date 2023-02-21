@@ -3,3 +3,4 @@ python-osc
 mido
 python-rtmidi
 PyQt6
+pyqtgraph

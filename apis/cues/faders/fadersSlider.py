@@ -37,9 +37,7 @@ class FadersSlider(QSlider):
         if defaultValue:
             self.setValue(defaultValue)
 
-    def processSubscription(self, mixerName, message, args):
-        arg = args[0]
-
+    def processSubscription(self, mixerName, message, arg):
         idx, components = self.getLineComponents(mixerName, message)
 
         if components is None:

@@ -1,4 +1,9 @@
 import logging
+from math import log10
+from PyQt6.QtCore import (
+    pyqtSignal,
+    pyqtSlot
+)
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -16,8 +21,9 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 import pyqtgraph
+import struct
 import traceback
-from util.constants import ALL_CHANNELS, AUX_CHANNELS, HEADAMP_CHANNELS
+from util.constants import ALL_CHANNELS, AUX_CHANNELS, HEADAMP_CHANNELS, METERS_CMD, METERS_EXPECTED_FLOATS
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +41,7 @@ class GainButton(QPushButton):
         
         # Lastly, remove subscriptions
         for mixerName in self.config["osc"]:
-            self.osc[mixerName + "Server"].subscription.remove("/meters/0")
+            self.osc[mixerName + "Server"].subscription.remove(METERS_CMD)
 
 class GainDialog(QDialog):
     def __init__(self, config, widgets, osc):
@@ -73,7 +79,12 @@ class GainDialog(QDialog):
             hWidget.setFixedWidth(120)
             hlayout.addWidget(hWidget)
 
-            hlayout.addWidget(self.plot)
+            vlayout = QVBoxLayout()
+            vlayout.addWidget(QLabel("Plots Post-Gain Meter Level for channel. Levels are plotted every half second."))
+            vlayout.addWidget(QLabel("Red Line is the 0.5s maximum level. Black Line is the 0.5 average level."))
+            vlayout.addWidget(QLabel("Nothing is plotted if no input signal is detected."))
+            vlayout.addWidget(self.plot)
+            hlayout.addLayout(vlayout)
 
             widget = QWidget()
             widget.setLayout(hlayout)
@@ -90,20 +101,35 @@ class GainDialog(QDialog):
             return widget
 
 class MeterPlot(pyqtgraph.PlotWidget):
+    plotData = pyqtSignal(float)
+
     def __init__(self, osc, mixerName):
         super().__init__()
         self.osc = osc
         self.mixerName = mixerName
 
         self.x = []
-        self.y = []
+        self.yMax = []
+        self.yAvg = []
+        self.yAgg = [] # Only plot every 10 data points
+
+        self.plotData.connect(self.onPlotData)
 
         self.setBackground('w')
-        self.plotLine = self.plot(self.x, self.y, pen=pyqtgraph.mkPen(color=(255, 0, 0)))
-        self.osc[mixerName + "Server"].subscription.add("/meters/0", self.processSubscription)
+        self.maxLine = self.plot(self.x, self.yMax, pen=pyqtgraph.mkPen(color=(255, 0, 0)))
+        self.avgLine = self.plot(self.x, self.yAvg, pen=pyqtgraph.mkPen(color=(0, 0, 0)))
+        self.setXRange(0, 10, padding = 0)
+        self.setYRange(-60, 0, padding = 0.05)
+        self.showGrid(y = True)
+
+        yAxis = self.getAxis('left')
+        yAxisTicks = [(i, str(i)) for i in range(-60, 1, 6)]
+        yAxis.setTicks([yAxisTicks, []])
+
+        self.osc[mixerName + "Server"].subscription.add(METERS_CMD, self.processSubscription)
 
         self.label = QLineEdit()
-        self.label.setEnabled(False)
+        self.label.setReadOnly(True)
 
         self.channel = QComboBox()
         channels = list(set(ALL_CHANNELS) - set(AUX_CHANNELS))
@@ -118,20 +144,28 @@ class MeterPlot(pyqtgraph.PlotWidget):
         self.channel.currentIndexChanged.connect(self.onIndexChange)
         self.channel.setCurrentIndex(0)
         
-    def processSubscription(self, mixerName, message, *args):
-        # TODO: Change this
-        print(str(message) + ": " + str(args))
+    def processSubscription(self, mixerName, message, arg):
+        format = "<hh" + "".join(["f" for i in range(0, METERS_EXPECTED_FLOATS)])
+        meterVals = struct.unpack(format, arg)
+
+        db = meterVals[self.channel.currentIndex() + 2]
+        if db >= 0.0001: # Ignore noise values
+            self.plotData.emit(20 * log10(db))
     
     def onIndexChange(self, idx):
         self.x = []
-        self.y = []
-        self.plotLine.setData(self.x, self.y)
+        self.yMax = []
+        self.yAvg = []
+        self.yAgg = []
+        self.maxLine.setData(self.x, self.yMax)
+        self.avgLine.setData(self.x, self.yAvg)
+        self.setXRange(0, 10, padding = 0)
 
         settings = {}
-        settings["/‐ha/" + "{:02d}".format(idx) + "/index"] = None
+        settings["/-ha/" + "{:02d}".format(idx) + "/index"] = None
         settings["/ch/" + "{:02d}".format(idx + 1) + "/config/name"] = None
         values = self.osc[self.mixerName + "Client"].bulk_send_messages(settings)
-        preampChannel = values["/‐ha/" + "{:02d}".format(idx) + "/index"]
+        preampChannel = values["/-ha/" + "{:02d}".format(idx) + "/index"]
 
         if preampChannel == -1:
             self.phantom.disable()
@@ -139,8 +173,31 @@ class MeterPlot(pyqtgraph.PlotWidget):
         else:
             self.phantom.enable(preampChannel)
             self.fader.enable(preampChannel)
-        
-        self.label.setText(settings["/ch/" + "{:02d}".format(idx + 1) + "/config/name"])
+
+        self.label.setText(values["/ch/" + "{:02d}".format(idx + 1) + "/config/name"])
+    
+    @pyqtSlot(float)
+    def onPlotData(self, yVal):
+        self.yAgg.append(yVal)
+
+        if len(self.yAgg) >= 10:
+            self.yMax.append(max(self.yAgg))
+            self.yAvg.append(sum(self.yAgg) / len(self.yAgg))
+            self.yAgg = []
+
+            if len(self.x) == 0:
+                self.x.append(0)
+            else:
+                self.x.append(self.x[-1] + 0.5)
+            
+            if len(self.x) > 20:
+                self.x = self.x[1:]
+                self.yMax = self.yMax[1:]
+                self.yAvg = self.yAvg[1:]
+                self.setXRange(self.x[0], self.x[-1], padding = 0)
+
+            self.maxLine.setData(self.x, self.yMax)
+            self.avgLine.setData(self.x, self.yAvg)
 
 class PhantomBox(QWidget):
     def __init__(self, osc, mixerName):
