@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
-from util.customWidgets import ClosingProgressDialog
+from util.customWidgets import ProgressDialog
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class CueFireButton(QPushButton):
                 if os.path.exists(self.cues[self.index]["snippet"].filename):
                     self.snippetNumSettings = loadSingleNumSettings(self.config, self.cues[self.index]["snippet"].filename)
                     if self.snippetNumSettings >= 100: # Will take more than 1 second
-                        dlg = ClosingProgressDialog("Snippet Load", self.loadSnippet)
+                        dlg = ProgressDialog("Snippet Load", self.loadSnippet)
                         dlg.exec()
                     else:
                         self.loadSnippet()
@@ -66,4 +66,4 @@ class CueFireButton(QPushButton):
             dlg.initBar.emit(self.snippetNumSettings)
         runSingle(self.config, self.osc, self.cues[self.index]["snippet"].filename, dlg = dlg)
         if dlg is not None:
-            dlg.complete.emit()
+            dlg.close()
