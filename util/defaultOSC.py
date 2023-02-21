@@ -260,7 +260,11 @@ class SubscriptionServer(ThreadingOSCUDPServer):
         if self.ipAddress is not None:
             client = SimpleUDPClient(self.ipAddress, PORT)
             client._sock = self.socket
-            client.send_message("/subscribe", address)
+
+            if "/meters/" in address:
+                client.send_message("/meters", address)
+            else:
+                client.send_message("/subscribe", address)
             self.activeSubscriptions[address] = command
     
     def remove(self, address):
@@ -289,7 +293,10 @@ class SubscriptionServer(ThreadingOSCUDPServer):
                 if self.shutdownFlag or len(self.activeSubscriptions) == 0:
                     return # Exit early if shutdown or reconnection going on
 
-                client.send_message(command, arg)
+                if "/meters/" in arg:
+                    client.send_message("/meters", arg)
+                else:
+                    client.send_message(command, arg)
 
                 # If time to run is over sleep time, want to just skip sleep
                 # If over 4.0 seconds already, just want to spew the rest out.

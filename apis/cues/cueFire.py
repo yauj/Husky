@@ -65,4 +65,5 @@ class CueFireButton(QPushButton):
         if dlg is not None:
             dlg.initBar.emit(self.snippetNumSettings)
         runSingle(self.config, self.osc, self.cues[self.index]["snippet"].filename, dlg = dlg)
-        dlg.complete.emit()
+        if dlg is not None:
+            dlg.complete.emit()
