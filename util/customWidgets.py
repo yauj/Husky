@@ -80,3 +80,11 @@ class ProgressDialog(QDialog):
         self.label.setText("Error: " + str(ex))
         self.label.setStyleSheet("color: red")
         self.okButton.setEnabled(True)
+
+# Closes Dialog when done
+class ClosingProgressDialog(ProgressDialog):
+    complete = pyqtSignal()
+
+    @pyqtSlot()
+    def onComplete(self):
+        self.close()
