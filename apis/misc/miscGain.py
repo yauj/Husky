@@ -58,47 +58,49 @@ class GainDialog(QDialog):
         else:
             tabs = QTabWidget()
             for mixerName in self.config["osc"]:
-                tabs.addTab(self.gainTabLayer(mixerName), mixerName.upper())
+                if self.osc[mixerName + "Client"].connected:
+                    tabs.addTab(self.gainTabLayer(mixerName), mixerName.upper())
+                else:
+                    tabs.addTab(self.notConnectedWidget(mixerName), mixerName.upper())
             vlayout.addWidget(tabs)
 
         self.setLayout(vlayout)
 
     def gainTabLayer(self, mixerName):
-        try:            
-            hlayout = QHBoxLayout()
+        hlayout = QHBoxLayout()
 
-            self.plot = MeterPlot(self.osc, mixerName)
+        self.plot = MeterPlot(self.osc, mixerName)
 
-            vlayout = QVBoxLayout()
-            vlayout.addWidget(self.plot.channel)
-            vlayout.addWidget(self.plot.label)
-            vlayout.addWidget(self.plot.phantom)
-            vlayout.addWidget(self.plot.fader)
-            hWidget = QWidget()
-            hWidget.setLayout(vlayout)
-            hWidget.setFixedWidth(120)
-            hlayout.addWidget(hWidget)
+        vlayout = QVBoxLayout()
+        vlayout.addWidget(self.plot.channel)
+        vlayout.addWidget(self.plot.label)
+        vlayout.addWidget(self.plot.phantom)
+        vlayout.addWidget(self.plot.fader)
+        hWidget = QWidget()
+        hWidget.setLayout(vlayout)
+        hWidget.setFixedWidth(120)
+        hlayout.addWidget(hWidget)
 
-            vlayout = QVBoxLayout()
-            vlayout.addWidget(QLabel("Plots Post-Gain Meter Level for channel. Levels are plotted every half second."))
-            vlayout.addWidget(QLabel("Red Line is the 0.5s maximum level. Black Line is the 0.5 average level."))
-            vlayout.addWidget(QLabel("Nothing is plotted if no input signal is detected."))
-            vlayout.addWidget(self.plot)
-            hlayout.addLayout(vlayout)
+        vlayout = QVBoxLayout()
+        vlayout.addWidget(QLabel("Plots Post-Gain Meter Level for channel. Levels are plotted every half second."))
+        vlayout.addWidget(QLabel("Red Line is the 0.5s maximum level. Black Line is the 0.5 average level."))
+        vlayout.addWidget(QLabel("Nothing is plotted if no input signal is detected."))
+        vlayout.addWidget(self.plot)
+        hlayout.addLayout(vlayout)
 
-            widget = QWidget()
-            widget.setLayout(hlayout)
-            return widget
-        except Exception as ex:
-            logger.error(traceback.format_exc())
-            vlayout = QVBoxLayout()
-            label = QLabel("Error: " + str(ex))
-            label.setStyleSheet("color:red")
-            vlayout.addWidget(label)
-            
-            widget = QWidget()
-            widget.setLayout(vlayout)
-            return widget
+        widget = QWidget()
+        widget.setLayout(hlayout)
+        return widget
+        
+    def notConnectedWidget(self, mixerName):
+        vlayout = QVBoxLayout()
+        label = QLabel("Not connected to " + mixerName.upper() + " Mixer")
+        label.setStyleSheet("color:red")
+        vlayout.addWidget(label)
+        
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        return widget
 
 class MeterPlot(pyqtgraph.PlotWidget):
     plotData = pyqtSignal(float)
