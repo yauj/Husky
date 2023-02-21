@@ -511,7 +511,7 @@ class MIDIServer(mido.Backend):
                 if message.channel + 1 == self.subscriptions[id]["midi"]["channel"] \
                     and message.note == self.subscriptions[id]["midi"]["control"] \
                     and self.subscriptions[id]["command"]["type"] == "Cue":
-                        self.processCue()
+                        self.processCue(id)
     
     def processCue(self, id):
         page = self.getPageIdx(self.widgets["tabs"]["Cue"], self.subscriptions[id]["command"]["page"])
