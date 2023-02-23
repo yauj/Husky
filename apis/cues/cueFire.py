@@ -6,12 +6,11 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 import traceback
-from util.customWidgets import ClosingProgressDialog
 
 logger = logging.getLogger(__name__)
 
 class CueFireButton(QPushButton):
-    def __init__(self, config, osc, prevIndex, index, printIndex, cues):
+    def __init__(self, config, osc, prevIndex, index, printIndex, cues, progressBar):
         super().__init__("Fire")
         if (len(printIndex) == 1):
             super().setShortcut("ctrl+" + printIndex)
@@ -23,18 +22,12 @@ class CueFireButton(QPushButton):
         self.prevIndex = prevIndex
         self.index = index
         self.cues = cues
+        self.progressBar = progressBar
         self.pressed.connect(self.clicked)
         self.setFixedWidth(50)
     
     def clicked(self):
-        try:
-            self.main()
-        except Exception as ex:
-            logger.error(traceback.format_exc())
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Cue")
-            dlg.setText("Error: " + str(ex))
-            dlg.exec()
+        self.main()
 
         self.setDown(False)
 
@@ -43,6 +36,7 @@ class CueFireButton(QPushButton):
             self.cues[self.prevIndex[0]]["label"].setStyleSheet("")
         self.prevIndex[0] = self.index
         try:
+            self.progressBar.initBar.emit(1)
             for category in self.config["cues"]["cueOptions"]:
                 if self.cues[self.index][category].currentText() != "":
                     fireLines(self.config, self.osc, self.config["cues"]["cueOptions"][category][self.cues[self.index][category].currentText()])
@@ -50,20 +44,15 @@ class CueFireButton(QPushButton):
             if self.cues[self.index]["snippet"].filename != "":
                 if os.path.exists(self.cues[self.index]["snippet"].filename):
                     self.snippetNumSettings = loadSingleNumSettings(self.config, self.cues[self.index]["snippet"].filename)
-                    if self.snippetNumSettings >= 100: # Will take more than 1 second
-                        dlg = ClosingProgressDialog("Snippet Load", self.loadSnippet)
-                        dlg.exec()
-                    else:
-                        self.loadSnippet()
+                    self.loadSnippet()
 
             self.cues[self.index]["label"].setStyleSheet("color:green")
+            self.progressBar.complete.emit()
         except Exception as ex:
+            logger.error(traceback.format_exc())
             self.cues[self.index]["label"].setStyleSheet("color:red")
-            raise ex
+            self.progressBar.raiseException.emit(ex)
 
-    def loadSnippet(self, dlg = None):
-        if dlg is not None:
-            dlg.initBar.emit(self.snippetNumSettings)
-        runSingle(self.config, self.osc, self.cues[self.index]["snippet"].filename, dlg = dlg)
-        if dlg is not None:
-            dlg.complete.emit()
+    def loadSnippet(self):
+        self.progressBar.initBar.emit(self.snippetNumSettings)
+        runSingle(self.config, self.osc, self.cues[self.index]["snippet"].filename, dlg = self.progressBar)

@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import (
 )
 
 class CueTab(QTabWidget):
-    def __init__(self, config, osc, widgets):
+    def __init__(self, config, osc, widgets, progressBar):
         super().__init__()
         self.config = config
         self.osc = osc
@@ -22,7 +22,7 @@ class CueTab(QTabWidget):
         self.prevIndex = [None]
         
         for i in range(0, self.config["cues"]["cuePages"]):
-            self.addTab(CuesObject(config, osc, widgets, self.prevIndex, i), chr(97 + i))
+            self.addTab(CuesObject(config, osc, widgets, progressBar, self.prevIndex, i), chr(97 + i))
             self.addAction(TabShortcut(self, chr(97 + i), i))
 
 class TabShortcut(QAction):
@@ -38,7 +38,7 @@ class TabShortcut(QAction):
         self.cueTab.setCurrentIndex(self.index)
 
 class CuesObject(QScrollArea):
-    def __init__(self, config, osc, widgets, prevIndex, pageIndex):
+    def __init__(self, config, osc, widgets, progressBar, prevIndex, pageIndex):
         super().__init__()
         self.buttons = []
 
@@ -72,7 +72,7 @@ class CuesObject(QScrollArea):
             hlayout.addWidget(snippet)
             options["snippet"] = snippet
 
-            button = CueFireButton(config, osc, prevIndex, index, printIndex, widgets["cues"])
+            button = CueFireButton(config, osc, prevIndex, index, printIndex, widgets["cues"], progressBar)
             hlayout.addWidget(button)
             self.buttons.append(button)
 

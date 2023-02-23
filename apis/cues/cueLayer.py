@@ -12,6 +12,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from util.customWidgets import ProgressBar
+
 class CueLayer(QTabWidget):
     def __init__(self, config, widgets, osc):
         super().__init__()
@@ -21,12 +23,18 @@ class CueLayer(QTabWidget):
 
         vlayout = QVBoxLayout()
 
+        self.progressBar = ProgressBar()
         tabs = self.cueTab()
         faders = self.faderTab()
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(CueLoadButton(self.widgets))
         hlayout.addWidget(CueSaveButton(self.config, self.widgets))
+        vlayout.addLayout(hlayout)
+
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(QLabel("Progress Bar:"))
+        hlayout.addWidget(self.progressBar)
         vlayout.addLayout(hlayout)
 
         subLayer = QTabWidget()
@@ -45,7 +53,7 @@ class CueLayer(QTabWidget):
         hlayout.addWidget(CueClearButton(self.widgets))
         vlayout.addLayout(hlayout)
 
-        self.widgets["tabs"]["Cue"] = CueTab(self.config, self.osc, self.widgets)
+        self.widgets["tabs"]["Cue"] = CueTab(self.config, self.osc, self.widgets, self.progressBar)
         vlayout.addWidget(self.widgets["tabs"]["Cue"])
 
         widget = QWidget()
