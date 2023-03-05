@@ -5,8 +5,9 @@ from PyQt6.QtWidgets import (
 from util.defaultOSC import MIDIClient
 
 class ConnectMidiButton(QPushButton):
-    def __init__(self, osc, name, port):
+    def __init__(self, config, osc, name, port):
         super().__init__("Connect")
+        self.config = config
         self.osc = osc
         self.name = name
         self.port = port
@@ -30,6 +31,7 @@ class ConnectMidiButton(QPushButton):
 
     def init(self, init = False):
         self.osc[self.name + "Midi"] = MIDIClient(self.port.currentText())
+        self.config["midi"][self.name]["default"] = self.port.currentText()
 
         if init:
             currentText = self.port.currentText()

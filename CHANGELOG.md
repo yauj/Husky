@@ -17,3 +17,10 @@ A **Patch Version** iteration means some sort of backwards *compatible* minor fe
 ## v1.0.0 (2022-12-27)
 
 First version of Husky!
+
+## v1.1.0 (2023-03-05)
+
+Add Preferences Menu, that allows you to modify the config object. This is a catch all preferences menu,
+to be able to modify preferences for anything.
+
+Also fundamentally changes the way that cache works, to save all defaults in the config.cache file.

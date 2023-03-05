@@ -19,14 +19,31 @@ from util.lock import OwnerLock
 from uuid import uuid4
 
 class MidiInputsButton(QPushButton):
-    def __init__(self, osc, widgets):
+    def __init__(self, config, osc, widgets):
         super().__init__("Edit MIDI Inputs")
+        self.config = config
         self.osc = osc
         self.widgets = widgets
         self.pressed.connect(self.clicked)
 
+        self.osc["serverMidi"] = {}
+        for portName in self.config["serverMidi"]:
+            self.osc["serverMidi"][portName] = MIDIServer(portName, self.widgets)
+            for param in self.config["serverMidi"][portName]:
+                self.osc["serverMidi"][portName].addCallback(param)
+            self.osc["serverMidi"][portName].open_ioPort()
+
     def clicked(self):
         MidiInputDialog(self.osc, self.widgets).exec()
+
+        # Update config
+        self.config["serverMidi"] = {}
+        for portName in self.osc["serverMidi"]:
+            self.config["serverMidi"][portName] = []
+            callbacks = self.osc["serverMidi"][portName].getCallbacks()
+            for id in callbacks:
+                self.config["serverMidi"][portName].append(callbacks[id])
+
         self.setDown(False)
 
 class MidiInputDialog(QDialog):

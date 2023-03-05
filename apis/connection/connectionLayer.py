@@ -34,7 +34,7 @@ class ConnectionLayer(QWidget):
             
             hlayout.addWidget(address) 
             hlayout.addWidget(address.status) 
-            hlayout.addWidget(ConnectOscButton(self.osc, address, mixerName, idx, self.widgets, "iem" not in self.config["osc"]))
+            hlayout.addWidget(ConnectOscButton(self.config, self.osc, address, mixerName, idx, self.widgets, "iem" not in self.config["osc"]))
 
             vlayout.addLayout(hlayout)
         
@@ -48,7 +48,7 @@ class ConnectionLayer(QWidget):
         
         hlayout.addWidget(address)  
         hlayout.addWidget(address.status)  
-        hlayout.addWidget(ConnectAtemButton(self.osc, address))
+        hlayout.addWidget(ConnectAtemButton(self.config, self.osc, address))
 
         vlayout.addLayout(hlayout)
 
@@ -63,11 +63,11 @@ class ConnectionLayer(QWidget):
             
             hlayout.addWidget(address)
             hlayout.addWidget(address.status)
-            hlayout.addWidget(ConnectMidiButton(self.osc, name, address))
+            hlayout.addWidget(ConnectMidiButton(self.config, self.osc, name, address))
 
             vlayout.addLayout(hlayout)
 
-        vlayout.addWidget(MidiInputsButton(self.osc, self.widgets))
+        vlayout.addWidget(MidiInputsButton(self.config, self.osc, self.widgets))
 
         self.setLayout(vlayout)
 

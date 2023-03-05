@@ -1,5 +1,4 @@
 import logging
-from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
     QCheckBox,
     QDialog,
