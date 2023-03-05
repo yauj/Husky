@@ -9,8 +9,9 @@ from util.defaultOSC import AtemClient, AtemSubscriptionServer
 logger = logging.getLogger(__name__)
 
 class ConnectAtemButton(QPushButton):
-    def __init__(self, osc, port):
+    def __init__(self, config, osc, port):
         super().__init__("Set")
+        self.config = config
         self.osc = osc
         self.port = port
 
@@ -46,3 +47,5 @@ class ConnectAtemButton(QPushButton):
         except Exception as ex:
             self.port.invalid()
             raise ex
+        finally:
+            self.config["atemPort"] = self.port.currentText()

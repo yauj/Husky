@@ -6,8 +6,9 @@ from util.constants import START_PORT
 from util.defaultOSC import NUM_THREADS, RetryingServer, SimpleClient
 
 class ConnectOscButton(QPushButton):
-    def __init__(self, osc, address, mixerName, index, widgets, pointIEM):
+    def __init__(self, config, osc, address, mixerName, index, widgets, pointIEM):
         super().__init__("Connect")
+        self.config = config
         self.osc = osc
         self.address = address
         self.mixerName = mixerName
@@ -42,7 +43,11 @@ class ConnectOscButton(QPushButton):
         if self.mixerName == "foh" and self.pointIEM:
             self.osc["iemClient"] = self.osc[self.mixerName + "Client"]
 
-        if (self.osc[self.mixerName + "Client"].connect(self.osc[self.mixerName + "Server"])):
+        connect = self.osc[self.mixerName + "Client"].connect(self.osc[self.mixerName + "Server"])
+
+        self.config["osc"][self.mixerName] = self.address.currentText()
+
+        if (connect):
             self.address.connected()
             return True
         else:

@@ -13,16 +13,9 @@ class ClearCache(QAction):
         self.triggered.connect(self.main)
 
     def main(self):
-        statusCode = subprocess.Popen("rm ./data/*.cache", shell = True).wait()
-        
-        if statusCode == 0:
+        dlg = QMessageBox(self.s)
+        dlg.setWindowTitle("Clear Cache")
+        dlg.setText("Are you sure you want to clear cache?\nApp will use default parameters on next startup.")
+        if dlg.exec():
             self.s.saveCache = False
-            dlg = QMessageBox(self.s)
-            dlg.setWindowTitle("Clear Cache")
-            dlg.setText("Cache cleared. App will use default parameters on next startup.")
-            dlg.exec()
-        else:
-            dlg = QMessageBox(self.s)
-            dlg.setWindowTitle("Clear Cache")
-            dlg.setText("Error Updating. Please check logs for details.")
-            dlg.exec()
+            subprocess.Popen("rm ./data/*.cache", shell = True).wait()

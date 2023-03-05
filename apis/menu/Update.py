@@ -85,7 +85,7 @@ class UpdateButton(QPushButton):
             dlg.setWindowTitle("Update App")
             dlg.setText("App Updated. Quitting App now. Please open again.")
             if dlg.exec():
-                os._exit(os.EX_OK)
+                self.parent.close()
         else:
             dlg = QMessageBox(self.parent)
             dlg.setWindowTitle("Update App")
