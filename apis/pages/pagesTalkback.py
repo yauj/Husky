@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
     QLabel,
+    QMainWindow,
     QMessageBox,
     QPushButton,
     QVBoxLayout,
@@ -14,22 +15,28 @@ import traceback
 logger = logging.getLogger(__name__)
 
 class TalkbackButton(QPushButton):
-    def __init__(self, config, osc):
+    def __init__(self, config, widgets, osc):
         super().__init__("Talkback Settings")
         self.config = config
+        self.widgets = widgets
         self.osc = osc
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        TalkbackDialog(self.config, self.osc).exec()
+        if "Talkback" not in self.widgets["windows"]:
+            self.widgets["windows"]["Talkback"] = TalkbackWindow(self.config, self.widgets, self.osc)
+        
+        self.widgets["windows"]["Talkback"].show()
+
         self.setDown(False)
 
-class TalkbackDialog(QDialog):
-    def __init__(self, config, osc):
+class TalkbackWindow(QMainWindow):
+    def __init__(self, config, widgets, osc):
         super().__init__()
-        try:
-            vlayout = QVBoxLayout()
+        self.widgets = widgets
 
+        vlayout = QVBoxLayout()
+        try:
             label = QLabel("Specify who to talkback to. A checked box indicates that talkback is active for channel.")
             label.setMaximumHeight(20)
             vlayout.addWidget(label)
@@ -81,15 +88,18 @@ class TalkbackDialog(QDialog):
                         hlayout.addWidget(spacer)
                         hlayout.addWidget(self.talkbacks[chName])
                         vlayout.addLayout(hlayout)
-
-            self.setLayout(vlayout)
         except Exception as ex:
             logger.error(traceback.format_exc())
-            vlayout = QVBoxLayout()
             label = QLabel("Error: " + str(ex))
             label.setStyleSheet("color:red")
             vlayout.addWidget(label)
-            self.setLayout(vlayout)
+        
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        self.setCentralWidget(widget)
+    
+    def closeEvent(self, a0):
+        del self.widgets["windows"]["Talkback"]
 
 # 1 Mixer
 class TalkbackOneBox(QCheckBox):

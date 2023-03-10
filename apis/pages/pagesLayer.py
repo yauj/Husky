@@ -29,7 +29,7 @@ class PagesLayer(QWidget):
             label.setStyleSheet("font-weight: bold")
             label.setFixedHeight(20)
             vlayout.addWidget(label)
-            vlayout.addWidget(TalkbackButton(config, osc))
+            vlayout.addWidget(TalkbackButton(config, widgets, osc))
             vlayout.addWidget(AutoMixButton(config, widgets, osc))
 
         self.setLayout(vlayout)
