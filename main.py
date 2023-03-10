@@ -3,12 +3,14 @@ from apis.cues.cueLayer import CueLayer
 from apis.cues.cueLoad import loadCue
 from apis.cues.cueSave import saveCue
 from apis.menu.About import About
-from apis.menu.ClearCache import ClearCache
 from apis.menu.Preferences import Preferences
+from apis.menu.ResetCache import ResetCache
+from apis.menu.ResetCommands import ResetCommands
 from apis.menu.SyncDirectory import BackupDirectory, LoadDirectory
+from apis.menu.TransferSettings import TransferButton
 from apis.menu.UndoCommands import UndoCommands
 from apis.menu.Update import UpdateApp
-from apis.misc.miscLayer import MiscLayer
+from apis.pages.pagesLayer import PagesLayer
 from apis.snippets.snippetsLayer import SnippetsLayer
 from config import config
 from datetime import datetime
@@ -32,7 +34,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.config = config
-        self.widgets = {"connection": {}, "personal": {}, "tabs": {}, "cues": [], "faders": [], "routing": {}}
+        self.widgets = {"connection": {}, "personal": {}, "tabs": {}, "cues": [], "faders": [], "routing": {}, "windows": {}}
         self.osc = {}
         self.saveCache = True
         self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
@@ -46,7 +48,7 @@ class MainWindow(QMainWindow):
         tabs.addTab(ConnectionLayer(self.config, self.widgets, self.osc), "Connections")
         tabs.addTab(SnippetsLayer(self.config, self.widgets, self.osc), "Snippets")
         tabs.addTab(CueLayer(self.config, self.widgets, self.osc), "Cues")
-        tabs.addTab(MiscLayer(self.config, self.widgets, self.osc), "Misc")
+        tabs.addTab(PagesLayer(self.config, self.widgets, self.osc), "Pages")
 
         self.loadCueCache()
 
@@ -61,7 +63,11 @@ class MainWindow(QMainWindow):
         prevCmdMenu = menu.addMenu("Sync App Directory")
         prevCmdMenu.addAction(BackupDirectory(self))
         prevCmdMenu.addAction(LoadDirectory(self))
-        menu.addAction(ClearCache(self))
+        prevCmdMenu = menu.addMenu("Reset...")
+        prevCmdMenu.addAction(ResetCommands(self, self.config, self.osc))
+        prevCmdMenu.addAction(ResetCache(self))     
+        if "iem" in self.config["osc"]:
+            menu.addAction(TransferButton(self, self.config, self.osc))
         menu.addAction(UpdateApp(self))
     
     # Load Config Cache
@@ -78,6 +84,9 @@ class MainWindow(QMainWindow):
 
     # Save Cache
     def closeEvent(self, a0):
+        for window in self.widgets["windows"].copy().keys():
+            self.widgets["windows"][window].close()
+
         for mixerName in self.config["osc"]:
             self.osc[mixerName + "Server"].shutdown()
         self.osc["atemServer"].shutdown()
