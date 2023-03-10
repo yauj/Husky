@@ -1,7 +1,6 @@
 import logging
 from PyQt6.QtWidgets import (
     QCheckBox,
-    QDialog,
     QHBoxLayout,
     QLabel,
     QMainWindow,
@@ -43,6 +42,7 @@ class TalkbackWindow(QMainWindow):
 
             self.talkbacks = {}
             vlayout.addWidget(TalkbackAllButton(osc, self.talkbacks))
+            vlayout.addWidget(TalkbackNoneButton(osc, self.talkbacks))
 
             if "iem" not in config["osc"]:
                 if "talkbackDestination" not in config:
@@ -155,6 +155,19 @@ class TalkbackAllButton(QPushButton):
     def clicked(self):
         for name in self.boxes:
             self.boxes[name].setChecked(True)
+
+        self.setDown(False)
+
+class TalkbackNoneButton(QPushButton):
+    def __init__(self, osc, boxes):
+        super().__init__("Talk to Nobody!")
+        self.osc = osc
+        self.boxes = boxes
+        self.pressed.connect(self.clicked)
+    
+    def clicked(self):
+        for name in self.boxes:
+            self.boxes[name].setChecked(False)
 
         self.setDown(False)
 
