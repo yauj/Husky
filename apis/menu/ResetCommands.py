@@ -1,25 +1,32 @@
 from apis.snippets.loadSingle import fireLines
 import logging
+from PyQt6.QtGui import (
+    QAction,
+)
 from PyQt6.QtWidgets import (
-    QPushButton,
+    QMessageBox
 )
 import traceback
 from util.customWidgets import ProgressDialog
 
 logger = logging.getLogger(__name__)
 
-class ResetButton(QPushButton):
-    def __init__(self, config, osc):
-        super().__init__("Reset Faders to Default")
+class ResetCommands(QAction):
+    def __init__(self, s, config, osc):
+        super().__init__("Reset Commands", s)
+        self.s = s
         self.config = config
         self.osc = osc
-        self.pressed.connect(self.clicked)
+        self.triggered.connect(self.clicked)
     
     def clicked(self):
-        dlg = ProgressDialog("Mute, Pan, Fader settings reset", self.main)
-        dlg.exec()
-
-        self.setDown(False)
+        dlg = QMessageBox(self.s)
+        dlg.setWindowTitle("Reset Commands")
+        dlg.setText("Are you sure you want to run reset commands?\nThese are the resetCommands specified in the config file.")
+        dlg.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
+        if dlg.exec() == QMessageBox.StandardButton.Ok:
+            newDlg = ProgressDialog("Reset", self.main)
+            newDlg.exec()
 
     def main(self, dlg):
         try:

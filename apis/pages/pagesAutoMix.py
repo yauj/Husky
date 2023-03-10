@@ -1,5 +1,5 @@
+from apis.pages.pagesMutes import MutesBox
 import logging
-from math import log2
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -13,8 +13,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 import struct
-
-from apis.misc.miscMutes import MutesBox
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +128,7 @@ class AutoMixWindow(QMainWindow):
                     elif self.assignments[mixerName][idx].currentIndex() == 2:
                         self.labels[mixerName][idx].setStyleSheet("color:rgb(0, 0, " + str(sum(values) / len(values)) + ");")
                     else:
-                        self.labels[mixerName][idx].setStyleSheet("color:rgb(0, 0, 0);")
+                        self.labels[mixerName][idx].setStyleSheet("color:rgb(255, 255, 255);")
     
     def processMuteSubscription(self, mixerName, message, arg):
         idx = int(message.split("/")[2]) - 1
