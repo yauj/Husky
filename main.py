@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.config = config
-        self.widgets = {"connection": {}, "personal": {}, "tabs": {}, "cues": [], "faders": [], "routing": {}}
+        self.widgets = {"connection": {}, "personal": {}, "tabs": {}, "cues": [], "faders": [], "routing": {}, "windows": {}}
         self.osc = {}
         self.saveCache = True
         self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
@@ -78,6 +78,9 @@ class MainWindow(QMainWindow):
 
     # Save Cache
     def closeEvent(self, a0):
+        for window in self.widgets["windows"].copy().keys():
+            self.widgets["windows"][window].close()
+
         for mixerName in self.config["osc"]:
             self.osc[mixerName + "Server"].shutdown()
         self.osc["atemServer"].shutdown()

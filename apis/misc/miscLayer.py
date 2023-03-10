@@ -1,3 +1,4 @@
+from apis.misc.miscAutoMix import AutoMixButton
 from apis.misc.miscGain import GainButton
 from apis.misc.miscMutes import MutesButton
 from apis.misc.miscReset import ResetButton
@@ -20,6 +21,7 @@ class MiscLayer(QWidget):
             if "iem" in config["osc"]:
                 vlayout.addWidget(TransferButton(config, osc))
             vlayout.addWidget(RoutingButton(config, widgets, osc))
+            vlayout.addWidget(AutoMixButton(config, widgets, osc))
         vlayout.addWidget(GainButton(config, widgets, osc))
         vlayout.addWidget(MutesButton(config, osc))
         vlayout.addWidget(ResetButton(config, osc))

@@ -47,6 +47,10 @@ class ConnectOscButton(QPushButton):
 
         self.config["osc"][self.mixerName] = self.address.currentText()
 
+        # Close all other windows
+        for window in self.widgets["windows"].copy().keys():
+            self.widgets["windows"][window].close()
+
         if (connect):
             self.address.connected()
             return True
