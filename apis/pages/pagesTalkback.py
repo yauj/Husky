@@ -86,7 +86,7 @@ class TalkbackWindow(QMainWindow):
 
                         hlayout = QHBoxLayout()
                         hlayout.addWidget(QLabel(chName + ":"))
-                        hlayout.addWidget(TalkbackMeButton(osc, self.talkbacks, chName))
+                        hlayout.addWidget(TalkbackMeButton(osc, self.talkbacks, bus))
                         self.talkbacks[bus] = TalkbackTwoBox(config, osc, bus)
                         spacer = QWidget()
                         spacer.setFixedWidth(30)
@@ -198,19 +198,19 @@ class TalkbackNoneButton(QPushButton):
         self.setDown(False)
 
 class TalkbackMeButton(QPushButton):
-    def __init__(self, osc, boxes, chName):
+    def __init__(self, osc, boxes, bus):
         super().__init__("Talk to just Me!")
         self.osc = osc
         self.boxes = boxes
-        self.chName = chName
+        self.bus = bus
         self.pressed.connect(self.clicked)
         self.setFixedWidth(150)
     
     def clicked(self):
-        for name in self.boxes:
-            if (name == self.chName):
-                self.boxes[name].setChecked(True)
+        for bus in self.boxes:
+            if (bus == self.bus):
+                self.boxes[bus].setChecked(True)
             else:
-                self.boxes[name].setChecked(False)
+                self.boxes[bus].setChecked(False)
 
         self.setDown(False)
