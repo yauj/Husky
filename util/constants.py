@@ -1,5 +1,5 @@
 APP_NAME = "Husky"
-VERSION = "v1.1.0" # Version of the app. TODO for each update, to iterate the version number, as well as iterating the CHANGELOG.
+VERSION = "v1.2.0" # Version of the app. TODO for each update, to iterate the version number, as well as iterating the CHANGELOG.
 
 MIXER_TYPE = "X32" # Options: X32, XR18
 PORT = 10023 if MIXER_TYPE == "X32" else 10024
@@ -134,8 +134,9 @@ ROUTING_OUT_USER = ROUTING_IN_USER + [
 ]
 
 SETTINGS = {
-    "Label": ["/config/icon", "/config/color"],
-    "HPF": ["/preamp/hpon", "/preamp/hpf"],
+    "Label": ["/config/name", "/config/icon", "/config/color"],
+    "Gate": ["/gate/mode", "/gate/thr", "/gate/range", "/gate/attack", "/gate/hold", "/gate/release"],
+    "HPF": ["/preamp/hpon", "/preamp/hpf", "/preamp/hpslope"],
     "EQ": [
         "/eq/1/type", "/eq/1/f", "/eq/1/g", "/eq/1/q",
         "/eq/2/type", "/eq/2/f", "/eq/2/g", "/eq/2/q",
@@ -144,6 +145,30 @@ SETTINGS = {
     ],
     "Dynamics": ["/dyn/thr", "/dyn/ratio", "/dyn/knee", "/dyn/mgain", "/dyn/attack", "/dyn/hold", "/dyn/release", "/dyn/mix"],
     "Pan and Mute": ["/mix/pan", "/mix/on"]
+}
+
+ADDITIONAL_SETTINGS = {
+    "Delay": ["/delay/on", "/delay/time"],
+    "Insert": ["/insert/on", "/insert/pos", "/insert/sel"],
+    "Groups": ["/grp/dca", "/grp/mute"],
+    "Sends": [
+        "/mix/01/on", "/mix/01/level", "/mix/01/type", "/mix/01/pan", "/mix/01/panFollow",
+        "/mix/02/on", "/mix/02/level",
+        "/mix/03/on", "/mix/03/level", "/mix/03/type", "/mix/03/pan", "/mix/03/panFollow",
+        "/mix/04/on", "/mix/04/level",
+        "/mix/05/on", "/mix/05/level", "/mix/05/type", "/mix/05/pan", "/mix/05/panFollow",
+        "/mix/06/on", "/mix/06/level",
+        "/mix/07/on", "/mix/07/level", "/mix/07/type", "/mix/07/pan", "/mix/07/panFollow",
+        "/mix/08/on", "/mix/08/level",
+        "/mix/09/on", "/mix/09/level", "/mix/09/type", "/mix/09/pan", "/mix/09/panFollow",
+        "/mix/10/on", "/mix/10/level",
+        "/mix/11/on", "/mix/11/level", "/mix/11/type", "/mix/11/pan", "/mix/11/panFollow",
+        "/mix/12/on", "/mix/12/level",
+        "/mix/13/on", "/mix/13/level", "/mix/13/type", "/mix/13/pan", "/mix/13/panFollow",
+        "/mix/14/on", "/mix/14/level",
+        "/mix/15/on", "/mix/15/level", "/mix/15/type", "/mix/15/pan", "/mix/15/panFollow",
+        "/mix/16/on", "/mix/16/level",
+    ]
 }
 
 SETTINGS_BUS_MTX = {
