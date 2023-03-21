@@ -13,6 +13,6 @@ class About(QAction):
 
         dlg = QMessageBox(self.s)
         dlg.setWindowTitle("About " + APP_NAME)
-        dlg.setText("Version: " + VERSION + "; Mixer: " + MIXER_TYPE)
+        dlg.setText("Version: " + VERSION + "; Mixer: " + MIXER_TYPE + "\nhttps://github.com/gp-seattle/Husky")
 
         self.triggered.connect(dlg.exec)

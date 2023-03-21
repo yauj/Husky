@@ -46,8 +46,6 @@ class TransferButton(QAction):
                     for param in SETTINGS[category]:
                         settings[channel + param] = None
 
-            settings[channel + "/config/name"] = None
-
             dlg.initBar.emit(len(settings) * 2)
             
             values = self.osc["fohClient"].bulk_send_messages(settings, dlg)

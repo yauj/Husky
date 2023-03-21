@@ -24,3 +24,7 @@ Add Preferences Menu, that allows you to modify the config object. This is a cat
 to be able to modify preferences for anything.
 
 Also fundamentally changes the way that cache works, to save all defaults in the config.cache file.
+
+## v1.2.0 (2023-03-21)
+
+Add Channel Swap feature in Menu.
