@@ -68,11 +68,11 @@ class CuesObject(QScrollArea):
                 options[category].addItems(items)
                 hlayout.addWidget(options[category])
 
-            snippet = CueSnippetButton(config, osc)
+            snippet = CueSnippetButton(config, widgets, osc)
             hlayout.addWidget(snippet)
             options["snippet"] = snippet
 
-            button = CueFireButton(config, osc, prevIndex, index, printIndex, widgets["cues"], progressBar)
+            button = CueFireButton(config, widgets, osc, prevIndex, index, printIndex, widgets["cues"], progressBar)
             hlayout.addWidget(button)
             self.buttons.append(button)
 

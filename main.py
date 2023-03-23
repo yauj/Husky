@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
         prevCmdMenu.addAction(BackupDirectory(self))
         prevCmdMenu.addAction(LoadDirectory(self))
         prevCmdMenu = menu.addMenu("Reset...")
-        prevCmdMenu.addAction(ResetCommands(self, self.config, self.osc))
+        prevCmdMenu.addAction(ResetCommands(self, self.config, self.widgets, self.osc))
         prevCmdMenu.addAction(ResetCache(self))
         menu.addAction(SwapChannels(self, self.config, self.osc))
         if "iem" in self.config["osc"]:

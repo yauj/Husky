@@ -48,6 +48,7 @@ class AutoMixLuckyWindow(QMainWindow):
         self.widgets = widgets
         self.osc = osc
         self.autoMixers = {}
+        self.assignments = {}
         self.mutes = []
 
         self.vlayout = QVBoxLayout()
@@ -112,12 +113,15 @@ class AutoMixLuckyWindow(QMainWindow):
 
         channels = sorted(set(ALL_CHANNELS) - set(AUX_CHANNELS))
         for idx, channel in enumerate(channels):
+            assignment = LuckyAssignmentBox(self.osc, self.autoMixers, idx)
+            self.assignments[channel] = assignment
+
             muteCmd = channel + "/mix/on"
             mute = MutesBox(self.osc, "foh", muteCmd, muteValues)
             self.mutes.append(mute)
 
             glayout.addWidget(QLabel(channel), idx + 1, 0)
-            glayout.addWidget(LuckyAssignmentBox(self.osc, self.autoMixers, idx), idx + 1, 1)
+            glayout.addWidget(assignment, idx + 1, 1)
             glayout.addWidget(mute, idx + 1, 2)
 
         widget = QWidget()

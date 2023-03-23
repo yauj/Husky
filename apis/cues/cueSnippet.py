@@ -4,16 +4,17 @@ from PyQt6.QtWidgets import (
 )
 
 class CueSnippetButton(QPushButton):
-    def __init__(self, config, osc):
+    def __init__(self, config, widgets, osc):
         super().__init__()
         self.config = config
+        self.widgets = widgets
         self.osc = osc
         self.setFilename("")
 
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        dlg = SnippetDialog(self, self.config, self.osc)
+        dlg = SnippetDialog(self, self.config, self.widgets, self.osc)
         dlg.exec()
 
         self.setDown(False)

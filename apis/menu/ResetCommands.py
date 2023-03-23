@@ -12,10 +12,11 @@ from util.customWidgets import ProgressDialog
 logger = logging.getLogger(__name__)
 
 class ResetCommands(QAction):
-    def __init__(self, s, config, osc):
+    def __init__(self, s, config, widgets, osc):
         super().__init__("Reset Commands", s)
         self.s = s
         self.config = config
+        self.widgets = widgets
         self.osc = osc
         self.triggered.connect(self.clicked)
     
@@ -39,7 +40,7 @@ class ResetCommands(QAction):
                 if "RESET" in self.config["cues"]["cueOptions"][category]:
                     lines.extend(self.config["cues"]["cueOptions"][category]["RESET"])
 
-            fireLines(self.config, self.osc, lines)
+            fireLines(self.config, self.widgets, self.osc, lines)
 
             logger.info("Settings Reset")
             dlg.complete.emit()

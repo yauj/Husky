@@ -12,24 +12,26 @@ from PyQt6.QtWidgets import (
 )
 
 class SnippetEditButton(QPushButton):
-    def __init__(self, config, osc, filename):
+    def __init__(self, config, widgets, osc, filename):
         super().__init__("Edit Current Snippet")
         self.config = config
+        self.widgets = widgets
         self.osc = osc
         self.filename = filename
         self.setEnabled(self.filename.text() != "")
         self.pressed.connect(self.clicked)
     
     def clicked(self):
-        dlg = SnippetEditDialog(self.config, self.osc, self.filename)
+        dlg = SnippetEditDialog(self.config, self.widgets, self.osc, self.filename)
         dlg.exec()
 
         self.setDown(False)
 
 class SnippetEditDialog(QDialog):
-    def __init__(self, config, osc, filename):
+    def __init__(self, config, widgets, osc, filename):
         super().__init__()
         self.config = config
+        self.widgets = widgets
         self.osc = osc
         self.filename = filename
 
@@ -58,8 +60,8 @@ class SnippetEditDialog(QDialog):
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(SnippetAddButton(self.config, self.osc, textbox))
-        hlayout.addWidget(SnippetUpdateButton(self.osc, textbox))
-        hlayout.addWidget(SnippetFireButton(self.config, self.osc, textbox))
+        hlayout.addWidget(SnippetUpdateButton(self.osc, self.widgets, textbox))
+        hlayout.addWidget(SnippetFireButton(self.config, self.widgets, self.osc, textbox))
         vlayout.addLayout(hlayout)
 
         vlayout.addWidget(SnippetSaveButton(self, self.filename, self.headerLine, textbox))
