@@ -22,7 +22,7 @@ METER_EXPECTED_AMIX_VALS = 8
 
 class AutoMixButton(QPushButton):
     def __init__(self, config, widgets, osc):
-        super().__init__("Auto Mix")
+        super().__init__("Auto Mix - Native")
         self.config = config
         self.widgets = widgets
         self.osc = osc

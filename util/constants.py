@@ -1,5 +1,5 @@
 APP_NAME = "Husky"
-VERSION = "v1.2.0" # Version of the app. TODO for each update, to iterate the version number, as well as iterating the CHANGELOG.
+VERSION = "v1.3.0" # Version of the app. TODO for each update, to iterate the version number, as well as iterating the CHANGELOG.
 
 MIXER_TYPE = "X32" # Options: X32, XR18
 PORT = 10023 if MIXER_TYPE == "X32" else 10024
@@ -8,6 +8,9 @@ NUM_THREADS = 10
 
 METERS_CMD = "/meters/4"
 METERS_EXPECTED_FLOATS = 82
+
+CHANNEL_METERS_CMD = "/meters/6"
+CHANNEL_METERS_EXPECTED_FLOATS = 4
 
 ALL_CHANNELS = [
     "/ch/01", "/ch/02", "/ch/03", "/ch/04", "/ch/05", "/ch/06", "/ch/07", "/ch/08",

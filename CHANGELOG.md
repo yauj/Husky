@@ -28,3 +28,7 @@ Also fundamentally changes the way that cache works, to save all defaults in the
 ## v1.2.0 (2023-03-21)
 
 Add Channel Swap feature in Menu.
+
+## v1.3.0 (2023-03-22)
+
+Add "I'm feeling lucky" auto mixer.

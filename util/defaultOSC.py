@@ -253,19 +253,48 @@ class SubscriptionServer(ThreadingOSCUDPServer):
 
     def functionHandler(self, address, *args):
         if address in self.subscriptions:
-            self.subscriptions[address](self.mixerName, address, args[0])
+            self.subscriptions[address]["command"](self.mixerName, address, args[0])
 
-    def add(self, address, command):
-        self.subscriptions[address] = command
+    def add(self, address, command, alias = None, param1 = 0, param2 = 0, paramTimeFactor = 1):
+        record = {
+            "address": address,
+            "command": command
+        }
+
+        if "/meters/" in address:
+            if alias is not None:
+                record["subCmd"] = "/batchsubscribe"
+                record["alias"] = alias
+                record["param1"] = param1
+                record["param2"] = param2
+                record["paramTimeFactor"] = paramTimeFactor
+            else:
+                record["subCmd"] = "/meters"
+        else:
+            if alias is not None:
+                record["subCmd"] = "/formatsubscribe"
+                record["alias"] = alias
+                record["param1"] = param1
+                record["param2"] = param2
+                record["paramTimeFactor"] = paramTimeFactor
+            else:
+                record["subCmd"] = "/subscribe"
+
+        if alias is not None:
+            self.subscriptions[alias] = record
+        else:
+            self.subscriptions[address] = record
+
         if self.ipAddress is not None:
             client = SimpleUDPClient(self.ipAddress, PORT)
             client._sock = self.socket
 
-            if "/meters/" in address:
-                client.send_message("/meters", address)
+            if "alias" in record:
+                client.send_message(record["subCmd"], [record["alias"], record["address"], record["param1"], record["param2"], record["paramTimeFactor"]])
+                self.activeSubscriptions[alias] = record
             else:
-                client.send_message("/subscribe", address)
-            self.activeSubscriptions[address] = command
+                client.send_message(record["subCmd"], record["address"])
+                self.activeSubscriptions[address] = record
     
     def remove(self, address):
         self.activeSubscriptions.pop(address, None)
@@ -287,16 +316,22 @@ class SubscriptionServer(ThreadingOSCUDPServer):
             client = SimpleUDPClient(self.ipAddress, PORT)
             client._sock = self.socket
             sleepTime = 4.0 / len(args) # Spread out commands across approx 4.0 seconds
-            for arg in args:
+            for address in args:
                 itrTime = time()
             
                 if self.shutdownFlag or len(self.activeSubscriptions) == 0:
                     return # Exit early if shutdown or reconnection going on
 
-                if "/meters/" in arg:
-                    client.send_message("/meters", arg)
+                if command == "/renew":
+                    if "alias" in args[address]:
+                        client.send_message(command, args[address]["alias"])
+                    else:
+                        client.send_message(command, address)
                 else:
-                    client.send_message(command, arg)
+                    if "alias" in args[address]:
+                        client.send_message(args[address]["subCmd"], [args[address]["alias"], args[address]["address"], args[address]["param1"], args[address]["param2"], args[address]["paramTimeFactor"]])
+                    else:
+                        client.send_message(args[address]["subCmd"], args[address]["address"])
 
                 # If time to run is over sleep time, want to just skip sleep
                 # If over 4.0 seconds already, just want to spew the rest out.
