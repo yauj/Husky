@@ -68,7 +68,10 @@ class AutoMixLuckyWindow(QMainWindow):
         self.bus = QComboBox()
         self.bus.addItem("None")
         self.bus.addItems(ALL_BUSES)
-        self.bus.setCurrentIndex(0)
+        if "luckyAutoMixBus" in self.config:
+            self.bus.setCurrentText(self.config["luckyAutoMixBus"])
+        else:
+            self.bus.setCurrentIndex(0)
 
         self.threshold = QSpinBox()
         self.threshold.setRange(-60, 0)
@@ -134,11 +137,11 @@ class AutoMixLuckyWindow(QMainWindow):
         self.osc["fohServer"].subscription.add("/ch/**/mix/on", self.processMuteSubscription, MUTE_SUB, 1, len(channels))
 
     def processMuteSubscription(self, mixerName, message, arg):
-        format = "<hh" + "".join(["h" for i in range(0, len(self.mutes))])
+        format = "<i" + "".join(["i" for i in range(0, len(self.mutes))])
         meterVals = struct.unpack(format, arg)
         
         for i in range(0, len(self.mutes)):
-            self.mutes[i].setChecked(meterVals[i + 2] == 0)
+            self.mutes[i].setChecked(meterVals[i + 1] == 0)
         
     def notConnected(self):
         label = QLabel("Not connected to FOH Mixer")
@@ -149,6 +152,9 @@ class AutoMixLuckyWindow(QMainWindow):
         self.osc["fohServer"].subscription.remove(MUTE_SUB)
         for autoMixName in self.autoMixers:
             self.autoMixers[autoMixName].removeAll()
+        
+        if self.bus.currentIndex() > 0:
+            self.config["luckyAutoMixBus"] = self.bus.currentText()
 
         del self.widgets["windows"]["AutoMixLucky"]
 
@@ -211,13 +217,13 @@ class LuckyGroup:
     def processSubscription(self, mixerName, message, arg):
         format = "<hh" + "".join(["f" for i in range(0, CHANNEL_METERS_EXPECTED_FLOATS)])
         meterVals = struct.unpack(format, arg)
-        db = 20 * math.log10(max(meterVals[6], 0.001)) # Cap Min at -60db.
+        db = 20 * math.log10(max(meterVals[-1], 0.001)) # Cap Min at -60db.
         
         channelIdx = int(message.replace(METER_SUB_PREFIX, ""))
         self.channelMeter[channelIdx].append(db)
 
         # Figure out if we should fire commands
-        shouldFire = next(iter(self.channelMeter.keys().values())) == channelIdx
+        shouldFire = next(iter(self.channelMeter.keys())) == channelIdx
 
         if shouldFire: # Passed condition that this is the first channelIdx
             busName = self.bus.currentText()
@@ -230,7 +236,7 @@ class LuckyGroup:
 
             maxChVal = None
             for channelIdx in valsMap:
-                if not self.mutes.isChecked():
+                if not self.mutes[channelIdx].isChecked():
                     if len(valsMap[channelIdx]) >= 3: # Should wait for all to have multiple datapoints
                         shouldFire = False
                     else:
@@ -239,8 +245,9 @@ class LuckyGroup:
                         if maxChVal is None or val > maxChVal:
                             maxChVal = val
         
-            if shouldFire: # Pass condition that there are values for every channel 
-                self.channelMeter = None
+            if shouldFire: # Pass condition that there are values for every channel
+                for channelIdx in valsMap:
+                    self.channelMeter[channelIdx] = []
 
             if maxChVal <= self.MIN and self.allOff: # It's all off already. Leave it be till there is a non-zero value
                 shouldFire = False
@@ -269,5 +276,5 @@ class LuckyGroup:
                             commands[command] = 0.25
                     self.osc[mixerName + "Client"].bulk_send_messages(commands)
                 finally:
-                    self.lock.release(id)
+                    self.lock.release()
                     self.allOff = (maxChVal <= self.MIN)
