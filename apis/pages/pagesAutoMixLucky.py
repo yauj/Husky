@@ -14,13 +14,13 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 import struct
-from util.constants import ALL_BUSES, ALL_CHANNELS, CHANNEL_METERS_CMD, CHANNEL_METERS_EXPECTED_FLOATS, AUX_CHANNELS
+from util.constants import ALL_BUSES, ALL_CHANNELS, AUTOMIX_METERS_CMD, AUTOMIX_METERS_EXPECTED_FLOATS, AUX_CHANNELS
 from util.lock import OwnerLock
 from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
-METER_SUB_PREFIX = "/lucky/meter/"
+FADER_SUB_PREFIX = "/lucky/fader/"
 MUTE_SUB = "/lucky/mutes"
 
 # TODO: Change Hardcode on FOH mixer
@@ -50,6 +50,7 @@ class AutoMixLuckyWindow(QMainWindow):
         self.autoMixers = {}
         self.assignments = {}
         self.mutes = []
+        self.gain = []
 
         self.vlayout = QVBoxLayout()
 
@@ -75,7 +76,7 @@ class AutoMixLuckyWindow(QMainWindow):
 
         self.threshold = QSpinBox()
         self.threshold.setRange(-60, 0)
-        self.threshold.setValue(-60) # Default to -60 db
+        self.threshold.setValue(-50) # Default to -50 db
 
         self.mBox = QSpinBox()
         self.mBox.setRange(1, 9)
@@ -107,7 +108,7 @@ class AutoMixLuckyWindow(QMainWindow):
         self.vlayout.addLayout(hlayout)
 
         for autoMixName in ["A", "B", "C", "D", "E"]:
-            self.autoMixers[autoMixName] = LuckyGroup(self.config, self.osc, self.bus, self.mutes, self.threshold, self.mBox, self.cBox)
+            self.autoMixers[autoMixName] = LuckyGroup(self.config, self.osc, self.bus, self.mutes, self.gain, self.threshold, self.mBox, self.cBox, autoMixName)
         
         glayout = QGridLayout()
         glayout.addWidget(QLabel("Channel"), 0, 0)
@@ -122,6 +123,7 @@ class AutoMixLuckyWindow(QMainWindow):
             muteCmd = channel + "/mix/on"
             mute = MutesBox(self.osc, "foh", muteCmd, muteValues)
             self.mutes.append(mute)
+            self.gain.append([])
 
             glayout.addWidget(QLabel(channel), idx + 1, 0)
             glayout.addWidget(assignment, idx + 1, 1)
@@ -135,6 +137,7 @@ class AutoMixLuckyWindow(QMainWindow):
         self.vlayout.addWidget(scroll)
 
         self.osc["fohServer"].subscription.add("/ch/**/mix/on", self.processMuteSubscription, MUTE_SUB, 1, len(channels))
+        self.osc["fohServer"].subscription.add(AUTOMIX_METERS_CMD, self.processGainSubscription)
 
     def processMuteSubscription(self, mixerName, message, arg):
         format = "<i" + "".join(["i" for i in range(0, len(self.mutes))])
@@ -142,6 +145,16 @@ class AutoMixLuckyWindow(QMainWindow):
         
         for i in range(0, len(self.mutes)):
             self.mutes[i].setChecked(meterVals[i + 1] == 0)
+    
+    def processGainSubscription(self, mixerName, message, arg):
+        format = "<hh" + "".join(["f" for i in range(0, AUTOMIX_METERS_EXPECTED_FLOATS)])
+        meterVals = struct.unpack(format, arg)
+
+        for channelIdx in range(0, len(self.gain)):
+            db = 20 * math.log10(max(meterVals[channelIdx + 2], 0.001))
+            self.gain[channelIdx].append(db)
+            if len(self.gain[channelIdx]) > 3: # Keep under 3
+                self.gain[channelIdx] = self.gain[channelIdx][1:]
         
     def notConnected(self):
         label = QLabel("Not connected to FOH Mixer")
@@ -150,6 +163,7 @@ class AutoMixLuckyWindow(QMainWindow):
     
     def closeEvent(self, a0):
         self.osc["fohServer"].subscription.remove(MUTE_SUB)
+        self.osc["fohServer"].subscription.remove(AUTOMIX_METERS_CMD)
         for autoMixName in self.autoMixers:
             self.autoMixers[autoMixName].removeAll()
         
@@ -185,48 +199,48 @@ class LuckyAssignmentBox(QComboBox):
 class LuckyGroup:
     MIN = -60.0
 
-    def __init__(self, config, osc, bus, mutes, threshold, mBox, cBox):
+    def __init__(self, config, osc, bus, mutes, gain, threshold, mBox, cBox, name):
         self.config = config
         self.osc = osc
         self.bus = bus
         self.mutes = mutes
+        self.gain = gain
         self.threshold = threshold
         self.mBox = mBox
         self.cBox = cBox
+        self.name = name
 
         self.allOff = False
 
         self.lock = OwnerLock()
-        self.channelMeter = {}
+        self.fadersPos = {}
     
     def addChannel(self, channelIdx):
-        self.channelMeter[channelIdx] = []
-        self.osc["fohServer"].subscription.add(CHANNEL_METERS_CMD, self.processSubscription, METER_SUB_PREFIX + str(channelIdx), channelIdx)
+        faderCommand = "/ch/" + "{:02d}".format(channelIdx + 1) + "/mix/fader"
+
+        self.fadersPos[channelIdx] = []
+        self.osc["fohServer"].subscription.add(faderCommand, self.processSubscription, FADER_SUB_PREFIX + "/" + self.name + "/" + str(channelIdx))
         self.allOff = False
     
     def removeChannel(self, channelIdx):
-        self.osc["fohServer"].subscription.remove(METER_SUB_PREFIX + str(channelIdx))
+        self.osc["fohServer"].subscription.remove(FADER_SUB_PREFIX + "/" + self.name + "/" + str(channelIdx))
 
         # Reset to Unity
         command = "/ch/" + "{:02d}".format(channelIdx + 1) + "/mix/" + self.bus.currentText() + "/level"
         self.osc["fohClient"].send_message(command, 0.75)
 
-        del self.channelMeter[channelIdx]
+        del self.fadersPos[channelIdx]
     
     def removeAll(self):
-        for channelIdx in self.channelMeter:
+        for channelIdx in self.fadersPos:
             self.removeChannel(channelIdx)
 
     def processSubscription(self, mixerName, message, arg):
-        format = "<hh" + "".join(["f" for i in range(0, CHANNEL_METERS_EXPECTED_FLOATS)])
-        meterVals = struct.unpack(format, arg)
-        db = 20 * math.log10(max(meterVals[-1], 0.001)) # Cap Min at -60db.
-        
-        channelIdx = int(message.replace(METER_SUB_PREFIX, ""))
-        self.channelMeter[channelIdx].append(db)
+        channelIdx = int(message.replace(FADER_SUB_PREFIX + "/" + self.name + "/", "")) - 1
+        self.fadersPos[channelIdx].append(arg)
 
         # Figure out if we should fire commands
-        shouldFire = next(iter(self.channelMeter.keys())) == channelIdx
+        shouldFire = next(iter(self.faderPos.keys())) == channelIdx
 
         if shouldFire: # Passed condition that this is the first channelIdx
             busName = self.bus.currentText()
@@ -234,7 +248,8 @@ class LuckyGroup:
                 shouldFire = False
 
         if shouldFire: # Passed condition that bus is specified
-            valsMap = self.channelMeter.copy()
+            valsMap = self.gain.copy()
+            fadersMap = self.fadersPos.copy()
             vals = {}
 
             maxChVal = None
@@ -242,17 +257,26 @@ class LuckyGroup:
                 if self.mutes[channelIdx].isChecked():
                     shouldFire = False
                 else:
-                    if len(valsMap[channelIdx]) < 3: # Should wait for all to have multiple datapoints
+                    if len(fadersMap[channelIdx]) < 3: # Should wait for all to have multiple datapoints
                         shouldFire = False
                     else:
                         val = max(valsMap[channelIdx])
+                        faderPos = max(fadersMap[channelIdx])
+                        if faderPos >= 0.5:
+                            val = val + (40 * faderPos) - 30
+                        elif faderPos >= 0.25:
+                            val = val + (80 * faderPos) - 50
+                        elif faderPos >= 0.125:
+                            val = val + (160 * faderPos) - 70
+                        else:
+                            val = val + (320 * faderPos) - 90
                         vals[channelIdx] = val
                         if maxChVal is None or val > maxChVal:
                             maxChVal = val
         
             if shouldFire: # Pass condition that there are values for every channel
-                for channelIdx in self.channelMeter:
-                    self.channelMeter[channelIdx] = []
+                for channelIdx in self.fadersPos:
+                    self.fadersPos[channelIdx] = []
 
             if maxChVal is None:
                 shouldFire = False
@@ -281,7 +305,7 @@ class LuckyGroup:
                                 commands[command] = 0.5 + (math.atan((vals[channelIdx] - maxChVal - m) / c) / 6)
                         else:
                             commands[command] = 0.25
-                        #print(command + ": " + str(vals[channelIdx]) + "->" + str(commands[command]))
+                        #print(command + ": " + str(vals[channelIdx]) + "->" + str(commands[command])) TODO REMOVE
                     self.osc[mixerName + "Client"].bulk_send_messages(commands)
                 finally:
                     self.lock.release()

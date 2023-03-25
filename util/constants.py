@@ -6,11 +6,11 @@ PORT = 10023 if MIXER_TYPE == "X32" else 10024
 START_PORT = 10000 # Ports: 10000 - AtemServer; 10001 - 10010 - bulk_send_message; 10011 - fohServer; 10012 - fohServer.subscription; 10013 - iemServer; 10014 - iemServer.subscription
 NUM_THREADS = 10
 
-METERS_CMD = "/meters/4"
-METERS_EXPECTED_FLOATS = 82
+GAIN_METERS_CMD = "/meters/1"
+GAIN_METERS_EXPECTED_FLOATS = 96
 
-CHANNEL_METERS_CMD = "/meters/6"
-CHANNEL_METERS_EXPECTED_FLOATS = 4
+AUTOMIX_METERS_CMD = "/meters/4"
+AUTOMIX_METERS_EXPECTED_FLOATS = 82
 
 ALL_CHANNELS = [
     "/ch/01", "/ch/02", "/ch/03", "/ch/04", "/ch/05", "/ch/06", "/ch/07", "/ch/08",
