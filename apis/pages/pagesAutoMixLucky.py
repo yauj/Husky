@@ -202,6 +202,7 @@ class LuckyGroup:
     def addChannel(self, channelIdx):
         self.channelMeter[channelIdx] = []
         self.osc["fohServer"].subscription.add(CHANNEL_METERS_CMD, self.processSubscription, METER_SUB_PREFIX + str(channelIdx), channelIdx)
+        self.allOff = False
     
     def removeChannel(self, channelIdx):
         self.osc["fohServer"].subscription.remove(METER_SUB_PREFIX + str(channelIdx))
@@ -209,6 +210,8 @@ class LuckyGroup:
         # Reset to Unity
         command = "/ch/" + "{:02d}".format(channelIdx + 1) + "/mix/" + self.bus.currentText() + "/level"
         self.osc["fohClient"].send_message(command, 0.75)
+
+        del self.channelMeter[channelIdx]
     
     def removeAll(self):
         for channelIdx in self.channelMeter:
@@ -236,8 +239,10 @@ class LuckyGroup:
 
             maxChVal = None
             for channelIdx in valsMap:
-                if not self.mutes[channelIdx].isChecked():
-                    if len(valsMap[channelIdx]) >= 3: # Should wait for all to have multiple datapoints
+                if self.mutes[channelIdx].isChecked():
+                    shouldFire = False
+                else:
+                    if len(valsMap[channelIdx]) < 3: # Should wait for all to have multiple datapoints
                         shouldFire = False
                     else:
                         val = max(valsMap[channelIdx])
@@ -246,10 +251,12 @@ class LuckyGroup:
                             maxChVal = val
         
             if shouldFire: # Pass condition that there are values for every channel
-                for channelIdx in valsMap:
+                for channelIdx in self.channelMeter:
                     self.channelMeter[channelIdx] = []
 
-            if maxChVal <= self.MIN and self.allOff: # It's all off already. Leave it be till there is a non-zero value
+            if maxChVal is None:
+                shouldFire = False
+            elif maxChVal <= self.MIN and self.allOff: # It's all off already. Leave it be till there is a non-zero value
                 shouldFire = False
 
         if shouldFire: # Passed all conditions
@@ -258,7 +265,7 @@ class LuckyGroup:
                 try:
                     m = self.mBox.value()
                     c = self.cBox.value()
-                    if maxChVal < self.threshold.value(): # Below Threshold, so should semi-gate all channels
+                    if maxChVal <= self.threshold.value(): # Below Threshold, so should semi-gate all channels
                         maxChVal = self.threshold.value()
                         c = 0
 
@@ -266,14 +273,15 @@ class LuckyGroup:
                     for channelIdx in valsMap:
                         command = "/ch/" + "{:02d}".format(channelIdx + 1) + "/mix/" + busName + "/level"
                         if channelIdx in vals:
-                            if vals[channelIdx] == maxChVal:
-                                commands[command] = 0.75
-                            elif vals[channelIdx] <= self.MIN:
+                            if vals[channelIdx] <= self.MIN:
                                 commands[command] = 0.25
+                            elif vals[channelIdx] == maxChVal and maxChVal > self.threshold.value():
+                                commands[command] = 0.75
                             else:
                                 commands[command] = 0.5 + (math.atan((vals[channelIdx] - maxChVal - m) / c) / 6)
                         else:
                             commands[command] = 0.25
+                        #print(command + ": " + str(vals[channelIdx]) + "->" + str(commands[command]))
                     self.osc[mixerName + "Client"].bulk_send_messages(commands)
                 finally:
                     self.lock.release()
