@@ -354,7 +354,7 @@ class LuckyGroup:
                             elif vals[channelIdx] == maxChVal and maxChVal > self.threshold.value():
                                 commands[command] = 0.75
                             else:
-                                commands[command] = 0.5 + (math.atan((vals[channelIdx] - maxChVal - m) / c) / 6)
+                                commands[command] = 0.5 + (math.atan((vals[channelIdx] - maxChVal - c) / m) / 6)
                         else:
                             commands[command] = 0.25
                         #print(command + ": " + str(vals[channelIdx]) + "->" + str(commands[command])) TODO REMOVE
