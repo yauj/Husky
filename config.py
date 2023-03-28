@@ -436,7 +436,8 @@ config = {
     "luckyAutoMix": {
         "bus": "08",
         "postFader": False,
-        "threshold": 0.5,
+        "min": -120,
+        "threshold": -120,
         "m": 3,
         "c": -12
     },

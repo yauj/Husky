@@ -15,8 +15,10 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from pythonosc.udp_client import SimpleUDPClient
 import struct
-from util.constants import ALL_BUSES, ALL_CHANNELS, AUTOMIX_METERS_CMD, AUTOMIX_METERS_EXPECTED_FLOATS, AUX_CHANNELS
+import threading
+from util.constants import ALL_BUSES, ALL_CHANNELS, AUTOMIX_METERS_CMD, AUTOMIX_METERS_EXPECTED_FLOATS, AUX_CHANNELS, PORT
 from util.lock import OwnerLock
 from uuid import uuid4
 
@@ -81,12 +83,19 @@ class AutoMixLuckyWindow(QMainWindow):
         if "luckyAutoMix" in self.config and "postFader" in self.config["luckyAutoMix"]:
             self.meter.setChecked(self.config["luckyAutoMix"]["postFader"])
 
+        self.min = QSpinBox()
+        self.min.setRange(-120, 0)
+        if "luckyAutoMix" in self.config and "min" in self.config["luckyAutoMix"]:
+            self.min.setValue(self.config["luckyAutoMix"]["min"])
+        else:
+            self.min.setValue(-120) # Default to min
+
         self.threshold = QSpinBox()
-        self.threshold.setRange(-80, 0)
+        self.threshold.setRange(-120, 0)
         if "luckyAutoMix" in self.config and "threshold" in self.config["luckyAutoMix"]:
             self.threshold.setValue(self.config["luckyAutoMix"]["threshold"])
         else:
-            self.threshold.setValue(-60) # Default to -60 db
+            self.threshold.setValue(-120) # Default to min
 
         self.mBox = QSpinBox()
         self.mBox.setRange(1, 9)
@@ -120,8 +129,13 @@ class AutoMixLuckyWindow(QMainWindow):
         self.vlayout.addLayout(hlayout)
 
         hlayout = QHBoxLayout()
-        hlayout.addWidget(QLabel("Threshold:"))
+        hlayout.addWidget(QLabel("Min dB:"))
+        hlayout.addWidget(self.min)
+        hlayout.addWidget(QLabel("Threshold dB:"))
         hlayout.addWidget(self.threshold)
+        self.vlayout.addLayout(hlayout)
+
+        hlayout = QHBoxLayout()
         hlayout.addWidget(QLabel("M:"))
         hlayout.addWidget(self.mBox)
         hlayout.addWidget(QLabel("C:"))
@@ -129,7 +143,7 @@ class AutoMixLuckyWindow(QMainWindow):
         self.vlayout.addLayout(hlayout)
 
         for autoMixName in ["A", "B", "C", "D", "E"]:
-            self.autoMixers[autoMixName] = LuckyGroup(self.config, self.osc, self.bus, self.weights, self.mutes, self.gain, self.meter, self.threshold, self.mBox, self.cBox, autoMixName)
+            self.autoMixers[autoMixName] = LuckyGroup(self.config, self.osc, self.bus, self.weights, self.mutes, self.gain, self.meter, self.min, self.threshold, self.mBox, self.cBox, autoMixName)
         
         glayout = QGridLayout()
         glayout.addWidget(QLabel("Channel"), 0, 0)
@@ -184,7 +198,7 @@ class AutoMixLuckyWindow(QMainWindow):
         meterVals = struct.unpack(format, arg)
 
         for channelIdx in range(0, len(self.gain)):
-            db = 20 * math.log10(max(meterVals[channelIdx + 2], 0.0001))
+            db = 20 * math.log10(meterVals[channelIdx + 2])
             self.gain[channelIdx].append(db)
             if len(self.gain[channelIdx]) > 3: # Keep under 3
                 self.gain[channelIdx] = self.gain[channelIdx][1:]
@@ -199,6 +213,7 @@ class AutoMixLuckyWindow(QMainWindow):
             self.config["luckyAutoMix"] = {
                 "bus": self.bus.currentText(),
                 "postFader": self.meter.isChecked(),
+                "min": self.min.value(),
                 "threshold": self.threshold.value(),
                 "m": self.mBox.value(),
                 "c": self.cBox.value(),
@@ -242,9 +257,7 @@ class LuckyAssignmentBox(QComboBox):
             self.autoMixers[newTxt].addChannel(self.channelIdx)
 
 class LuckyGroup:
-    MIN = -80.0
-
-    def __init__(self, config, osc, bus, weights, mutes, gain, meter, threshold, mBox, cBox, name):
+    def __init__(self, config, osc, bus, weights, mutes, gain, meter, min, threshold, mBox, cBox, name):
         self.config = config
         self.osc = osc
         self.bus = bus
@@ -252,12 +265,11 @@ class LuckyGroup:
         self.mutes = mutes
         self.gain = gain
         self.meter = meter
+        self.min = min
         self.threshold = threshold
         self.mBox = mBox
         self.cBox = cBox
         self.name = name
-
-        self.allOff = False
 
         self.lock = OwnerLock()
         self.fadersPos = {}
@@ -267,7 +279,6 @@ class LuckyGroup:
 
         self.fadersPos[channelIdx] = []
         self.osc["fohServer"].subscription.add(faderCommand, self.processSubscription, FADER_SUB_PREFIX + self.name + "/" + str(channelIdx))
-        self.allOff = False
     
     def removeChannel(self, channelIdx):
         self.osc["fohServer"].subscription.remove(FADER_SUB_PREFIX + self.name + "/" + str(channelIdx))
@@ -284,81 +295,102 @@ class LuckyGroup:
             self.removeChannel(channelIdx)
 
     def processSubscription(self, mixerName, message, arg):
-        channelIdx = int(message.replace(FADER_SUB_PREFIX + self.name + "/", ""))
-        self.fadersPos[channelIdx].append(arg)
+        thisChannel = int(message.replace(FADER_SUB_PREFIX + self.name + "/", ""))
+        faderVals = struct.unpack("<hhf", arg)
+        self.fadersPos[thisChannel].append(faderVals[-1])
 
-        # Figure out if we should fire commands
-        shouldFire = next(iter(self.fadersPos.keys())) == channelIdx
+        holder = ProcessHolder(thisChannel, self.bus, self.gain, self.fadersPos)
 
-        if shouldFire: # Passed condition that this is the first channelIdx
-            busName = self.bus.currentText()
-            if busName == "None":
-                shouldFire = False
+        if holder.shouldFire:
+            threads = []
+            for channelIdx in holder.fadersMap:
+                th = threading.Thread(target = self.calcMeterVal, args = (holder, channelIdx))
+                th.start()
+                threads.append(th)
+            
+            for th in threads:
+                th.join()
 
-        if shouldFire: # Passed condition that bus is specified
-            valsMap = self.gain.copy()
-            fadersMap = self.fadersPos.copy()
-            vals = {}
+            holder.calcMaxVal()
 
-            maxChVal = None
-            for channelIdx in valsMap:
-                if self.mutes[channelIdx].isChecked():
-                    shouldFire = False
-                else:
-                    if len(fadersMap[channelIdx]) < 3: # Should wait for all to have multiple datapoints
-                        shouldFire = False
-                    else:
-                        val = max(valsMap[channelIdx])
-                        val = val + self.weights[channelIdx].value()
-
-                        if self.meter.isChecked():
-                            faderPos = max(fadersMap[channelIdx])
-                            if faderPos >= 0.5:
-                                val = val + (40 * faderPos) - 30
-                            elif faderPos >= 0.25:
-                                val = val + (80 * faderPos) - 50
-                            elif faderPos >= 0.125:
-                                val = val + (160 * faderPos) - 70
-                            else:
-                                val = val + (320 * faderPos) - 90
-
-                        vals[channelIdx] = val
-                        if maxChVal is None or val > maxChVal:
-                            maxChVal = val
-        
-            if shouldFire: # Pass condition that there are values for every channel
-                for channelIdx in self.fadersPos:
-                    self.fadersPos[channelIdx] = []
-
-            if maxChVal is None:
-                shouldFire = False
-            elif maxChVal <= self.MIN and self.allOff: # It's all off already. Leave it be till there is a non-zero value
-                shouldFire = False
-
-        if shouldFire: # Passed all conditions
+        if holder.shouldFire: # Passed all conditions
             id = str(uuid4())
             if self.lock.acquire(id):
                 try:
                     m = self.mBox.value()
                     c = self.cBox.value()
-                    if maxChVal <= self.threshold.value(): # Below Threshold, so should semi-gate all channels
-                        maxChVal = self.threshold.value()
+                    if holder.maxChVal < self.threshold.value(): # Below Threshold, so should semi-gate all channels
+                        holder.maxChVal = self.threshold.value()
                         c = 0
 
-                    commands = {}
-                    for channelIdx in valsMap:
-                        command = "/ch/" + "{:02d}".format(channelIdx + 1) + "/mix/" + busName + "/level"
-                        if channelIdx in vals:
-                            if vals[channelIdx] <= self.MIN:
-                                commands[command] = 0.25
-                            elif vals[channelIdx] == maxChVal and maxChVal > self.threshold.value():
-                                commands[command] = 0.75
-                            else:
-                                commands[command] = 0.5 + (math.atan((vals[channelIdx] - maxChVal - c) / m) / 6)
-                        else:
-                            commands[command] = 0.25
-                        #print(command + ": " + str(vals[channelIdx]) + "->" + str(commands[command])) TODO REMOVE
-                    self.osc[mixerName + "Client"].bulk_send_messages(commands)
+                    threads = []
+                    for channelIdx in holder.fadersMap:
+                        th = threading.Thread(target = self.fireCommand, args = (mixerName, holder, channelIdx, m, c))
+                        th.start()
+                        threads.append(th)
+                    
+                    for th in threads:
+                        th.join()
                 finally:
                     self.lock.release()
-                    self.allOff = (maxChVal <= self.MIN)
+    
+    def calcMeterVal(self, holder, channelIdx):
+        if not self.mutes[channelIdx].isChecked():
+            if len(holder.valsMap[channelIdx]) < 3: # Should wait for all to have multiple datapoints
+                holder.shouldFire = False
+            else:
+                val = max(holder.valsMap[channelIdx])
+                val = val + self.weights[channelIdx].value()
+
+                if self.meter.isChecked():
+                    faderPos = max(holder.fadersMap[channelIdx])
+                    if faderPos >= 0.5:
+                        val = val + (40 * faderPos) - 30
+                    elif faderPos >= 0.25:
+                        val = val + (80 * faderPos) - 50
+                    elif faderPos >= 0.125:
+                        val = val + (160 * faderPos) - 70
+                    else:
+                        val = val + (320 * faderPos) - 90
+
+                holder.vals[channelIdx] = val
+        
+        if len(self.fadersPos[channelIdx]) >= 3:
+            self.fadersPos[channelIdx] = self.fadersPos[channelIdx][1:] # Remove first element, to keep list small
+
+    def fireCommand(self, mixerName, holder, channelIdx, m, c):
+        fireValue = 0.25
+
+        command = "/ch/" + "{:02d}".format(channelIdx + 1) + "/mix/" + holder.busName + "/level"
+        if channelIdx in holder.vals:
+            if holder.vals[channelIdx] <= self.min.value():
+                fireValue = 0.25
+            elif holder.vals[channelIdx] == holder.maxChVal:
+                fireValue = 0.75
+            else:
+                fireValue = 0.5 + (math.atan((holder.vals[channelIdx] - holder.maxChVal - c) / m) / 6)
+        else:
+            fireValue = 0.25
+
+        client = SimpleUDPClient(self.osc[mixerName + "Client"].ipAddress, PORT)
+        client.send_message(command, fireValue)
+
+class ProcessHolder:
+    def __init__(self, thisChannel, bus, gain, fadersPos):
+        # Condition that this is the first channel
+        self.shouldFire = next(iter(fadersPos.keys())) == thisChannel
+        # Condition that the bus is specified
+        if self.shouldFire: 
+            self.busName = bus.currentText()
+            if self.busName == "None":
+                self.shouldFire = False
+
+        self.valsMap = gain.copy()
+        self.fadersMap = fadersPos.copy()
+        self.vals = {}
+
+    def calcMaxVal(self):
+        self.maxChVal = max(self.vals.values()) if len(self.vals) > 0 else None
+
+        if self.maxChVal is None:
+            self.shouldFire = False

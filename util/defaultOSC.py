@@ -308,13 +308,11 @@ class SubscriptionServer(ThreadingOSCUDPServer):
     def renewThread(self):
         while not self.shutdownFlag:
             self.sendCommands("/renew", self.activeSubscriptions)
-    
+
     def sendCommands(self, command, args):
         args = args.copy()
         startTime = time()
         if self.ipAddress is not None and len(args) > 0:
-            client = SimpleUDPClient(self.ipAddress, PORT)
-            client._sock = self.socket
             sleepTime = 4.0 / len(args) # Spread out commands across approx 4.0 seconds
             for address in args:
                 itrTime = time()
@@ -322,6 +320,8 @@ class SubscriptionServer(ThreadingOSCUDPServer):
                 if self.shutdownFlag or len(self.activeSubscriptions) == 0:
                     return # Exit early if shutdown or reconnection going on
 
+                client = SimpleUDPClient(self.ipAddress, PORT)
+                client._sock = self.socket
                 if command == "/renew":
                     if "alias" in args[address]:
                         client.send_message(command, args[address]["alias"])

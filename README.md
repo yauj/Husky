@@ -99,7 +99,9 @@ This is a boolean value, specifying whether or not we want to base the auto mixe
 
 #### threshold
 
-This is the gate threshold. If mics meter volume are below this threshold, then all mics will be gated down to at least -10db. How this works is effectively, the threshold will be 
+This is the gate threshold. If mics meter volume are below this threshold, then all mics will be gated down to at least -10db. How this works is that `c = 0` if max meter value is below the threshold, so that all values will then translate to be between range -10db to -30db.
+
+Be careful about adjusting threshold to be not equal to the minimum of 100, because latency issues will mean that if channel volume is ducked, it will take more time to respond.
 
 #### m *and* c
 
@@ -111,7 +113,7 @@ The volume that a channel is auto mixed to depends on the following equation:
 
 Effectively, `c in (-24, 0)` is the point at which the curve will hit -10db, and then start to concave back up, and `m in (1, 9)` is the slope of the curve. If you want a more aggressive automixer, then set `m` to be lower, and if you want it to be more smoothed out, set `m` to be higher.
 
-Exceptions to channels that won't follow the equation is: the channel with the max meter volume, which will have unity send gain; and channels with meter volume below -80db, which will default to -30db send gain.
+Only exception to channels that won't follow the equation is the channel with the max meter volume, which will have unity send gain.
 
 ### resetCommands
 
