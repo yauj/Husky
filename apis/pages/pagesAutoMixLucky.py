@@ -2,6 +2,7 @@ from apis.pages.pagesMutes import MutesBox, getCurrentMutes
 import logging
 import math
 from PyQt6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QDoubleSpinBox,
     QGridLayout,
@@ -71,22 +72,35 @@ class AutoMixLuckyWindow(QMainWindow):
         self.bus = QComboBox()
         self.bus.addItem("None")
         self.bus.addItems(ALL_BUSES)
-        if "luckyAutoMixBus" in self.config:
-            self.bus.setCurrentText(self.config["luckyAutoMixBus"])
+        if "luckyAutoMix" in self.config and  "bus" in self.config["luckyAutoMix"]:
+            self.bus.setCurrentText(self.config["luckyAutoMix"]["bus"])
         else:
             self.bus.setCurrentIndex(0)
 
+        self.meter = QCheckBox()
+        if "luckyAutoMix" in self.config and  "postFader" in self.config["luckyAutoMix"]:
+            self.meter.setChecked(self.config["luckyAutoMix"]["postFader"])
+
         self.threshold = QSpinBox()
         self.threshold.setRange(-80, 0)
-        self.threshold.setValue(-60) # Default to -60 db
+        if "luckyAutoMix" in self.config and  "threshold" in self.config["luckyAutoMix"]:
+            self.threshold.setValue(self.config["luckyAutoMix"]["threshold"])
+        else:
+            self.threshold.setValue(-60) # Default to -60 db
 
         self.mBox = QSpinBox()
         self.mBox.setRange(1, 9)
-        self.mBox.setValue(3)
+        if "luckyAutoMix" in self.config and  "m" in self.config["luckyAutoMix"]:
+            self.mBox.setValue(self.config["luckyAutoMix"]["m"])
+        else:
+            self.mBox.setValue(3)
         
         self.cBox = QSpinBox()
         self.cBox.setRange(-24, 0)
-        self.cBox.setValue(-12)
+        if "luckyAutoMix" in self.config and  "c" in self.config["luckyAutoMix"]:
+            self.cBox.setValue(self.config["luckyAutoMix"]["c"])
+        else:
+            self.cBox.setValue(-12)
 
         self.vlayout.addWidget(QLabel(
             "Let Go and Let Dog. Automixes channels using specified bus.\n"
@@ -101,10 +115,7 @@ class AutoMixLuckyWindow(QMainWindow):
         self.vlayout.addLayout(hlayout)
 
         hlayout = QHBoxLayout()
-        hlayout.addWidget(QLabel("Meter:"))
-        self.meter = QComboBox()
-        self.meter.addItems(["Pre-Fader", "Post-Fader"])
-        self.meter.setCurrentIndex(0)
+        hlayout.addWidget(QLabel("Meter Post-Fader:"))
         hlayout.addWidget(self.meter)
         self.vlayout.addLayout(hlayout)
 
@@ -136,6 +147,10 @@ class AutoMixLuckyWindow(QMainWindow):
             weight.setSingleStep(0.5)
             weight.setValue(0)
             self.weights[idx] = weight
+
+            if "luckyAutoMix" in self.config and "mappings" in self.config["luckyAutoMix"] and channel in self.config["luckyAutoMix"]["mappings"]:
+                assignment.setCurrentText(self.config["luckyAutoMix"]["mappings"][channel]["assignment"])
+                weight.setValue(self.config["luckyAutoMix"]["mappings"][channel]["weight"])
 
             muteCmd = channel + "/mix/on"
             mute = MutesBox(self.osc, "foh", muteCmd, muteValues)
@@ -180,13 +195,25 @@ class AutoMixLuckyWindow(QMainWindow):
         self.vlayout.addWidget(label)
     
     def closeEvent(self, a0):
+        if self.bus.currentIndex() > 0:
+            self.config["luckyAutoMix"] = {
+                "bus": self.bus.currentText(),
+                "postFader": self.meter.isChecked(),
+                "threshold": self.threshold.value(),
+                "m": self.mBox.value(),
+                "c": self.cBox.value(),
+                "mappings": {}
+            }
+            for idx, channel in enumerate(self.assignments):
+                self.config["luckyAutoMix"]["mappings"][channel] = {
+                    "assignment": self.assignments[channel].currentText(),
+                    "weight": self.weights[idx].value()
+                }
+
         self.osc["fohServer"].subscription.remove(MUTE_SUB)
         self.osc["fohServer"].subscription.remove(AUTOMIX_METERS_CMD)
         for autoMixName in self.autoMixers:
             self.autoMixers[autoMixName].removeAll()
-        
-        if self.bus.currentIndex() > 0:
-            self.config["luckyAutoMixBus"] = self.bus.currentText()
 
         del self.widgets["windows"]["AutoMixLucky"]
 
@@ -221,8 +248,8 @@ class LuckyGroup:
         self.config = config
         self.osc = osc
         self.bus = bus
-        self.mutes = mutes
         self.weights = weights
+        self.mutes = mutes
         self.gain = gain
         self.meter = meter
         self.threshold = threshold
@@ -252,7 +279,8 @@ class LuckyGroup:
         del self.fadersPos[channelIdx]
     
     def removeAll(self):
-        for channelIdx in self.fadersPos:
+        faderPosCopy = self.fadersPos.copy()
+        for channelIdx in faderPosCopy:
             self.removeChannel(channelIdx)
 
     def processSubscription(self, mixerName, message, arg):
@@ -283,7 +311,7 @@ class LuckyGroup:
                         val = max(valsMap[channelIdx])
                         val = val + self.weights[channelIdx].value()
 
-                        if self.meter.currentIndex() > 0:
+                        if self.meter.isChecked():
                             faderPos = max(fadersMap[channelIdx])
                             if faderPos >= 0.5:
                                 val = val + (40 * faderPos) - 30

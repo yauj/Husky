@@ -433,7 +433,13 @@ config = {
         },
     },
     "talkbackChannel": "/ch/30",
-    "luckyAutoMixBus": "08",
+    "luckyAutoMix": {
+        "bus": "08",
+        "postFader": False,
+        "threshold": 0.5,
+        "m": 3,
+        "c": -12
+    },
     "resetCommands": {
         "/ch/01/mix/fader": 0.75, "/ch/01/mix/pan": 0.5, "/ch/01/mix/on": 1,
         "/ch/02/mix/fader": 0.75, "/ch/02/mix/pan": 0.5, "/ch/02/mix/on": 1,
