@@ -112,6 +112,8 @@ def fireLines(config, widgets, osc, lines, iemCopy = False, dlg = None):
             if "AutoMixLucky" in widgets["windows"]: # Do nothing if window not open
                 if components[1] in widgets["windows"]["AutoMixLucky"].assignments:
                     widgets["windows"]["AutoMixLucky"].assignments[components[1]].setCurrentText(components[2])
+                    channelIdx = int(components[1].replace("/ch/", "")) - 1
+                    widgets["windows"]["AutoMixLucky"].weights[channelIdx].setValue(float(components[3]))
         elif components[0] == "midi":
             channel = int(components[2]) - 1
             control = int(components[3])

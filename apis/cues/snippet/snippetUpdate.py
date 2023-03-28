@@ -74,7 +74,9 @@ def updateLucky(widgets, textbox, settings):
     for channel in settings:
         if "AutoMixLucky" in widgets["windows"]:
             if channel in widgets["windows"]["AutoMixLucky"].assignments:
-                current = widgets["windows"]["AutoMixLucky"].assignments[channel].currentText()
-                textbox.append("lucky " + channel + " " + current)
+                assignment = widgets["windows"]["AutoMixLucky"].assignments[channel].currentText()
+                channelIdx = int(channel.replace("/ch/", "")) - 1
+                weight = widgets["windows"]["AutoMixLucky"].weights[channelIdx].value()
+                textbox.append("lucky " + channel + " " + assignment + " " + str(weight))
         else: # Keep existing line if window not open
             textbox.append(settings[channel])

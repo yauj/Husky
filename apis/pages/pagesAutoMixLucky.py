@@ -3,6 +3,7 @@ import logging
 import math
 from PyQt6.QtWidgets import (
     QComboBox,
+    QDoubleSpinBox,
     QGridLayout,
     QHBoxLayout,
     QLabel,
@@ -49,6 +50,7 @@ class AutoMixLuckyWindow(QMainWindow):
         self.osc = osc
         self.autoMixers = {}
         self.assignments = {}
+        self.weights = {}
         self.mutes = []
         self.gain = []
 
@@ -75,8 +77,8 @@ class AutoMixLuckyWindow(QMainWindow):
             self.bus.setCurrentIndex(0)
 
         self.threshold = QSpinBox()
-        self.threshold.setRange(-60, 0)
-        self.threshold.setValue(-50) # Default to -50 db
+        self.threshold.setRange(-80, 0)
+        self.threshold.setValue(-60) # Default to -60 db
 
         self.mBox = QSpinBox()
         self.mBox.setRange(1, 9)
@@ -99,6 +101,14 @@ class AutoMixLuckyWindow(QMainWindow):
         self.vlayout.addLayout(hlayout)
 
         hlayout = QHBoxLayout()
+        hlayout.addWidget(QLabel("Meter:"))
+        self.meter = QComboBox()
+        self.meter.addItems(["Pre-Fader", "Post-Fader"])
+        self.meter.setCurrentIndex(0)
+        hlayout.addWidget(self.meter)
+        self.vlayout.addLayout(hlayout)
+
+        hlayout = QHBoxLayout()
         hlayout.addWidget(QLabel("Threshold:"))
         hlayout.addWidget(self.threshold)
         hlayout.addWidget(QLabel("M:"))
@@ -108,17 +118,24 @@ class AutoMixLuckyWindow(QMainWindow):
         self.vlayout.addLayout(hlayout)
 
         for autoMixName in ["A", "B", "C", "D", "E"]:
-            self.autoMixers[autoMixName] = LuckyGroup(self.config, self.osc, self.bus, self.mutes, self.gain, self.threshold, self.mBox, self.cBox, autoMixName)
+            self.autoMixers[autoMixName] = LuckyGroup(self.config, self.osc, self.bus, self.weights, self.mutes, self.gain, self.meter, self.threshold, self.mBox, self.cBox, autoMixName)
         
         glayout = QGridLayout()
         glayout.addWidget(QLabel("Channel"), 0, 0)
         glayout.addWidget(QLabel("Group"), 0, 1)
-        glayout.addWidget(QLabel("Mute"), 0, 2)
+        glayout.addWidget(QLabel("Weight"), 0, 2)
+        glayout.addWidget(QLabel("Mute"), 0, 3)
 
         channels = sorted(set(ALL_CHANNELS) - set(AUX_CHANNELS))
         for idx, channel in enumerate(channels):
             assignment = LuckyAssignmentBox(self.osc, self.autoMixers, idx)
             self.assignments[channel] = assignment
+
+            weight = QDoubleSpinBox()
+            weight.setRange(-12, 12)
+            weight.setSingleStep(0.5)
+            weight.setValue(0)
+            self.weights[idx] = weight
 
             muteCmd = channel + "/mix/on"
             mute = MutesBox(self.osc, "foh", muteCmd, muteValues)
@@ -127,7 +144,8 @@ class AutoMixLuckyWindow(QMainWindow):
 
             glayout.addWidget(QLabel(channel), idx + 1, 0)
             glayout.addWidget(assignment, idx + 1, 1)
-            glayout.addWidget(mute, idx + 1, 2)
+            glayout.addWidget(weight, idx + 1, 2)
+            glayout.addWidget(mute, idx + 1, 3)
 
         widget = QWidget()
         widget.setLayout(glayout)
@@ -151,7 +169,7 @@ class AutoMixLuckyWindow(QMainWindow):
         meterVals = struct.unpack(format, arg)
 
         for channelIdx in range(0, len(self.gain)):
-            db = 20 * math.log10(max(meterVals[channelIdx + 2], 0.001))
+            db = 20 * math.log10(max(meterVals[channelIdx + 2], 0.0001))
             self.gain[channelIdx].append(db)
             if len(self.gain[channelIdx]) > 3: # Keep under 3
                 self.gain[channelIdx] = self.gain[channelIdx][1:]
@@ -197,14 +215,16 @@ class LuckyAssignmentBox(QComboBox):
             self.autoMixers[newTxt].addChannel(self.channelIdx)
 
 class LuckyGroup:
-    MIN = -60.0
+    MIN = -80.0
 
-    def __init__(self, config, osc, bus, mutes, gain, threshold, mBox, cBox, name):
+    def __init__(self, config, osc, bus, weights, mutes, gain, meter, threshold, mBox, cBox, name):
         self.config = config
         self.osc = osc
         self.bus = bus
         self.mutes = mutes
+        self.weights = weights
         self.gain = gain
+        self.meter = meter
         self.threshold = threshold
         self.mBox = mBox
         self.cBox = cBox
@@ -219,11 +239,11 @@ class LuckyGroup:
         faderCommand = "/ch/" + "{:02d}".format(channelIdx + 1) + "/mix/fader"
 
         self.fadersPos[channelIdx] = []
-        self.osc["fohServer"].subscription.add(faderCommand, self.processSubscription, FADER_SUB_PREFIX + "/" + self.name + "/" + str(channelIdx))
+        self.osc["fohServer"].subscription.add(faderCommand, self.processSubscription, FADER_SUB_PREFIX + self.name + "/" + str(channelIdx))
         self.allOff = False
     
     def removeChannel(self, channelIdx):
-        self.osc["fohServer"].subscription.remove(FADER_SUB_PREFIX + "/" + self.name + "/" + str(channelIdx))
+        self.osc["fohServer"].subscription.remove(FADER_SUB_PREFIX + self.name + "/" + str(channelIdx))
 
         # Reset to Unity
         command = "/ch/" + "{:02d}".format(channelIdx + 1) + "/mix/" + self.bus.currentText() + "/level"
@@ -236,11 +256,11 @@ class LuckyGroup:
             self.removeChannel(channelIdx)
 
     def processSubscription(self, mixerName, message, arg):
-        channelIdx = int(message.replace(FADER_SUB_PREFIX + "/" + self.name + "/", "")) - 1
+        channelIdx = int(message.replace(FADER_SUB_PREFIX + self.name + "/", ""))
         self.fadersPos[channelIdx].append(arg)
 
         # Figure out if we should fire commands
-        shouldFire = next(iter(self.faderPos.keys())) == channelIdx
+        shouldFire = next(iter(self.fadersPos.keys())) == channelIdx
 
         if shouldFire: # Passed condition that this is the first channelIdx
             busName = self.bus.currentText()
@@ -261,15 +281,19 @@ class LuckyGroup:
                         shouldFire = False
                     else:
                         val = max(valsMap[channelIdx])
-                        faderPos = max(fadersMap[channelIdx])
-                        if faderPos >= 0.5:
-                            val = val + (40 * faderPos) - 30
-                        elif faderPos >= 0.25:
-                            val = val + (80 * faderPos) - 50
-                        elif faderPos >= 0.125:
-                            val = val + (160 * faderPos) - 70
-                        else:
-                            val = val + (320 * faderPos) - 90
+                        val = val + self.weights[channelIdx].value()
+
+                        if self.meter.currentIndex() > 0:
+                            faderPos = max(fadersMap[channelIdx])
+                            if faderPos >= 0.5:
+                                val = val + (40 * faderPos) - 30
+                            elif faderPos >= 0.25:
+                                val = val + (80 * faderPos) - 50
+                            elif faderPos >= 0.125:
+                                val = val + (160 * faderPos) - 70
+                            else:
+                                val = val + (320 * faderPos) - 90
+
                         vals[channelIdx] = val
                         if maxChVal is None or val > maxChVal:
                             maxChVal = val
