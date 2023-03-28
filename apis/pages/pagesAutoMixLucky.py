@@ -72,32 +72,32 @@ class AutoMixLuckyWindow(QMainWindow):
         self.bus = QComboBox()
         self.bus.addItem("None")
         self.bus.addItems(ALL_BUSES)
-        if "luckyAutoMix" in self.config and  "bus" in self.config["luckyAutoMix"]:
+        if "luckyAutoMix" in self.config and "bus" in self.config["luckyAutoMix"]:
             self.bus.setCurrentText(self.config["luckyAutoMix"]["bus"])
         else:
             self.bus.setCurrentIndex(0)
 
         self.meter = QCheckBox()
-        if "luckyAutoMix" in self.config and  "postFader" in self.config["luckyAutoMix"]:
+        if "luckyAutoMix" in self.config and "postFader" in self.config["luckyAutoMix"]:
             self.meter.setChecked(self.config["luckyAutoMix"]["postFader"])
 
         self.threshold = QSpinBox()
         self.threshold.setRange(-80, 0)
-        if "luckyAutoMix" in self.config and  "threshold" in self.config["luckyAutoMix"]:
+        if "luckyAutoMix" in self.config and "threshold" in self.config["luckyAutoMix"]:
             self.threshold.setValue(self.config["luckyAutoMix"]["threshold"])
         else:
             self.threshold.setValue(-60) # Default to -60 db
 
         self.mBox = QSpinBox()
         self.mBox.setRange(1, 9)
-        if "luckyAutoMix" in self.config and  "m" in self.config["luckyAutoMix"]:
+        if "luckyAutoMix" in self.config and "m" in self.config["luckyAutoMix"]:
             self.mBox.setValue(self.config["luckyAutoMix"]["m"])
         else:
             self.mBox.setValue(3)
         
         self.cBox = QSpinBox()
         self.cBox.setRange(-24, 0)
-        if "luckyAutoMix" in self.config and  "c" in self.config["luckyAutoMix"]:
+        if "luckyAutoMix" in self.config and "c" in self.config["luckyAutoMix"]:
             self.cBox.setValue(self.config["luckyAutoMix"]["c"])
         else:
             self.cBox.setValue(-12)
