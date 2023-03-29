@@ -289,21 +289,12 @@ class SubscriptionServer(ThreadingOSCUDPServer):
             client = SimpleUDPClient(self.ipAddress, PORT)
             client._sock = self.socket
 
-            sendFlag = True
-            while sendFlag:
-                try:
-                    if "alias" in record:
-                        client.send_message(record["subCmd"], [record["alias"], record["address"], record["param1"], record["param2"], record["paramTimeFactor"]])
-                        self.activeSubscriptions[alias] = record
-                    else:
-                        client.send_message(record["subCmd"], record["address"])
-                        self.activeSubscriptions[address] = record
-                    sendFlag = False
-                except BrokenPipeError:
-                    logger.warn("Broken Pipe in subscription thread. Creating new socket.")
-                    self.socket.close()
-                    self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    self.socket.bind((self.ipAddress, PORT))
+            if "alias" in record:
+                client.send_message(record["subCmd"], [record["alias"], record["address"], record["param1"], record["param2"], record["paramTimeFactor"]])
+                self.activeSubscriptions[alias] = record
+            else:
+                client.send_message(record["subCmd"], record["address"])
+                self.activeSubscriptions[address] = record
     
     def remove(self, address):
         self.activeSubscriptions.pop(address, None)
@@ -316,19 +307,11 @@ class SubscriptionServer(ThreadingOSCUDPServer):
 
     def renewThread(self):
         while not self.shutdownFlag:
-            try:
-                # Using subscribe instead of /renew, for the case that a network blimp happens for more than 10 seconds.
-                # self.sendCommands("/renew", self.activeSubscriptions)
-                self.sendCommands("/subscribe", self.activeSubscriptions)
-            except Exception as ex:
-                logger.warn("Exception in subscription renew thread: " + str(ex))
+            self.sendCommands("/renew", self.activeSubscriptions)
 
     def sendCommands(self, command, args):
         args = args.copy()
         startTime = time()
-        client = SimpleUDPClient(self.ipAddress, PORT)
-        client._sock = self.socket
-
         if self.ipAddress is not None and len(args) > 0:
             sleepTime = 4.0 / len(args) # Spread out commands across approx 4.0 seconds
             for address in args:
@@ -336,32 +319,19 @@ class SubscriptionServer(ThreadingOSCUDPServer):
             
                 if self.shutdownFlag or len(self.activeSubscriptions) == 0:
                     return # Exit early if shutdown or reconnection going on
-                
-                sendCmd = command
-                sendArg = address
-                if command == "/renew":
-                    sendCmd = command
-                    if "alias" in args[address]:
-                        sendArg = args[address]["alias"]
-                    else:
-                        sendArg = address
-                else:
-                    sendCmd = args[address]["subCmd"]
-                    if "alias" in args[address]:
-                        sendArg = [args[address]["alias"], args[address]["address"], args[address]["param1"], args[address]["param2"], args[address]["paramTimeFactor"]]
-                    else:
-                        sendArg = args[address]["address"]
 
-                sendFlag = True
-                while sendFlag:
-                    try:
-                        client.send_message(sendCmd, sendArg)
-                        sendFlag = False
-                    except BrokenPipeError:
-                        logger.warn("Broken Pipe in subscription thread. Creating new socket.")
-                        self.socket.close()
-                        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                        self.socket.bind((self.ipAddress, PORT))
+                client = SimpleUDPClient(self.ipAddress, PORT)
+                client._sock = self.socket
+                if command == "/renew":
+                    if "alias" in args[address]:
+                        client.send_message(command, args[address]["alias"])
+                    else:
+                        client.send_message(command, address)
+                else:
+                    if "alias" in args[address]:
+                        client.send_message(args[address]["subCmd"], [args[address]["alias"], args[address]["address"], args[address]["param1"], args[address]["param2"], args[address]["paramTimeFactor"]])
+                    else:
+                        client.send_message(args[address]["subCmd"], args[address]["address"])
 
                 # If time to run is over sleep time, want to just skip sleep
                 # If over 4.0 seconds already, just want to spew the rest out.
