@@ -75,8 +75,9 @@ def updateLucky(widgets, textbox, settings):
         if "AutoMixLucky" in widgets["windows"]:
             if channel in widgets["windows"]["AutoMixLucky"].assignments:
                 assignment = widgets["windows"]["AutoMixLucky"].assignments[channel].currentText()
-                channelIdx = int(channel.replace("/ch/", "")) - 1
-                weight = widgets["windows"]["AutoMixLucky"].weights[channelIdx].value()
-                textbox.append("lucky " + channel + " " + assignment + " " + str(weight))
+                # Don't save weights, since weights should just help match mic sensitivities, so shouldn't be dependent on person.
+                # channelIdx = int(channel.replace("/ch/", "")) - 1
+                # weight = widgets["windows"]["AutoMixLucky"].weights[channelIdx].value()
+                textbox.append("lucky " + channel + " " + assignment)
         else: # Keep existing line if window not open
             textbox.append(settings[channel])
