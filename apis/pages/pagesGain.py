@@ -23,7 +23,7 @@ from PyQt6.QtWidgets import (
 import pyqtgraph
 import struct
 import traceback
-from util.constants import ALL_CHANNELS, AUX_CHANNELS, HEADAMP_CHANNELS, METERS_CMD, METERS_EXPECTED_FLOATS
+from util.constants import ALL_CHANNELS, AUX_CHANNELS, HEADAMP_CHANNELS, GAIN_METERS_CMD, GAIN_METERS_EXPECTED_FLOATS
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class GainButton(QPushButton):
         
         # Lastly, remove subscriptions
         for mixerName in self.config["osc"]:
-            self.osc[mixerName + "Server"].subscription.remove(METERS_CMD)
+            self.osc[mixerName + "Server"].subscription.remove(GAIN_METERS_CMD)
 
 class GainDialog(QDialog):
     def __init__(self, config, widgets, osc):
@@ -128,7 +128,7 @@ class MeterPlot(pyqtgraph.PlotWidget):
         yAxisTicks = [(i, str(i)) for i in range(-60, 1, 6)]
         yAxis.setTicks([yAxisTicks, []])
 
-        self.osc[mixerName + "Server"].subscription.add(METERS_CMD, self.processSubscription)
+        self.osc[mixerName + "Server"].subscription.add(GAIN_METERS_CMD, self.processSubscription)
 
         self.label = QLineEdit()
         self.label.setReadOnly(True)
@@ -147,7 +147,7 @@ class MeterPlot(pyqtgraph.PlotWidget):
         self.channel.setCurrentIndex(0)
         
     def processSubscription(self, mixerName, message, arg):
-        format = "<hh" + "".join(["f" for i in range(0, METERS_EXPECTED_FLOATS)])
+        format = "<hh" + "".join(["f" for i in range(0, GAIN_METERS_EXPECTED_FLOATS)])
         meterVals = struct.unpack(format, arg)
 
         db = meterVals[self.channel.currentIndex() + 2]

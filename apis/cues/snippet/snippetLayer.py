@@ -10,10 +10,11 @@ from PyQt6.QtWidgets import (
 )
 
 class SnippetDialog(QDialog):
-    def __init__(self, parent, config, osc):
+    def __init__(self, parent, config, widgets, osc):
         super().__init__()
         self.parent = parent
         self.config = config
+        self.widgets = widgets
         self.osc = osc
 
         vlayout = QVBoxLayout()
@@ -34,7 +35,7 @@ class SnippetDialog(QDialog):
         hlayout.addWidget(self.createButton)
         vlayout.addLayout(hlayout)
 
-        self.editButton = SnippetEditButton(self.config, self.osc, filename)
+        self.editButton = SnippetEditButton(self.config, self.widgets, self.osc, filename)
         vlayout.addWidget(self.editButton)
 
         self.setLayout(vlayout)

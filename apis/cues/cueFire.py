@@ -10,7 +10,7 @@ import traceback
 logger = logging.getLogger(__name__)
 
 class CueFireButton(QPushButton):
-    def __init__(self, config, osc, prevIndex, index, printIndex, cues, progressBar):
+    def __init__(self, config, widgets, osc, prevIndex, index, printIndex, cues, progressBar):
         super().__init__("Fire")
         if (len(printIndex) == 1):
             super().setShortcut("ctrl+" + printIndex)
@@ -18,6 +18,7 @@ class CueFireButton(QPushButton):
             super().setShortcut("ctrl+0")
 
         self.config = config
+        self.widgets = widgets
         self.osc = osc
         self.prevIndex = prevIndex
         self.index = index
@@ -39,7 +40,7 @@ class CueFireButton(QPushButton):
             self.progressBar.initBar.emit(1)
             for category in self.config["cues"]["cueOptions"]:
                 if self.cues[self.index][category].currentText() != "":
-                    fireLines(self.config, self.osc, self.config["cues"]["cueOptions"][category][self.cues[self.index][category].currentText()])
+                    fireLines(self.config, self.widgets, self.osc, self.config["cues"]["cueOptions"][category][self.cues[self.index][category].currentText()])
             
             if self.cues[self.index]["snippet"].filename != "":
                 if os.path.exists(self.cues[self.index]["snippet"].filename):
@@ -55,4 +56,4 @@ class CueFireButton(QPushButton):
 
     def loadSnippet(self):
         self.progressBar.initBar.emit(self.snippetNumSettings)
-        runSingle(self.config, self.osc, self.cues[self.index]["snippet"].filename, dlg = self.progressBar)
+        runSingle(self.config, self.widgets, self.osc, self.cues[self.index]["snippet"].filename, dlg = self.progressBar)

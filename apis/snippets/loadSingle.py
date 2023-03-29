@@ -11,9 +11,10 @@ from util.customWidgets import ProgressDialog
 logger = logging.getLogger(__name__)
 
 class LoadButton(QPushButton):
-    def __init__(self, config, osc, chName, filename, person):
+    def __init__(self, config, widgets, osc, chName, filename, person):
         super().__init__("Load")
         self.config = config
+        self.widgets = widgets
         self.osc = osc
         self.chName = chName
         self.filename = filename
@@ -36,14 +37,14 @@ class LoadButton(QPushButton):
     def main(self, dlg):
         try:
             dlg.initBar.emit(loadSingleNumSettings(self.config, "data/" + self.filename.currentText(), self.chName != "Mains"))
-            runSingle(self.config, self.osc, "data/" + self.filename.currentText(), self.chName != "Mains", self.chName, dlg)
+            runSingle(self.config, self.widgets, self.osc, "data/" + self.filename.currentText(), self.chName != "Mains", self.chName, dlg)
             self.person.setCurrentText(self.filename.currentText().split(".")[0].split("_")[2])
             dlg.complete.emit()
         except Exception as ex:
             logger.error(traceback.format_exc())
             dlg.raiseException.emit(ex)
 
-def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None):
+def runSingle(config, widgets, osc, filename, iemCopy = False, chName = None, dlg = None):
     lines = []
     with open(filename) as scnFile:
         # Process Headers
@@ -93,11 +94,11 @@ def runSingle(config, osc, filename, iemCopy = False, chName = None, dlg = None)
             if keepLine:
                 lines.append(line)
 
-    fireLines(config, osc, lines, iemCopy, dlg)
+    fireLines(config, widgets, osc, lines, iemCopy, dlg)
 
     logger.info("Loaded " + filename)
 
-def fireLines(config, osc, lines, iemCopy = False, dlg = None):
+def fireLines(config, widgets, osc, lines, iemCopy = False, dlg = None):
     settings = {"foh": {}, "iem": {}, "atem": {}}
     fadeSettings = {"foh": {}, "iem": {}, "atem": {}}
     for mixerName in config["osc"]: # Make sure that any additional mixers will be added
@@ -107,7 +108,14 @@ def fireLines(config, osc, lines, iemCopy = False, dlg = None):
     for line in lines:
         components = line.split()
 
-        if components[0] == "midi":
+        if components[0] == "lucky":
+            if "AutoMixLucky" in widgets["windows"]: # Do nothing if window not open
+                if components[1] in widgets["windows"]["AutoMixLucky"].assignments:
+                    widgets["windows"]["AutoMixLucky"].assignments[components[1]].setCurrentText(components[2])
+                    if len(components) >= 4: # Then we want to load weight as well
+                        channelIdx = int(components[1].replace("/ch/", "")) - 1
+                        widgets["windows"]["AutoMixLucky"].weights[channelIdx].setValue(float(components[3]))
+        elif components[0] == "midi":
             channel = int(components[2]) - 1
             control = int(components[3])
             value = int(components[4])

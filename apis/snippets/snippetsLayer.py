@@ -59,7 +59,7 @@ class SnippetsLayer(QTabWidget):
             filenames[chName].setCurrentIndex(-1)
             hlayout.addWidget(filenames[chName])
 
-            hlayout.addWidget(LoadButton(self.config, self.osc, chName, filenames[chName], self.widgets["personal"][chName]))
+            hlayout.addWidget(LoadButton(self.config, self.widgets, self.osc, chName, filenames[chName], self.widgets["personal"][chName]))
 
             vlayout.addLayout(hlayout)
 
@@ -82,7 +82,7 @@ class SnippetsLayer(QTabWidget):
         filenames["Mains"].setMaxCount(10)
         filenames["Mains"].setCurrentIndex(-1)
         hlayout.addWidget(filenames["Mains"])
-        hlayout.addWidget(LoadButton(self.config, self.osc, "Mains", filenames["Mains"], self.widgets["personal"]["Mains"]))
+        hlayout.addWidget(LoadButton(self.config, self.widgets, self.osc, "Mains", filenames["Mains"], self.widgets["personal"]["Mains"]))
         vlayout.addLayout(hlayout)
 
         scrollWidget = QWidget()
@@ -93,7 +93,7 @@ class SnippetsLayer(QTabWidget):
         scroll.setWidgetResizable(True)
         
         layout.addWidget(scroll)
-        layout.addWidget(LoadAllButton(self.config, self.osc, filenames, self.widgets["personal"]))
+        layout.addWidget(LoadAllButton(self.config, self.widgets, self.osc, filenames, self.widgets["personal"]))
         widget = QWidget()
         widget.setLayout(layout)
         return widget

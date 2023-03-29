@@ -3,6 +3,7 @@ from apis.cues.cueLayer import CueLayer
 from apis.cues.cueLoad import loadCue
 from apis.cues.cueSave import saveCue
 from apis.menu.About import About
+from apis.menu.CopyChannels import CopyChannels
 from apis.menu.Preferences import Preferences
 from apis.menu.ResetCache import ResetCache
 from apis.menu.ResetCommands import ResetCommands
@@ -64,10 +65,12 @@ class MainWindow(QMainWindow):
         prevCmdMenu = menu.addMenu("Sync App Directory")
         prevCmdMenu.addAction(BackupDirectory(self))
         prevCmdMenu.addAction(LoadDirectory(self))
+        prevCmdMenu = menu.addMenu("Move Channels")
+        prevCmdMenu.addAction(SwapChannels(self, self.config, self.osc))
+        prevCmdMenu.addAction(CopyChannels(self, self.config, self.osc))
         prevCmdMenu = menu.addMenu("Reset...")
-        prevCmdMenu.addAction(ResetCommands(self, self.config, self.osc))
+        prevCmdMenu.addAction(ResetCommands(self, self.config, self.widgets, self.osc))
         prevCmdMenu.addAction(ResetCache(self))
-        menu.addAction(SwapChannels(self, self.config, self.osc))
         if "iem" in self.config["osc"]:
             menu.addAction(TransferButton(self, self.config, self.osc))
         menu.addAction(UpdateApp(self))

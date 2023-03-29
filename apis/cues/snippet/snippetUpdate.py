@@ -9,9 +9,10 @@ import traceback
 logger = logging.getLogger(__name__)
 
 class SnippetUpdateButton(QPushButton):
-    def __init__(self, osc, textbox):
+    def __init__(self, osc, widgets, textbox):
         super().__init__("Update Listed Settings")
         self.osc = osc
+        self.widgets = widgets
         self.textbox = textbox
         self.pressed.connect(self.clicked)
     
@@ -21,6 +22,7 @@ class SnippetUpdateButton(QPushButton):
         try:
             main(
                 self.osc,
+                self.widgets,
                 curSettings,
                 self.textbox
             )
@@ -42,9 +44,10 @@ class SnippetUpdateButton(QPushButton):
 
         self.setDown(False)
 
-def main(osc, curSettings, textbox):
+def main(osc, widgets, curSettings, textbox):
     fohSettings = {}
     iemSettings = {}
+    luckySettings = {}
     otherLines = []
     for line in curSettings:
         components = line.strip().split()
@@ -53,11 +56,28 @@ def main(osc, curSettings, textbox):
             fohSettings[components[1]] = None
         elif components[0] == "iem":
             iemSettings[components[1]] = None
+        elif components[0] == "lucky":
+            luckySettings[components[1]] = line
         else:
             otherLines.append(line)
 
     textbox.clear()
-    appendSettingsToTextbox(osc, textbox, "foh", fohSettings)
-    appendSettingsToTextbox(osc, textbox, "iem", iemSettings)
+    if len(fohSettings) > 0:
+        appendSettingsToTextbox(osc, textbox, "foh", fohSettings)
+    if len(iemSettings) > 0:
+        appendSettingsToTextbox(osc, textbox, "iem", iemSettings)
+    updateLucky(widgets, textbox, luckySettings)
     for line in otherLines:
         textbox.append(line)
+
+def updateLucky(widgets, textbox, settings):
+    for channel in settings:
+        if "AutoMixLucky" in widgets["windows"]:
+            if channel in widgets["windows"]["AutoMixLucky"].assignments:
+                assignment = widgets["windows"]["AutoMixLucky"].assignments[channel].currentText()
+                # Don't save weights, since weights should just help match mic sensitivities, so shouldn't be dependent on person.
+                # channelIdx = int(channel.replace("/ch/", "")) - 1
+                # weight = widgets["windows"]["AutoMixLucky"].weights[channelIdx].value()
+                textbox.append("lucky " + channel + " " + assignment)
+        else: # Keep existing line if window not open
+            textbox.append(settings[channel])

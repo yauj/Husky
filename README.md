@@ -85,6 +85,36 @@ Additionally, specify the `defaultValue` of a fader, to force the fader to start
 
 This is the channel that FOH talkback is being sent through. Applicable because FOH Talkback Channel is sent to IEM Mixer. If only a single mixer is specified, then `talkbackDestination` is expected, which should be either `A` or `B`.
 
+### luckyAutoMix
+
+These are default params for the auto-mixer. This is not required, as there have been default parameters that have been hard coded. Parameters include:
+
+#### bus
+
+This is the default bus to use the auto mixer with. The way that this auto mixer works, is that it changes the bus sends for individual enabled channels. Because of this, it is required for the bus sends to be set as **Post Fader**.
+
+#### postFader
+
+This is a boolean value, specifying whether or not we want to base the auto mixer off the meter value on input, or on output. In practice, the output meter value is calculated using the input meter value, adding the fader position. *Note that the X32 auto mixer bases uses input meters for the auto mixer.*
+
+#### threshold
+
+This is the gate threshold. If mics meter volume are below this threshold, then all mics will be gated down to at least -10db. How this works is that `c = 0` if max meter value is below the threshold, so that all values will then translate to be between range -10db to -30db.
+
+Be careful about adjusting threshold to be not equal to the minimum of 100, because latency issues will mean that if channel volume is ducked, it will take more time to respond.
+
+#### m *and* c
+
+The volume that a channel is auto mixed to depends on the following equation:
+
+```
+0.5 + arctan((Channel Volume - Max Channel Volume - c) / m) / 6
+```
+
+Effectively, `c in (-24, 0)` is the point at which the curve will hit -10db, and then start to concave back up, and `m in (1, 9)` is the slope of the curve. If you want a more aggressive automixer, then set `m` to be lower, and if you want it to be more smoothed out, set `m` to be higher.
+
+Only exception to channels that won't follow the equation is the channel with the max meter volume, which will have unity send gain.
+
 ### resetCommands
 
 This is a dictionary containing commands to be fired on reset call, where the key is the osc address and the value is the argument to be fired. The argument should be in the correct data format.
@@ -109,6 +139,12 @@ You are also able to fire MIDI cues, by putting commands in the following format
 
 ```
 midi [audio|video|light] [channel:1-16] [control:0-127] [value:0-127]
+```
+
+Additionally, you are also able to make changes to the "I'm Feeling Lucky" local auto mixer in the following format:
+
+```
+lucky [/ch/01, /ch/02, ...] [assignment: OFF, A, B, ...] [weight: -12.0 - 12.0] 
 ```
 
 ### cue

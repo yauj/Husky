@@ -1,4 +1,5 @@
 from apis.pages.pagesAutoMix import AutoMixButton
+from apis.pages.pagesAutoMixLucky import AutoMixLuckyButton
 from apis.pages.pagesGain import GainButton
 from apis.pages.pagesMutes import MutesButton
 from apis.pages.pagesRouting import RoutingButton
@@ -49,5 +50,6 @@ class PagesLayer(QWidget):
 
             vlayout.addWidget(TalkbackButton(config, widgets, osc))
             vlayout.addWidget(AutoMixButton(config, widgets, osc))
+            vlayout.addWidget(AutoMixLuckyButton(config, widgets, osc))
 
         self.setLayout(vlayout)
