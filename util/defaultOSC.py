@@ -302,12 +302,18 @@ class SubscriptionServer(ThreadingOSCUDPServer):
         # self.client.send_message("/unsubscribe", address) Just allow subscription to expire
     
     def subscribeThread(self):
-        self.sendCommands("/subscribe", self.subscriptions)
         self.activeSubscriptions = self.subscriptions.copy()
+        self.sendCommands("/subscribe", self.subscriptions)
 
     def renewThread(self):
         while not self.shutdownFlag:
-            self.sendCommands("/renew", self.activeSubscriptions)
+            try:
+                # Subscribe instead of renew
+                # self.sendCommands("/renew", self.activeSubscriptions)
+                self.sendCommands("/subscribe", self.subscriptions)
+            except Exception as ex:
+                logger.warn("Ran into Exception: " + str(ex))
+                sleep(1)
 
     def sendCommands(self, command, args):
         args = args.copy()
