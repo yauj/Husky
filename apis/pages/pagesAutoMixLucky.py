@@ -285,7 +285,10 @@ class LuckyGroup:
 
         # Reset to Unity
         command = "/ch/" + "{:02d}".format(channelIdx + 1) + "/mix/" + self.bus.currentText() + "/level"
-        self.osc["fohClient"].send_message(command, 0.75)
+        try:
+            self.osc["fohClient"].send_message(command, 0.75)
+        except Exception as ex:
+            logger.warn("Unable to reset bus level for " + command)
 
         del self.fadersPos[channelIdx]
     
@@ -336,7 +339,7 @@ class LuckyGroup:
     
     def calcMeterVal(self, holder, channelIdx):
         if not self.mutes[channelIdx].isChecked():
-            if len(holder.valsMap[channelIdx]) < 3: # Should wait for all to have multiple datapoints
+            if channelIdx not in holder.valsMap or len(holder.valsMap[channelIdx]) < 3: # Should wait for all to have multiple datapoints
                 holder.shouldFire = False
             else:
                 val = max(holder.valsMap[channelIdx])
