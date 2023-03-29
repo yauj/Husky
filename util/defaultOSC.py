@@ -8,6 +8,7 @@ from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import BlockingOSCUDPServer, ThreadingOSCUDPServer
 import socket
 import threading
+import traceback
 from time import time, sleep
 from util.constants import APP_NAME, NUM_THREADS, PORT, START_PORT
 from uuid import uuid4
@@ -252,8 +253,11 @@ class SubscriptionServer(ThreadingOSCUDPServer):
         super().shutdown() # Finishes up server thread
 
     def functionHandler(self, address, *args):
-        if address in self.subscriptions:
-            self.subscriptions[address]["command"](self.mixerName, address, args[0])
+        try:
+            if address in self.subscriptions:
+                self.subscriptions[address]["command"](self.mixerName, address, args[0])
+        except Exception as ex:
+            logger.debug("Subscription Inflow Exception: " + traceback.format_exc())
 
     def add(self, address, command, alias = None, param1 = 0, param2 = 0, paramTimeFactor = 1):
         record = {
@@ -302,8 +306,11 @@ class SubscriptionServer(ThreadingOSCUDPServer):
         # self.client.send_message("/unsubscribe", address) Just allow subscription to expire
     
     def subscribeThread(self):
-        self.activeSubscriptions = self.subscriptions.copy()
-        self.sendCommands("/subscribe", self.subscriptions)
+        try:
+            self.activeSubscriptions = self.subscriptions.copy()
+            self.sendCommands("/subscribe", self.subscriptions)
+        except Exception as ex:
+            logger.debug("Subscription Creation Exception: " + traceback.format_exc())
 
     def renewThread(self):
         while not self.shutdownFlag:
@@ -312,7 +319,7 @@ class SubscriptionServer(ThreadingOSCUDPServer):
                 # self.sendCommands("/renew", self.activeSubscriptions)
                 self.sendCommands("/subscribe", self.subscriptions)
             except Exception as ex:
-                logger.warn("Ran into Exception: " + str(ex))
+                logger.debug("Subscription Renewal Exception: " + traceback.format_exc())
                 sleep(1)
 
     def sendCommands(self, command, args):

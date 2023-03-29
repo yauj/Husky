@@ -209,26 +209,27 @@ class AutoMixLuckyWindow(QMainWindow):
         self.vlayout.addWidget(label)
     
     def closeEvent(self, a0):
-        if self.bus.currentIndex() > 0:
-            self.config["luckyAutoMix"] = {
-                "bus": self.bus.currentText(),
-                "postFader": self.meter.isChecked(),
-                "min": self.min.value(),
-                "threshold": self.threshold.value(),
-                "m": self.mBox.value(),
-                "c": self.cBox.value(),
-                "mappings": {}
-            }
-            for idx, channel in enumerate(self.assignments):
-                self.config["luckyAutoMix"]["mappings"][channel] = {
-                    "assignment": self.assignments[channel].currentText(),
-                    "weight": self.weights[idx].value()
+        if hasattr(self, 'bus'):
+            if self.bus.currentIndex() > 0:
+                self.config["luckyAutoMix"] = {
+                    "bus": self.bus.currentText(),
+                    "postFader": self.meter.isChecked(),
+                    "min": self.min.value(),
+                    "threshold": self.threshold.value(),
+                    "m": self.mBox.value(),
+                    "c": self.cBox.value(),
+                    "mappings": {}
                 }
+                for idx, channel in enumerate(self.assignments):
+                    self.config["luckyAutoMix"]["mappings"][channel] = {
+                        "assignment": self.assignments[channel].currentText(),
+                        "weight": self.weights[idx].value()
+                    }
 
-        self.osc["fohServer"].subscription.remove(MUTE_SUB)
-        self.osc["fohServer"].subscription.remove(AUTOMIX_METERS_CMD)
-        for autoMixName in self.autoMixers:
-            self.autoMixers[autoMixName].removeAll()
+            self.osc["fohServer"].subscription.remove(MUTE_SUB)
+            self.osc["fohServer"].subscription.remove(AUTOMIX_METERS_CMD)
+            for autoMixName in self.autoMixers:
+                self.autoMixers[autoMixName].removeAll()
 
         del self.widgets["windows"]["AutoMixLucky"]
 
