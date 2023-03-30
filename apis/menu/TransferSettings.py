@@ -40,7 +40,9 @@ class TransferButton(QAction):
                 settings["/config/chlink/" + chlink] = None
 
             # Exclude AUX and talkback channels
-            channels = set(ALL_CHANNELS) - set(AUX_CHANNELS) - set([self.config["talkbackChannel"]])
+            channels = set(ALL_CHANNELS) - set(AUX_CHANNELS)
+            if "talkback" in self.config and "channel" in self.config["talkback"]:
+                channels = channels - set([self.config["talkback"]["channel"]])
             for channel in channels:
                 for category in SETTINGS:
                     for param in SETTINGS[category]:

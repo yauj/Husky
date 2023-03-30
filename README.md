@@ -81,9 +81,21 @@ Additionally, the field `oscFeedback` can be specified, to specify certain feedb
 
 Additionally, specify the `defaultValue` of a fader, to force the fader to start at a certain position. This value should be a number between 0 and 127.
 
-### talkbackChannel
+### talkback
 
-This is the channel that FOH talkback is being sent through. Applicable because FOH Talkback Channel is sent to IEM Mixer. If only a single mixer is specified, then `talkbackDestination` is expected, which should be either `A` or `B`.
+Different values related to talkback.
+
+#### destination
+
+Which destination to use for IEM talkback enable/disable. One of either `A` or `B`.
+
+#### channel
+
+This is the channel that FOH talkback is being sent through. Applicable because FOH Talkback Channel is sent to IEM Mixer. Should be in a format similar to `/ch/01`.
+
+#### link
+
+Whether to link buttons on the FOH mixer with the mute of the talkback channel in the IEM mixer. Only applicable for 2 mixer application.
 
 ### luckyAutoMix
 
