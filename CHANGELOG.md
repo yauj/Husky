@@ -32,3 +32,19 @@ Add Channel Swap feature in Menu.
 ## v1.3.0 (2023-03-22)
 
 Add "I'm feeling lucky" auto mixer.
+
+## v2.0.0 (2023-03-30)
+
+Add Talkback link, where FOH talkback buttons are linked with the mute/unmute of the talkback channel on the IEM mixer.
+
+This is backwards incompatible change, as it changes the format of the config. Talkback config is now in the following format:
+
+```
+    "talkback": {
+        "destination": "B",
+        "channel": "/ch/30",
+        "link": true
+    },
+```
+
+Requires manual change in existing instances of Husky. Only really runs on 2 computers right now, so this change is managable.

@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 import traceback
+from util.constants import TALKBACK_STAT_PREFIX
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,19 @@ class TalkbackButton(QPushButton):
         self.config = config
         self.widgets = widgets
         self.osc = osc
+        self.tbCurState = -1 # Start at -1, to make sure we start with initializing the state
+        self.tbButtonStates = [0, 0]
         self.pressed.connect(self.clicked)
+
+        if (
+            "talkback" in config
+            and "link" in config["talkback"]
+            and "channel" in config["talkback"]
+            and config["talkback"]["link"]
+            and "iem" in config["osc"]
+        ):
+            for talkbackDestination in ["A", "B"]:
+                self.osc["fohServer"].subscription.add(TALKBACK_STAT_PREFIX + talkbackDestination, self.processTalkbackSubscription)
     
     def clicked(self):
         if "Talkback" not in self.widgets["windows"]:
@@ -28,6 +41,17 @@ class TalkbackButton(QPushButton):
         self.widgets["windows"]["Talkback"].show()
 
         self.setDown(False)
+    
+    def processTalkbackSubscription(self, mixerName, message, arg):
+        if message == TALKBACK_STAT_PREFIX + "A":
+            self.tbButtonStates[0] = arg
+
+            newState = max(self.tbButtonStates) # If one button is on, then want the talkback gate to be open
+            if newState != self.tbCurState:
+                self.tbCurState = newState
+                self.osc["iemClient"].send_message(self.config["talkback"]["channel"] + "/mix/on", newState)
+        else: # B
+            self.tbButtonStates[1] = arg
 
 class TalkbackWindow(QMainWindow):
     def __init__(self, config, widgets, osc):
@@ -47,13 +71,13 @@ class TalkbackWindow(QMainWindow):
             if "iem" not in config["osc"]:
                 if not self.osc["fohClient"].connected:
                     raise SystemError("Not Connected to FOH Mixer")
-                if "talkbackDestination" not in config:
-                    raise KeyError("talkbackDestination is not specified in config.py")
+                if "talkback" not in config or "destination" not in config["talkback"]:
+                    raise KeyError("talkback.destination is not specified in config.py")
 
                 vlayout.addWidget(TalkbackAllButton(osc, self.talkbacks))
                 vlayout.addWidget(TalkbackNoneButton(osc, self.talkbacks))
 
-                command = "/config/talk/" + config["talkbackDestination"] + "/destmap"
+                command = "/config/talk/" + config["talkback"]["destination"] + "/destmap"
                 self.bitmap = ["0"] * 18
 
                 for chName in config["personal"]:
@@ -74,8 +98,8 @@ class TalkbackWindow(QMainWindow):
             else:
                 if not self.osc["iemClient"].connected:
                     raise SystemError("Not Connected to IEM Mixer")
-                if "talkbackChannel" not in config:
-                    raise KeyError("talkbackChannel is not specified in config.py")
+                if "talkback" not in config or "channel" not in config["talkback"]:
+                    raise KeyError("talkback.channel is not specified in config.py")
 
                 vlayout.addWidget(TalkbackAllButton(osc, self.talkbacks))
                 vlayout.addWidget(TalkbackNoneButton(osc, self.talkbacks))
@@ -94,7 +118,7 @@ class TalkbackWindow(QMainWindow):
                         hlayout.addWidget(self.talkbacks[bus])
                         vlayout.addLayout(hlayout)
 
-                        self.osc["iemServer"].subscription.add(config["talkbackChannel"] + "/mix/" + bus + "/on", self.processTwoSubscription)
+                        self.osc["iemServer"].subscription.add(config["talkback"]["channel"] + "/mix/" + bus + "/on", self.processTwoSubscription)
         except Exception as ex:
             logger.error(traceback.format_exc())
             label = QLabel("Error: " + str(ex))
@@ -121,11 +145,11 @@ class TalkbackWindow(QMainWindow):
     
     def closeEvent(self, a0):
         if "iem" not in self.config["osc"]:
-            self.osc["fohServer"].subscription.remove("/config/talk/" + self.config["talkbackDestination"] + "/destmap")
+            self.osc["fohServer"].subscription.remove("/config/talk/" + self.config["talkback"]["destination"] + "/destmap")
         else:
             for chName in self.config["personal"]:
                 if "iem_bus" in self.config["personal"][chName]:
-                    self.osc["iemServer"].subscription.remove(self.config["talkbackChannel"] + "/mix/" + self.config["personal"][chName]["iem_bus"] + "/on")
+                    self.osc["iemServer"].subscription.remove(self.config["talkback"]["channel"] + "/mix/" + self.config["personal"][chName]["iem_bus"] + "/on")
 
         del self.widgets["windows"]["Talkback"]
 
@@ -156,7 +180,7 @@ class TalkbackTwoBox(QCheckBox):
     def __init__(self, config, osc, bus):
         super().__init__()
         self.osc = osc
-        self.command = config["talkbackChannel"] + "/mix/" + bus + "/on"
+        self.command = config["talkback"]["channel"] + "/mix/" + bus + "/on"
         self.setFixedWidth(20)
         self.stateChanged.connect(self.clicked)
     
@@ -186,7 +210,7 @@ class TalkbackAllButton(QPushButton):
 
 class TalkbackNoneButton(QPushButton):
     def __init__(self, osc, boxes):
-        super().__init__("Talk to Nobody!")
+        super().__init__("Talk to Nobody¡")
         self.osc = osc
         self.boxes = boxes
         self.pressed.connect(self.clicked)

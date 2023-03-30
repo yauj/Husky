@@ -432,7 +432,10 @@ config = {
             "Stream Overall": {"commands": ["atem /atem/audio/output/gain -60 10"]}
         },
     },
-    "talkbackChannel": "/ch/30",
+    "talkback": {
+        "channel": "/ch/30",
+        "link": True
+    },
     "luckyAutoMix": {
         "bus": "08",
         "postFader": False,

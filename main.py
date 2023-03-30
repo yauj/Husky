@@ -28,7 +28,7 @@ from PyQt6.QtWidgets import (
 import subprocess
 import sys
 import traceback
-from util.constants import APP_NAME
+from util.constants import APP_NAME, TALKBACK_STAT_PREFIX
 from util.defaultOSC import MIDIVirtualPort
 
 class MainWindow(QMainWindow):
@@ -102,6 +102,18 @@ class MainWindow(QMainWindow):
 
             with open("data/cue.cache", "w") as file:
                 saveCue(self.config, file, self.widgets)
+        
+        if (
+            "talkback" in config
+            and "link" in config["talkback"]
+            and "channel" in config["talkback"]
+            and config["talkback"]["link"]
+            and "iem" in config["osc"]
+        ):
+            for talkbackDestination in ["A", "B"]:
+                self.osc["fohServer"].subscription.remove(TALKBACK_STAT_PREFIX + talkbackDestination)
+            if self.osc["iemClient"].connected:
+                self.osc["iemClient"].send_message(self.config["talkback"]["channel"] + "/mix/on", 1)
 
         return super().closeEvent(a0)
 
