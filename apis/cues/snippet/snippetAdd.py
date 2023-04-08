@@ -235,13 +235,17 @@ class AddPresetButton(QPushButton):
 
             if "iem_bus" in self.boxes[name] and self.boxes[name]["iem_bus"].isChecked():
                 for channel in ALL_CHANNELS:
-                    prefix = channel + "/mix/" + self.config["personal"][name]["iem_bus"]
+                    if self.config["personal"][name]["iem_bus"] == "st": # Main Stereo Out
+                        iemSettings[channel + "/mix/fader"] = None
+                        iemSettings[channel + "/mix/pan"] = None
+                    elif self.config["personal"][name]["iem_bus"] == "mono": # Mono Out
+                        iemSettings[channel + "/mix/mlevel"] = None
+                    else:
+                        prefix = channel + "/mix/" + self.config["personal"][name]["iem_bus"]
 
-                    iemSettings[prefix + "/on"] = None
-                    iemSettings[prefix + "/level"] = None
-
-                    if self.config["personal"][name]["iem_bus"] in ODD_BUSES:
-                        iemSettings[prefix + "/pan"] = None
+                        iemSettings[prefix + "/level"] = None
+                        if self.config["personal"][name]["iem_bus"] in ODD_BUSES:
+                            iemSettings[prefix + "/pan"] = None
 
         if len(fohSettings) > 0:
             appendSettingsToTextbox(self.osc, self.textbox, "foh", fohSettings)

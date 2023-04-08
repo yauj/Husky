@@ -118,7 +118,10 @@ class TalkbackWindow(QMainWindow):
                         hlayout.addWidget(self.talkbacks[bus])
                         vlayout.addLayout(hlayout)
 
-                        self.osc["iemServer"].subscription.add(config["talkback"]["channel"] + "/mix/" + bus + "/on", self.processTwoSubscription)
+                        if bus == "st" or bus == "mono":
+                            self.osc["iemServer"].subscription.add(config["talkback"]["channel"] + "/mix/" + bus, self.processTwoSubscription)
+                        else:
+                            self.osc["iemServer"].subscription.add(config["talkback"]["channel"] + "/mix/" + bus + "/on", self.processTwoSubscription)
         except Exception as ex:
             logger.error(traceback.format_exc())
             label = QLabel("Error: " + str(ex))
@@ -137,7 +140,12 @@ class TalkbackWindow(QMainWindow):
 
         # Match boxes to bitmap
         for bus in self.talkbacks:
-            self.talkbacks[bus].setChecked(self.bitmap[18 - int(bus)] == "1")
+            if bus == "st":
+                self.talkbacks[bus].setChecked(self.bitmap[0] == "1")
+            elif bus == "mono":
+                self.talkbacks[bus].setChecked(self.bitmap[1] == "1")
+            else:
+                self.talkbacks[bus].setChecked(self.bitmap[18 - int(bus)] == "1")
 
     def processTwoSubscription(self, mixerName, message, arg):
         bus = message.split("/")[4]
@@ -149,7 +157,10 @@ class TalkbackWindow(QMainWindow):
         else:
             for chName in self.config["personal"]:
                 if "iem_bus" in self.config["personal"][chName]:
-                    self.osc["iemServer"].subscription.remove(self.config["talkback"]["channel"] + "/mix/" + self.config["personal"][chName]["iem_bus"] + "/on")
+                    if self.config["personal"][chName]["iem_bus"] == "st" or self.config["personal"][chName]["iem_bus"] == "mono":
+                        self.osc["iemServer"].subscription.remove(self.config["talkback"]["channel"] + "/mix/" + self.config["personal"][chName]["iem_bus"])
+                    else:
+                        self.osc["iemServer"].subscription.remove(self.config["talkback"]["channel"] + "/mix/" + self.config["personal"][chName]["iem_bus"] + "/on")
 
         del self.widgets["windows"]["Talkback"]
 
@@ -159,7 +170,13 @@ class TalkbackOneBox(QCheckBox):
         super().__init__()
         self.osc = osc
         self.bitmap = bitmap
-        self.index = 18 - int(bus)
+        self.index = 18
+        if bus == "st":
+            self.index = 0
+        elif bus == "mono":
+            self.index = 1
+        else:
+            self.index = 18 - int(bus)
         self.command = command
         self.setFixedWidth(20)
         self.stateChanged.connect(self.clicked)
@@ -181,6 +198,8 @@ class TalkbackTwoBox(QCheckBox):
         super().__init__()
         self.osc = osc
         self.command = config["talkback"]["channel"] + "/mix/" + bus + "/on"
+        if bus == "st" or bus == "mono":
+            self.command = config["talkback"]["channel"] + "/mix/" + bus
         self.setFixedWidth(20)
         self.stateChanged.connect(self.clicked)
     

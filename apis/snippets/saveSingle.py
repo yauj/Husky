@@ -63,10 +63,11 @@ def runSingle(osc, chName, personName, config, dlg = None):
                         tags[value] = key
                         file.write(" " + key + "=" + value)
                 if "iem_bus" in config["personal"][chName]:
-                    key = "<iem_bus>"
-                    value = "mix/" + config["personal"][chName]["iem_bus"]
-                    tags[value] = key
-                    file.write(" " + key + "=" + value)
+                    if config["personal"][chName]["iem_bus"] != "st" and config["personal"][chName]["iem_bus"] != "mono":
+                        key = "<iem_bus>"
+                        value = "mix/" + config["personal"][chName]["iem_bus"]
+                        tags[value] = key
+                        file.write(" " + key + "=" + value)
 
                 if "channels" in config["personal"][chName]:
                     saveChannels(osc, file, tags, config["personal"][chName]["channels"], dlg)
@@ -99,13 +100,17 @@ def saveChannels(osc, file, tags, channels, dlg = None):
 def saveIEMBus(osc, file, tags, bus, dlg = None):
     settings = {}
     for channel in ALL_CHANNELS:
-        prefix = channel + "/mix/" + bus
+        if bus == "st": # Main Stereo Out
+            settings[channel + "/mix/fader"] = None
+            settings[channel + "/mix/pan"] = None
+        elif bus == "mono": # Mono Out
+            settings[channel + "/mix/mlevel"] = None
+        else:
+            prefix = channel + "/mix/" + bus
 
-        settings[prefix + "/on"] = None
-        settings[prefix + "/level"] = None
-
-        if bus in ODD_BUSES:
-            settings[prefix + "/pan"] = None
+            settings[prefix + "/level"] = None
+            if bus in ODD_BUSES:
+                settings[prefix + "/pan"] = None
     
     saveSettingsToFile(osc, file, tags, "iem", settings, dlg)
 
@@ -157,10 +162,14 @@ def saveSingleNumSettings(config, chName):
 
         if "iem_bus" in config["personal"][chName]:
             iemNum = len(ALL_CHANNELS)
-            if config["personal"][chName]["iem_bus"] in ODD_BUSES:
-                iemNum = iemNum * 3
-            else:
+            if config["personal"][chName]["iem_bus"] == "st":
                 iemNum = iemNum * 2
+            elif config["personal"][chName]["iem_bus"] == "mono":
+                iemNum = iemNum * 1
+            elif config["personal"][chName]["iem_bus"] in ODD_BUSES:
+                iemNum = iemNum * 2
+            else:
+                iemNum = iemNum * 1
             
             num = num + iemNum
 

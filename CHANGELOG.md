@@ -48,3 +48,9 @@ This is backwards incompatible change, as it changes the format of the config. T
 ```
 
 Requires manual change in existing instances of Husky. Only really runs on 2 computers right now, so this change is managable.
+
+## v2.1.0 (2023-04-08)
+
+Add ability to use "st" (Main Out) or "mono" (Mono Out) as a iem_bus.
+
+Also changing config to match next evolution of 45th loft.
