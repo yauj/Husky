@@ -115,7 +115,8 @@ class AutoMixLuckyWindow(QMainWindow):
             "Let Go and Let Dog. Automixes channels using specified bus.\n"
             + "This will only work if:\n"
             + "- Bus is set to Post-Fader\n"
-            + "- Output to mains comes from the Bus and not the individual channels."
+            + "- Output to mains comes from the Bus and not the individual channels.\n"
+            + "This works off network monitoring, so Native automixer is still better."
         ))
 
         hlayout = QHBoxLayout()

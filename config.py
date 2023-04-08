@@ -317,6 +317,9 @@ config = {
         "HH2": {
             "channels": ["03"]
         },
+        "HH3": {
+            "channels": ["04"]
+        },
         "Vocals 1": {
             "channels": ["05", "09"],
             "iem_bus": "01"
@@ -328,6 +331,9 @@ config = {
         "Vocals 3": {
             "channels": ["07"],
             "iem_bus": "05"
+        },
+        "Vocals 4": {
+            "channels": ["08"]
         },
         "Keys": {
             "channels": ["10", "11", "12"],
@@ -347,6 +353,10 @@ config = {
         },
         "Drums": {
             "iem_bus": "15"
+        },
+        "Choir": {
+            "channels": ["31", "32"],
+            "iem_bus": "st"
         }
     },
     "cues": {
@@ -401,6 +411,12 @@ config = {
                     "foh /ch/07/mix/01/on int 0", "foh /ch/07/mix/02/on int 0", "foh /ch/07/mix/03/on int 1", "foh /ch/07/mix/08/on int 0",
                     "foh /ch/08/mix/01/on int 1", "foh /ch/08/mix/02/on int 1", "foh /ch/08/mix/03/on int 0", "foh /ch/08/mix/08/on int 0",
                 ],
+                "All": [
+                    "foh /ch/05/mix/01/on int 1", "foh /ch/05/mix/02/on int 1", "foh /ch/05/mix/03/on int 0", "foh /ch/05/mix/08/on int 0",
+                    "foh /ch/06/mix/01/on int 1", "foh /ch/06/mix/02/on int 1", "foh /ch/06/mix/03/on int 0", "foh /ch/06/mix/08/on int 0",
+                    "foh /ch/07/mix/01/on int 1", "foh /ch/07/mix/02/on int 1", "foh /ch/07/mix/03/on int 0", "foh /ch/07/mix/08/on int 0",
+                    "foh /ch/08/mix/01/on int 1", "foh /ch/08/mix/02/on int 1", "foh /ch/08/mix/03/on int 0", "foh /ch/08/mix/08/on int 0",
+                ],
                 "Talk": [
                     "foh /ch/05/mix/01/on int 0", "foh /ch/05/mix/02/on int 0", "foh /ch/05/mix/03/on int 0", "foh /ch/05/mix/08/on int 1",
                     "foh /ch/06/mix/01/on int 0", "foh /ch/06/mix/02/on int 0", "foh /ch/06/mix/03/on int 0", "foh /ch/06/mix/08/on int 1",
@@ -412,7 +428,7 @@ config = {
         "faders": {
             "VOX EQ": {"commands": ["foh /ch/05/eq/1/g 0.2 0.5"]},
             "VOX Pan": {"commands": ["foh /ch/06/mix/pan 0.5 0.2", "foh /ch/07/mix/pan 0.5 0.8"]},
-            "EG/Keys Pan": {"commands": ["foh /ch/13/mix/pan 0.5 0.2", "foh /ch/11/mix/pan 0.5 0.8"]},
+            "EG Pan": {"commands": ["foh /ch/13/mix/pan 0.5 0.2", "foh /ch/14/mix/pan 0.5 0.8"]},
             "Bass/Drums HPF": {"commands": ["foh /ch/20/preamp/hpf 0.3 0.0"]},
             "VOX Tracks": {"defaultValue": 63, "commands": ["midi audio 2 50"]},
             "EG/Keys Tracks": {"defaultValue": 63, "commands": ["midi audio 2 51"]},

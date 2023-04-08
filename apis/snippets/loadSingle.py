@@ -61,9 +61,10 @@ def runSingle(config, widgets, osc, filename, iemCopy = False, chName = None, dl
                         value = "/ch/" + channel
                         tags[key] = value
                 if "iem_bus" in config["personal"][chName]:
-                    key = "<iem_bus>"
-                    value = "mix/" + config["personal"][chName]["iem_bus"]
-                    tags[key] = value
+                    if config["personal"][chName]["iem_bus"] != "st" and config["personal"][chName]["iem_bus"] != "mono":
+                        key = "<iem_bus>"
+                        value = "mix/" + config["personal"][chName]["iem_bus"]
+                        tags[key] = value
 
                 for pair in headerLine.split()[1:]:
                     keyVal = pair.split("=")
