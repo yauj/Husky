@@ -54,3 +54,7 @@ Requires manual change in existing instances of Husky. Only really runs on 2 com
 Add ability to use "st" (Main Out) or "mono" (Mono Out) as a iem_bus.
 
 Also changing config to match next evolution of 45th loft.
+
+## v2.2.0 (2023-04-13)
+
+Add ability to open files from osc snippet files.

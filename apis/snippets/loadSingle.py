@@ -1,4 +1,5 @@
 import logging
+import subprocess
 import mido
 import os.path
 from PyQt6.QtWidgets import (
@@ -116,6 +117,8 @@ def fireLines(config, widgets, osc, lines, iemCopy = False, dlg = None):
                     if len(components) >= 4: # Then we want to load weight as well
                         channelIdx = int(components[1].replace("/ch/", "")) - 1
                         widgets["windows"]["AutoMixLucky"].weights[channelIdx].setValue(float(components[3]))
+        elif components[0] == "open":
+            subprocess.Popen(line, shell = True) # Just open file in background (Only Mac Compatiable)
         elif components[0] == "midi":
             channel = int(components[2]) - 1
             control = int(components[3])
