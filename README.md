@@ -1,5 +1,6 @@
-# x32-scripts
-Custom scripts for X32
+# Husky
+
+Companion app for X32.
 
 Run the following: `python3 main.py`
 
@@ -151,6 +152,12 @@ You are also able to fire MIDI cues, by putting commands in the following format
 
 ```
 midi [audio|video|light] [channel:1-16] [control:0-127] [value:0-127]
+```
+
+You are also able to open files using the following command:
+
+```
+open [filepath]
 ```
 
 Additionally, you are also able to make changes to the "I'm Feeling Lucky" local auto mixer in the following format:
