@@ -1,3 +1,4 @@
+import mido
 from apis.connection.connectionLayer import ConnectionLayer
 from apis.cues.cueLayer import CueLayer
 from apis.cues.cueLoad import loadCue
@@ -28,7 +29,7 @@ from PyQt6.QtWidgets import (
 import subprocess
 import sys
 import traceback
-from util.constants import APP_NAME, TALKBACK_STAT_PREFIX
+from util.constants import APP_NAME, SELECT_STAT, TALKBACK_STAT_PREFIX
 from util.defaultOSC import MIDIVirtualPort
 
 class MainWindow(QMainWindow):
@@ -74,6 +75,8 @@ class MainWindow(QMainWindow):
         if "iem" in self.config["osc"]:
             menu.addAction(TransferButton(self, self.config, self.osc))
         menu.addAction(UpdateApp(self))
+
+        self.addSubscriptions()
     
     # Load Config Cache
     def loadConfigCache(self):
@@ -103,19 +106,63 @@ class MainWindow(QMainWindow):
             with open("data/cue.cache", "w") as file:
                 saveCue(self.config, file, self.widgets)
         
+        self.removeSubscriptions()
+
+        return super().closeEvent(a0)
+
+    def addSubscriptions(self):
         if (
-            "talkback" in config
-            and "link" in config["talkback"]
-            and "channel" in config["talkback"]
-            and config["talkback"]["link"]
-            and "iem" in config["osc"]
+            "selectLink" in self.config
+            and "targetDestination" in self.config["selectLink"]
+            and "midiChannel" in self.config["selectLink"]
+        ):
+            self.osc["fohServer"].subscription.add(SELECT_STAT, self.processSelectSubscription)
+
+        if (
+            "talkback" in self.config
+            and "link" in self.config["talkback"]
+            and "channel" in self.config["talkback"]
+            and self.config["talkback"]["link"]
+            and "iem" in self.config["osc"]
+        ):
+            for talkbackDestination in ["A", "B"]:
+                self.osc["fohServer"].subscription.add(TALKBACK_STAT_PREFIX + talkbackDestination, self.processTalkbackSubscription)
+
+    def removeSubscriptions(self):
+        if (
+            "selectLink" in self.config
+            and "targetDestination" in self.config["selectLink"]
+            and "midiChannel" in self.config["selectLink"]
+        ):
+            self.osc["fohServer"].subscription.remove(SELECT_STAT)
+
+        if (
+            "talkback" in self.config
+            and "link" in self.config["talkback"]
+            and "channel" in self.config["talkback"]
+            and self.config["talkback"]["link"]
+            and "iem" in self.config["osc"]
         ):
             for talkbackDestination in ["A", "B"]:
                 self.osc["fohServer"].subscription.remove(TALKBACK_STAT_PREFIX + talkbackDestination)
             if self.osc["iemClient"].connected:
                 self.osc["iemClient"].send_message(self.config["talkback"]["channel"] + "/mix/on", 1)
 
-        return super().closeEvent(a0)
+    def processTalkbackSubscription(self, mixerName, message, arg):
+        if message == TALKBACK_STAT_PREFIX + "A":
+            self.tbButtonStates[0] = arg
+
+            newState = max(self.tbButtonStates) # If one button is on, then want the talkback gate to be open
+            if newState != self.tbCurState:
+                self.tbCurState = newState
+                self.osc["iemClient"].send_message(self.config["talkback"]["channel"] + "/mix/on", newState)
+        else: # B
+            self.tbButtonStates[1] = arg
+    
+    def processSelectSubscription(self, mixerName, message, arg):
+        self.osc[self.config["selectLink"]["targetDestination"] + "Midi"].send(
+            mido.Message("note_on", channel = self.config["selectLink"]["midiChannel"] - 1, note = arg)
+        )
 
 def excepthook(exc_type, exc_value, exc_tb):
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
