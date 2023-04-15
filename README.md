@@ -98,6 +98,18 @@ This is the channel that FOH talkback is being sent through. Applicable because 
 
 Whether to link buttons on the FOH mixer with the mute of the talkback channel in the IEM mixer. Only applicable for 2 mixer application.
 
+### selectLink
+
+If configured, will send MIDI note_on on select. Useful for shortcutting selecting channels in linked Ableton section.
+
+#### targetDestination
+
+Name of the target MIDI channel destination.
+
+#### midiChannel
+
+Channel to send to.
+
 ### luckyAutoMix
 
 These are default params for the auto-mixer. This is not required, as there have been default parameters that have been hard coded. Parameters include:

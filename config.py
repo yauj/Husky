@@ -452,6 +452,10 @@ config = {
         "channel": "/ch/30",
         "link": True
     },
+    "selectLink": {
+        "targetDestination": "audio",
+        "midiChannel": 3
+    },
     "luckyAutoMix": {
         "bus": "08",
         "postFader": False,

@@ -58,3 +58,7 @@ Also changing config to match next evolution of 45th loft.
 ## v2.2.0 (2023-04-13)
 
 Add ability to open files from osc snippet files.
+
+## v2.3.0 (2023-04-14)
+
+Add ability to fire MIDI command off of mixer select changes.

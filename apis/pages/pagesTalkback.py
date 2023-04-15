@@ -10,7 +10,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 import traceback
-from util.constants import TALKBACK_STAT_PREFIX
 
 logger = logging.getLogger(__name__)
 
@@ -24,16 +23,6 @@ class TalkbackButton(QPushButton):
         self.tbButtonStates = [0, 0]
         self.pressed.connect(self.clicked)
 
-        if (
-            "talkback" in config
-            and "link" in config["talkback"]
-            and "channel" in config["talkback"]
-            and config["talkback"]["link"]
-            and "iem" in config["osc"]
-        ):
-            for talkbackDestination in ["A", "B"]:
-                self.osc["fohServer"].subscription.add(TALKBACK_STAT_PREFIX + talkbackDestination, self.processTalkbackSubscription)
-    
     def clicked(self):
         if "Talkback" not in self.widgets["windows"]:
             self.widgets["windows"]["Talkback"] = TalkbackWindow(self.config, self.widgets, self.osc)
@@ -41,17 +30,6 @@ class TalkbackButton(QPushButton):
         self.widgets["windows"]["Talkback"].show()
 
         self.setDown(False)
-    
-    def processTalkbackSubscription(self, mixerName, message, arg):
-        if message == TALKBACK_STAT_PREFIX + "A":
-            self.tbButtonStates[0] = arg
-
-            newState = max(self.tbButtonStates) # If one button is on, then want the talkback gate to be open
-            if newState != self.tbCurState:
-                self.tbCurState = newState
-                self.osc["iemClient"].send_message(self.config["talkback"]["channel"] + "/mix/on", newState)
-        else: # B
-            self.tbButtonStates[1] = arg
 
 class TalkbackWindow(QMainWindow):
     def __init__(self, config, widgets, osc):
