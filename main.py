@@ -161,7 +161,7 @@ class MainWindow(QMainWindow):
     
     def processSelectSubscription(self, mixerName, message, arg):
         self.osc[self.config["selectLink"]["targetDestination"] + "Midi"].send(
-            mido.Message("note_on", channel = self.config["selectLink"]["midiChannel"] - 1, note = arg)
+            mido.Message("control_change", channel = self.config["selectLink"]["midiChannel"] - 1, control = arg, value = 127)
         )
 
 def excepthook(exc_type, exc_value, exc_tb):

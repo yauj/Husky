@@ -62,3 +62,7 @@ Add ability to open files from osc snippet files.
 ## v2.3.0 (2023-04-14)
 
 Add ability to fire MIDI command off of mixer select changes.
+
+## v2.3.1 (2023-04-27)
+
+Change MIDI command fired from note_on to control_change
