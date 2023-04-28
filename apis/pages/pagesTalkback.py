@@ -19,8 +19,6 @@ class TalkbackButton(QPushButton):
         self.config = config
         self.widgets = widgets
         self.osc = osc
-        self.tbCurState = -1 # Start at -1, to make sure we start with initializing the state
-        self.tbButtonStates = [0, 0]
         self.pressed.connect(self.clicked)
 
     def clicked(self):
