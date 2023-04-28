@@ -116,6 +116,7 @@ class MainWindow(QMainWindow):
             and "targetDestination" in self.config["selectLink"]
             and "midiChannel" in self.config["selectLink"]
         ):
+            self.curSelect = None
             self.osc["fohServer"].subscription.add(SELECT_STAT, self.processSelectSubscription)
 
         if (
@@ -160,9 +161,11 @@ class MainWindow(QMainWindow):
             self.tbButtonStates[1] = arg
     
     def processSelectSubscription(self, mixerName, message, arg):
-        self.osc[self.config["selectLink"]["targetDestination"] + "Midi"].send(
-            mido.Message("control_change", channel = self.config["selectLink"]["midiChannel"] - 1, control = arg, value = 127)
-        )
+        if self.curSelect != arg:
+            self.osc[self.config["selectLink"]["targetDestination"] + "Midi"].send(
+                mido.Message("note_on", channel = self.config["selectLink"]["midiChannel"] - 1, note = arg)
+            )
+            self.curSelect = arg
 
 def excepthook(exc_type, exc_value, exc_tb):
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))

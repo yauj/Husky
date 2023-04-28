@@ -1,5 +1,5 @@
 APP_NAME = "Husky"
-VERSION = "v2.3.1" # Version of the app. TODO for each update, to iterate the version number, as well as iterating the CHANGELOG.
+VERSION = "v2.3.2" # Version of the app. TODO for each update, to iterate the version number, as well as iterating the CHANGELOG.
 
 MIXER_TYPE = "X32" # Options: X32, XR18
 PORT = 10023 if MIXER_TYPE == "X32" else 10024
@@ -12,7 +12,7 @@ GAIN_METERS_EXPECTED_FLOATS = 96
 AUTOMIX_METERS_CMD = "/meters/4"
 AUTOMIX_METERS_EXPECTED_FLOATS = 82
 
-SELECT_STAT = "/‐stat/selidx"
+SELECT_STAT = "/-stat/selidx"
 TALKBACK_STAT_PREFIX = "/-stat/talk/"
 
 ALL_CHANNELS = [

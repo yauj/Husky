@@ -100,7 +100,7 @@ Whether to link buttons on the FOH mixer with the mute of the talkback channel i
 
 ### selectLink
 
-If configured, will send MIDI cc on select. Useful for shortcutting selecting channels in linked Ableton section.
+If configured, will send MIDI note on select. Useful for shortcutting selecting channels in linked Ableton section.
 
 #### targetDestination
 
