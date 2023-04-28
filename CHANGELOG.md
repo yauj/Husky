@@ -70,3 +70,7 @@ Change MIDI command fired from note_on to control_change
 ## v2.3.2 (2023-04-27)
 
 Change MIDI command fired from control_change to note_on
+
+## v2.3.3 (2023-04-28)
+
+Fix talkback link

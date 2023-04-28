@@ -126,6 +126,8 @@ class MainWindow(QMainWindow):
             and self.config["talkback"]["link"]
             and "iem" in self.config["osc"]
         ):
+            self.tbCurState = -1 # Start at -1, to make sure we start with initializing the state
+            self.tbButtonStates = [0, 0]
             for talkbackDestination in ["A", "B"]:
                 self.osc["fohServer"].subscription.add(TALKBACK_STAT_PREFIX + talkbackDestination, self.processTalkbackSubscription)
 
