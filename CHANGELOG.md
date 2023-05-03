@@ -74,3 +74,7 @@ Change MIDI command fired from control_change to note_on
 ## v2.3.3 (2023-04-28)
 
 Fix talkback link
+
+## v2.3.4 (2023-05-03)
+
+Don't transfer link to IEM mixer if talkback channel in the channel pair
