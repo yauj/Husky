@@ -78,3 +78,9 @@ Fix talkback link
 ## v2.3.4 (2023-05-03)
 
 Don't transfer link to IEM mixer if talkback channel in the channel pair
+
+## v2.4.0 (2023-05-14)
+
+Add ability to recall MIDI history from all control change commands targeted at Husky.
+
+Useful for recalling History of all outputs from Ableton.

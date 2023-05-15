@@ -507,10 +507,11 @@ class MIDIClient(mido.Backend):
 
 # MIDI Server
 class MIDIServer(mido.Backend):
-    def __init__(self, port = None, widgets = None):
+    def __init__(self, port = None, osc = None, widgets = None):
         super().__init__("mido.backends.rtmidi")
         self.ioPort = None
         self.port = port
+        self.osc = osc # This goes against philosophy to make servers lightweight
         self.widgets = widgets # This goes against philosophy to make servers lightweight
         self.subscriptions = {}
 
@@ -554,12 +555,15 @@ class MIDIServer(mido.Backend):
                             self.processCue(id)
                     elif self.subscriptions[id]["command"]["type"] == "Fader":
                         self.processFader(id, message)
+                    elif self.subscriptions[id]["command"]["type"] == "Pull History":
+                        self.osc["virtualMidi"].sendHistory(self.ioPort.output.send)
             elif message.type == "note_on" and self.subscriptions[id]["midi"]["type"] == "Note":
-                # Only support cues
-                if message.channel + 1 == self.subscriptions[id]["midi"]["channel"] \
-                    and message.note == self.subscriptions[id]["midi"]["control"] \
-                    and self.subscriptions[id]["command"]["type"] == "Cue":
+                # No support for fader
+                if message.channel + 1 == self.subscriptions[id]["midi"]["channel"] and message.note == self.subscriptions[id]["midi"]["control"]:
+                    if self.subscriptions[id]["command"]["type"] == "Cue":
                         self.processCue(id)
+                    elif self.subscriptions[id]["command"]["type"] == "Pull History":
+                        self.osc["virtualMidi"].sendHistory(self.ioPort.output.send)
     
     def processCue(self, id):
         page = self.getPageIdx(self.widgets["tabs"]["Cue"], self.subscriptions[id]["command"]["page"])
@@ -632,6 +636,21 @@ class MIDIServer(mido.Backend):
 class MIDIVirtualPort(mido.Backend):
     def __init__(self):
         super().__init__("mido.backends.rtmidi")
+        self.history = {}
+
         self.ioPort = super().open_ioport(APP_NAME, True)
-        self.ioPort.input.callback = self.ioPort.output.send
+        self.ioPort.input.callback = self.callbackFunction
         logger.info("Created MIDI IO Port " + APP_NAME)
+    
+    def callbackFunction(self, message):
+        if message.type == "control_change":
+            if message.channel not in self.history:
+                self.history[message.channel] = {}
+            self.history[message.channel][message.control] = message.value
+        self.ioPort.output.send(message)
+    
+    def sendHistory(self, sendFunction):
+        for channel in sorted(self.history.keys()):
+            for control in self.history[channel]:
+                sendFunction(mido.Message(type = "control_change", channel = channel, control = control, value = self.history[channel][control]))
+                sleep(0.1) # Max 100 commands per second to ensure that no requests are dropped

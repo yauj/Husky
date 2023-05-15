@@ -1,5 +1,5 @@
 APP_NAME = "Husky"
-VERSION = "v2.3.4" # Version of the app. TODO for each update, to iterate the version number, as well as iterating the CHANGELOG.
+VERSION = "v2.4.0" # Version of the app. TODO for each update, to iterate the version number, as well as iterating the CHANGELOG.
 
 MIXER_TYPE = "X32" # Options: X32, XR18
 PORT = 10023 if MIXER_TYPE == "X32" else 10024
