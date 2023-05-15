@@ -305,7 +305,53 @@ config = {
                 "midi": {"type": "Note", "channel": 11, "control": 47},
                 "command": {"type": "Cue", "page": "d", "index": "8"}
             }
-        ]
+        ],
+        "TouchOSC Bridge": [
+            {
+                "midi": {"type": "Control Change", "channel": 2, "control": 0},
+                "command": {"type": "Pull History"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 1},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "1"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 2},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "2"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 3},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "3"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 4},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "4"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 5},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "5"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 6},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "6"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 7},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "7"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 8},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "8"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 9},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "Prev Page"}
+            },
+            {
+                "midi": {"type": "Control Change", "channel": 1, "control": 10},
+                "command": {"type": "Cue", "page": "CURRENT", "index": "Nex Page"}
+            }
+        ],
     },
     "personal": {
         "DPA": {
@@ -493,8 +539,8 @@ config = {
         "/ch/26/preamp/trim": 0.5, "/ch/26/mix/fader": 0.0, "/ch/26/mix/pan": 0.5,
         "/ch/27/preamp/trim": 0.5, "/ch/27/mix/fader": 0.0, "/ch/27/mix/pan": 0.0, 
         "/ch/28/preamp/trim": 0.5, "/ch/28/mix/pan": 1.0,
-        "/ch/29/preamp/trim": 0.5, "/ch/29/mix/fader": 0.0, "/ch/29/mix/pan": 0.5,
-        "/ch/30/preamp/trim": 0.5, "/ch/30/mix/fader": 0.0, "/ch/30/mix/pan": 0.5,
+        "/ch/29/preamp/trim": 0.5, "/ch/29/mix/fader": 0.75, "/ch/29/mix/pan": 0.0,
+        "/ch/30/preamp/trim": 0.5, "/ch/30/mix/pan": 1.0,
         "/ch/31/preamp/trim": 0.5, "/ch/31/mix/fader": 0.75, "/ch/31/mix/pan": 0.0, 
         "/ch/32/preamp/trim": 0.5, "/ch/32/mix/pan": 1.0, "/ch/31/mix/on": 1,
         "/ch/31/mix/13/level": 0.75, "/ch/31/mix/13/pan": 0.0, "/ch/32/mix/13/pan": 1.0, "/ch/31/mix/13/on": 1,

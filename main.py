@@ -38,9 +38,10 @@ class MainWindow(QMainWindow):
 
         self.config = config
         self.widgets = {"connection": {}, "personal": {}, "tabs": {}, "cues": [], "faders": [], "routing": {}, "windows": {}}
-        self.osc = {}
+        self.osc = {
+            "virtualMidi": MIDIVirtualPort() # Virtual MIDI Port
+        }
         self.saveCache = True
-        self.virtualPort = MIDIVirtualPort() # Virtual MIDI Port
 
         self.setWindowTitle(APP_NAME)
 

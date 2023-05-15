@@ -28,7 +28,7 @@ class MidiInputsButton(QPushButton):
 
         self.osc["serverMidi"] = {}
         for portName in self.config["serverMidi"]:
-            self.osc["serverMidi"][portName] = MIDIServer(portName, self.widgets)
+            self.osc["serverMidi"][portName] = MIDIServer(portName, self.osc, self.widgets)
             for param in self.config["serverMidi"][portName]:
                 self.osc["serverMidi"][portName].addCallback(param)
             self.osc["serverMidi"][portName].open_ioPort()
@@ -110,7 +110,7 @@ class AddRemoveButton(QPushButton):
     def onPressed(self):
         name = self.address.currentText()
         if self.isAdd:
-            self.osc["serverMidi"][name] = MIDIServer(name, self.widgets)
+            self.osc["serverMidi"][name] = MIDIServer(name, self.osc, self.widgets)
             newIdx = self.tabs.count()
             self.tabs.addTab(MidiPage(self.osc, self.widgets, self.tabs, name), name)
             if (self.osc["serverMidi"][name].open_ioPort()):
@@ -297,8 +297,12 @@ class MidiPageLine(QWidget):
             self.params["midi"]["channel"].setValue(initParams["midi"]["channel"])
             self.params["midi"]["control"].setValue(initParams["midi"]["control"])
             self.params["command"]["type"].setCurrentText(initParams["command"]["type"])
-            self.params["command"]["page"].setCurrentText(initParams["command"]["page"])
-            self.params["command"]["index"].setCurrentText(initParams["command"]["index"])
+            if initParams["command"]["type"] == "Pull History":
+                self.params["command"]["page"].setCurrentIndex(-1)
+                self.params["command"]["index"].setCurrentIndex(-1)
+            else:
+                self.params["command"]["page"].setCurrentText(initParams["command"]["page"])
+                self.params["command"]["index"].setCurrentText(initParams["command"]["index"])
             self.label.setStyleSheet("color:green")
             self.button.setText("Delete")
 
@@ -315,6 +319,7 @@ class CommandBox(QComboBox):
         self.parent = parent
         
         self.addItems(self.parent.widgets["tabs"].keys())
+        self.addItem("Pull History")
         self.setCurrentIndex(-1)
         self.setFixedWidth(100)
 
@@ -323,7 +328,7 @@ class CommandBox(QComboBox):
     def onChange(self, text):
         while self.parent.params["command"]["page"].itemText(0) != "":
             self.parent.params["command"]["page"].removeItem(0)
-        if text == "":
+        if text == "" or text == "Pull History":
             self.parent.params["command"]["page"].setCurrentIndex(-1)
             self.parent.params["command"]["page"].setEnabled(False)
         else:
@@ -335,8 +340,8 @@ class CommandBox(QComboBox):
         
         while self.parent.params["command"]["index"].itemText(0) != "":
             self.parent.params["command"]["index"].removeItem(0)
-        if text == "":
-            self.parent.params["command"]["page"].setCurrentIndex(-1)
+        if text == "" or text == "Pull History":
+            self.parent.params["command"]["index"].setCurrentIndex(-1)
             self.parent.params["command"]["index"].setEnabled(False)
         else:
             for idx in range(0, 10 if text == "Cue" else 4):
@@ -398,8 +403,14 @@ class ConnectButton(QPushButton):
                 self.currentParams["midi"]["channel"] = self.parent.params["midi"]["channel"].value() - 1
                 self.currentParams["midi"]["control"] = self.parent.params["midi"]["control"].value()
                 self.currentParams["command"]["type"] = self.parent.params["command"]["type"].currentText()
-                self.currentParams["command"]["page"] = self.parent.params["command"]["page"].currentText()
-                self.currentParams["command"]["index"] = self.parent.params["command"]["index"].currentText()
+                if self.currentParams["command"]["type"] == "Pull History":
+                    if "page" in self.currentParams["command"]:
+                        del self.currentParams["command"]["page"]
+                    if "index" in self.currentParams["command"]:
+                        del self.currentParams["command"]["index"]
+                else:
+                    self.currentParams["command"]["page"] = self.parent.params["command"]["page"].currentText()
+                    self.currentParams["command"]["index"] = self.parent.params["command"]["index"].currentText()
 
                 if self.text() == "Connect":
                     self.parent.id = self.parent.osc["serverMidi"][self.parent.portName].addCallback(self.currentParams.copy())
@@ -472,7 +483,7 @@ def loadMidi(file, osc, widgets):
         components = line.split("\t")
         if components[0] != portName:
             portName = components[0]
-            osc["serverMidi"][portName] = MIDIServer(portName, widgets)
+            osc["serverMidi"][portName] = MIDIServer(portName, osc, widgets)
             osc["serverMidi"][portName].open_ioPort()
         param = {
             "midi": {"type": components[1], "channel": int(components[2]), "control": int(components[3])},
