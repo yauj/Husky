@@ -636,7 +636,7 @@ class MIDIServer(mido.Backend):
 class MIDIVirtualPort(mido.Backend):
     def __init__(self):
         super().__init__("mido.backends.rtmidi")
-        self.history = [ [None for _ in range(0, 128)] for _ in range(0, 16)]
+        self.history = {}
 
         self.ioPort = super().open_ioport(APP_NAME, True)
         self.ioPort.input.callback = self.callbackFunction
@@ -644,12 +644,13 @@ class MIDIVirtualPort(mido.Backend):
     
     def callbackFunction(self, message):
         if message.type == "control_change":
+            if message.channel not in self.history:
+                self.history[message.channel] = {}
             self.history[message.channel][message.control] = message.value
         self.ioPort.output.send(message)
     
     def sendHistory(self, sendFunction):
-        for channel in range(0, len(self.history)):
-            for control in range(0, len(self.history[channel])):
-                if self.history[channel][control] is not None:
-                    sendFunction(mido.Message(type = "control_change", channel = channel, control = control, value = self.history[channel][control]))
-                    sleep(0.1) # Max 100 commands per second to ensure that no requests are dropped
+        for channel in sorted(self.history.keys()):
+            for control in self.history[channel]:
+                sendFunction(mido.Message(type = "control_change", channel = channel, control = control, value = self.history[channel][control]))
+                sleep(0.1) # Max 100 commands per second to ensure that no requests are dropped
