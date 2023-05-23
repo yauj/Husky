@@ -84,3 +84,7 @@ Don't transfer link to IEM mixer if talkback channel in the channel pair
 Add ability to recall MIDI history from all control change commands targeted at Husky.
 
 Useful for recalling History of all outputs from Ableton.
+
+## v2.5.0 (2023-05-23)
+
+Add ability to update MIDI state based on MIDI history.
