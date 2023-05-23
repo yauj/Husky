@@ -74,7 +74,7 @@ def main(config, osc, widgets, curSettings, textbox):
     if len(iemSettings) > 0:
         appendSettingsToTextbox(osc, textbox, "iem", iemSettings)
     for target in midiSettings:
-        if target in config["midi"] and config["midi"][target]["type"] == "cc":
+        if target in config["midi"] and config["midi"][target]["type"] == "cc" and osc[target + "Midi"].output is not None:
             updateMidi(osc, midiSettings[target])
 
         for components in midiSettings[target]:
