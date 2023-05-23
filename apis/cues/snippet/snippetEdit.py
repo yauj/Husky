@@ -60,7 +60,7 @@ class SnippetEditDialog(QDialog):
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(SnippetAddButton(self.config, self.osc, textbox))
-        hlayout.addWidget(SnippetUpdateButton(self.osc, self.widgets, textbox))
+        hlayout.addWidget(SnippetUpdateButton(self.config, self.osc, self.widgets, textbox))
         hlayout.addWidget(SnippetFireButton(self.config, self.widgets, self.osc, textbox))
         vlayout.addLayout(hlayout)
 
